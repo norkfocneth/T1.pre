@@ -44,6 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.ui.viewmodel.OnboardingViewModel
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -64,25 +67,32 @@ import com.example.t1.theme.*
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 
-val TAKEN_USERNAMES = listOf(
-    "sensai", "focus", "tanaka", "erikson", "elena", "marcus", "miller", "chen",
-    "ninja", "pro", "legend", "alpha", "beast", "king", "queen", "master"
-)
-
 enum class UsernameStatus {
     IDLE, CHECKING, AVAILABLE, TAKEN
 }
 
 @Composable
 fun UsernameScreen(
-    onComplete: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onComplete: (String, String?) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
+    val statusState by viewModel.usernameStatus.collectAsStateWithLifecycle()
+    val suggestionsState by viewModel.suggestions.collectAsStateWithLifecycle()
 
     var input by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf(UsernameStatus.IDLE) }
-    var suggestions by remember { mutableStateOf(listOf<String>()) }
+    var displayNameInput by remember { mutableStateOf("") }
+
+    // Map VM status to local status
+    val status = when (statusState) {
+        com.example.t1.ui.viewmodel.UsernameStatus.IDLE -> UsernameStatus.IDLE
+        com.example.t1.ui.viewmodel.UsernameStatus.CHECKING -> UsernameStatus.CHECKING
+        com.example.t1.ui.viewmodel.UsernameStatus.AVAILABLE -> UsernameStatus.AVAILABLE
+        com.example.t1.ui.viewmodel.UsernameStatus.TAKEN -> UsernameStatus.TAKEN
+        com.example.t1.ui.viewmodel.UsernameStatus.ERROR -> UsernameStatus.AVAILABLE
+    }
+    val suggestions = suggestionsState
 
     // Alphanumeric + Underscores filtering & Max 16 length
     val onInputChange: (String) -> Unit = { newValue ->
@@ -96,23 +106,11 @@ fun UsernameScreen(
     LaunchedEffect(input) {
         val trimmed = input.trim()
         if (trimmed.isEmpty()) {
-            status = UsernameStatus.IDLE
-            suggestions = emptyList()
+            viewModel.checkUsername("") // resets status
             return@LaunchedEffect
         }
-
-        status = UsernameStatus.CHECKING
         delay(600) // Debounce delay
-
-        val lowercaseUsername = trimmed.lowercase()
-        val isTaken = TAKEN_USERNAMES.contains(lowercaseUsername)
-        if (isTaken) {
-            status = UsernameStatus.TAKEN
-            suggestions = listOf("_x", "2k", "_pro", ".go", "_hq").map { "$lowercaseUsername$it" }.take(3)
-        } else {
-            status = UsernameStatus.AVAILABLE
-            suggestions = emptyList()
-        }
+        viewModel.checkUsername(trimmed)
     }
 
     val canContinue = status == UsernameStatus.AVAILABLE && input.trim().length >= 2
@@ -410,6 +408,59 @@ fun UsernameScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Text(
+                text = "DISPLAY NAME (OPTIONAL)",
+                style = LabelSmall.copy(color = MutedForeground, fontSize = 9.sp),
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(start = 4.dp, bottom = 6.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(2.dp, Border, RoundedCornerShape(16.dp))
+                    .background(Card)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                BasicTextField(
+                    value = displayNameInput,
+                    onValueChange = { if (it.length <= 40) displayNameInput = it },
+                    textStyle = TextStyle(
+                        fontFamily = SpaceGrotesk,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Foreground
+                    ),
+                    cursorBrush = SolidColor(Foreground),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    decorationBox = { innerTextField ->
+                        Box {
+                            if (displayNameInput.isEmpty()) {
+                                Text(
+                                    text = "e.g. Arnav Suryavanshi",
+                                    style = TextStyle(
+                                        fontFamily = SpaceGrotesk,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MutedForeground.copy(alpha = 0.4f)
+                                    )
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Continue CTA
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
@@ -431,7 +482,7 @@ fun UsernameScreen(
                         enabled = canContinue
                     ) {
                         Haptics.playMedium(view)
-                        onComplete("${input.trim().lowercase()}.t1")
+                        onComplete("${input.trim().lowercase()}.t1", displayNameInput.trim().takeIf { it.isNotEmpty() })
                     },
                 contentAlignment = Alignment.Center
             ) {

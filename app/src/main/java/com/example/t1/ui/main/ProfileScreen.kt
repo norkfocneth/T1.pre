@@ -98,6 +98,7 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     onSignOut: () -> Unit,
     username: String,
+    onUpdateName: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -106,7 +107,7 @@ fun ProfileScreen(
     var privacyMode by remember { mutableStateOf(true) }
     var isEditing by remember { mutableStateOf(false) }
 
-    var name by remember { mutableStateOf("Erik Vance") }
+    var name by remember(username) { mutableStateOf(username) }
     var title by remember { mutableStateOf("Deep Work Enthusiast") }
 
     var editName by remember { mutableStateOf(name) }
@@ -118,6 +119,7 @@ fun ProfileScreen(
         name = editName
         title = editTitle
         isEditing = false
+        onUpdateName?.invoke(editName)
     }
 
     val maxScore = remember { weeklyScores.maxOrNull() ?: 100 }

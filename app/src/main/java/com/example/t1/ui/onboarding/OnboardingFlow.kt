@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,11 +25,16 @@ enum class OnboardingStep {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OnboardingFlow(
-    onComplete: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onComplete: (String, String?, Int) -> Unit,
+    modifier: Modifier = Modifier,
+    initialStep: OnboardingStep = OnboardingStep.AUTH
 ) {
-    var step by remember { mutableStateOf(OnboardingStep.AUTH) }
+    var step by remember { mutableStateOf(initialStep) }
     var focusScore by remember { mutableIntStateOf(68) }
+
+    LaunchedEffect(initialStep) {
+        step = initialStep
+    }
 
     val handleQuestionsComplete: (List<Int>) -> Unit = { answers ->
         val base = 55
@@ -84,7 +90,7 @@ fun OnboardingFlow(
             }
             OnboardingStep.USERNAME -> {
                 UsernameScreen(
-                    onComplete = { username -> onComplete(username) }
+                    onComplete = { username, displayName -> onComplete(username, displayName, focusScore) }
                 )
             }
         }

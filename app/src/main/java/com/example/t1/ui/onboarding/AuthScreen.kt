@@ -61,6 +61,20 @@ import androidx.compose.ui.unit.sp
 import com.example.t1.theme.*
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
+import android.widget.Toast
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.ui.viewmodel.AuthUiState
+import com.example.t1.ui.viewmodel.AuthViewModel
 
 @Composable
 fun OnboardingBackground(
@@ -103,10 +117,24 @@ fun OnboardingBackground(
 @Composable
 fun AuthScreen(
     onContinue: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var isSignUp by remember { mutableStateOf(false) }
+    var emailInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState) {
+        if (uiState is AuthUiState.Success) {
+            showDialog = false
+            onContinue()
+        }
+    }
 
     // Entrance Animation States
     var showLogo by remember { mutableStateOf(false) }
@@ -219,7 +247,7 @@ fun AuthScreen(
                                     indication = null
                                 ) {
                                     Haptics.playMedium(view)
-                                    onContinue()
+                                    Toast.makeText(context, "Google Sign-In is currently disabled. Please use Email Sign-In.", Toast.LENGTH_LONG).show()
                                 }
                                 .drawBehind {
                                     // Custom glow shadow around button
@@ -239,12 +267,6 @@ fun AuthScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                // Google Icon Custom Drawing or standard representation
-                                Canvas(modifier = Modifier.size(18.dp)) {
-                                    // A simplified version of Google logo colors inside canvas, or we can use custom drawing if we want
-                                    // But let's just make a nice circle representing the google sign-in icon or a simple icon
-                                }
-                                // Or we can construct custom SVG path in Canvas. Let's do that for maximum accuracy
                                 GoogleIcon(modifier = Modifier.size(18.dp))
                                 
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -278,7 +300,7 @@ fun AuthScreen(
                                     indication = null
                                 ) {
                                     Haptics.playMedium(view)
-                                    onContinue()
+                                    showDialog = true
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -324,6 +346,175 @@ fun AuthScreen(
                     ),
                     textAlign = TextAlign.Center
                 )
+            }
+        }
+    }
+
+    if (showDialog) {
+        Dialog(onDismissRequest = {
+            showDialog = false
+            viewModel.resetState()
+        }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .border(1.dp, Border, RoundedCornerShape(24.dp))
+                    .background(Card)
+                    .padding(24.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = if (isSignUp) "CREATE ACCOUNT" else "SIGN IN",
+                        style = TrackingWide.copy(
+                            color = MutedForeground,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    // Tab selector (Sign in / Sign up)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Secondary)
+                            .border(1.dp, Border, RoundedCornerShape(20.dp))
+                            .padding(2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(if (!isSignUp) Foreground else Color.Transparent)
+                                .clickable { isSignUp = false },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Sign In",
+                                style = LabelMedium.copy(
+                                    color = if (!isSignUp) Background else Foreground,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(if (isSignUp) Foreground else Color.Transparent)
+                                .clickable { isSignUp = true },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Sign Up",
+                                style = LabelMedium.copy(
+                                    color = if (isSignUp) Background else Foreground,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    // Email Field
+                    Text(
+                        text = "EMAIL",
+                        style = LabelSmall.copy(color = MutedForeground, fontSize = 9.sp),
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        textStyle = BodyMedium.copy(color = Foreground),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                        cursorBrush = SolidColor(Foreground),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, Border, RoundedCornerShape(12.dp))
+                            .background(Background.copy(alpha = 0.5f))
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Password Field
+                    Text(
+                        text = "PASSWORD",
+                        style = LabelSmall.copy(color = MutedForeground, fontSize = 9.sp),
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(
+                        value = passwordInput,
+                        onValueChange = { passwordInput = it },
+                        textStyle = BodyMedium.copy(color = Foreground),
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                        cursorBrush = SolidColor(Foreground),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, Border, RoundedCornerShape(12.dp))
+                            .background(Background.copy(alpha = 0.5f))
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Error message
+                    if (uiState is AuthUiState.Error) {
+                        Text(
+                            text = (uiState as AuthUiState.Error).message,
+                            style = BodySmall.copy(color = Destructive),
+                            modifier = Modifier.padding(bottom = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    
+                    // CTA Button
+                    val isBtnEnabled = emailInput.trim().isNotEmpty() && passwordInput.length >= 6
+                    val btnAlpha = if (isBtnEnabled && uiState !is AuthUiState.Loading) 1f else 0.5f
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .alpha(btnAlpha)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Foreground)
+                            .clickable(enabled = isBtnEnabled && uiState !is AuthUiState.Loading) {
+                                Haptics.playMedium(view)
+                                if (isSignUp) {
+                                    viewModel.signUp(emailInput, passwordInput)
+                                } else {
+                                    viewModel.signIn(emailInput, passwordInput)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState is AuthUiState.Loading) {
+                            CircularProgressIndicator(color = Background, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text(
+                                text = if (isSignUp) "Create Account" else "Sign In",
+                                style = LabelLarge.copy(color = Background, fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

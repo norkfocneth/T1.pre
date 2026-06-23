@@ -56,6 +56,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.theme.*
 import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.util.Haptics
@@ -118,7 +121,8 @@ enum class LeaderboardTab {
 @Composable
 fun LeaderboardScreen(
     username: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
     var activeTab by remember { mutableStateOf(LeaderboardTab.WEEK) }
@@ -127,19 +131,43 @@ fun LeaderboardScreen(
     val weekData = remember { generateLeaderboardUsers(1) }
     val allData = remember { generateLeaderboardUsers(2) }
 
-    val currentData = when (activeTab) {
-        LeaderboardTab.DAY -> dayData
-        LeaderboardTab.WEEK -> weekData
-        LeaderboardTab.ALL -> allData
+    val leaderboardEntries by mainViewModel.leaderboardState.collectAsStateWithLifecycle()
+
+    val currentData = if (leaderboardEntries.isNotEmpty()) {
+        leaderboardEntries.map { entry ->
+            val formattedName = if (entry.displayName != null) {
+                "${entry.displayName} (${entry.username})"
+            } else {
+                entry.username
+            }
+            LeaderboardUser(
+                rank = entry.rank,
+                name = formattedName,
+                score = entry.focusScore.toFloat(),
+                streak = entry.streak,
+                percentile = "top ${max(1, entry.rank * 2)}%",
+                badge = "Gold badge",
+                movement = "same",
+                movementVal = 0
+            )
+        }
+    } else {
+        when (activeTab) {
+            LeaderboardTab.DAY -> dayData
+            LeaderboardTab.WEEK -> weekData
+            LeaderboardTab.ALL -> allData
+        }
     }
 
     val top3 = currentData.take(3)
     val rest = currentData.drop(3)
 
-    val userEntry = LeaderboardUser(
-        rank = 9,
+    val userEntryFromList = currentData.firstOrNull { it.name.lowercase().contains(username.lowercase()) }
+    val userScoreState = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
+    val userEntry = userEntryFromList ?: LeaderboardUser(
+        rank = if (currentData.isNotEmpty()) currentData.size + 1 else 9,
         name = if (username.endsWith(".t1")) username else "$username.t1",
-        score = 58.0f,
+        score = userScoreState.value.toFloat(),
         streak = 12,
         percentile = "top 42%",
         badge = "Silver badge",

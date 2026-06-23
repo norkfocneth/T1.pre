@@ -1,0 +1,38 @@
+package com.example.t1.di
+
+import android.content.Context
+import androidx.room.Room
+import com.example.t1.data.database.T1Database
+import com.example.t1.data.database.dao.FocusSessionDao
+import com.example.t1.data.database.dao.UserProfileDao
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): T1Database {
+        return Room.databaseBuilder(
+            context,
+            T1Database::class.java,
+            "t1_database"
+        ).fallbackToDestructiveMigration().build()
+    }
+
+    @Provides
+    fun provideUserProfileDao(database: T1Database): UserProfileDao {
+        return database.userProfileDao()
+    }
+
+    @Provides
+    fun provideFocusSessionDao(database: T1Database): FocusSessionDao {
+        return database.focusSessionDao()
+    }
+}

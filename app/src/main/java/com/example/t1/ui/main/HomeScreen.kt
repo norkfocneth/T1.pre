@@ -62,12 +62,13 @@ fun HomeScreen(
     username: String,
     onOpenTimer: () -> Unit,
     onOpenProfile: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusScore: Int = 85
 ) {
     val view = LocalView.current
     val context = LocalContext.current
 
-    val score = 85
+    val score = focusScore
     val percentile = 76
     var showBreakdown by remember { mutableStateOf(false) }
 

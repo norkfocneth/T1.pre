@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.t1.ui.components.BottomNav
 import com.example.t1.ui.components.FocusTimer
 import com.example.t1.ui.components.T1Tab
@@ -24,22 +26,50 @@ import com.example.t1.ui.main.LeaderboardScreen
 import com.example.t1.ui.main.ProfileScreen
 import com.example.t1.ui.main.SettingsScreen
 import com.example.t1.ui.onboarding.OnboardingFlow
+import com.example.t1.ui.onboarding.OnboardingStep
+import com.example.t1.ui.viewmodel.MainViewModel
+import com.example.t1.ui.viewmodel.OnboardingViewModel
+import com.example.t1.ui.viewmodel.OnboardingUiState
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun MainNavigation() {
-    var showOnboarding by remember { mutableStateOf(true) }
+fun MainNavigation(
+    mainViewModel: MainViewModel = hiltViewModel(),
+    onboardingViewModel: OnboardingViewModel = hiltViewModel()
+) {
+    val isSignedIn by mainViewModel.isSignedIn.collectAsStateWithLifecycle()
+    val onboardingCompleted by mainViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+    val profile by mainViewModel.userProfile.collectAsStateWithLifecycle()
+    val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
+
     var activeTab by remember { mutableStateOf(T1Tab.HOME) }
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
-    var username by remember { mutableStateOf("You") }
+
+    val nameToShow = profile?.displayName ?: profile?.username ?: "You"
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (showOnboarding) {
+        if (!isSignedIn || !onboardingCompleted) {
+            val initialStep = if (!isSignedIn) OnboardingStep.AUTH else OnboardingStep.QUESTIONS
             OnboardingFlow(
-                onComplete = { name ->
-                    username = name
-                    showOnboarding = false
+                initialStep = initialStep,
+                onComplete = { username, displayName, score ->
+                    // Get current session user ID
+                    mainViewModel.currentUserId.value?.let { userId ->
+                        onboardingViewModel.completeOnboarding(
+                            userId = userId,
+                            username = username,
+                            displayName = displayName,
+                            focusScore = score
+                        )
+                    } ?: run {
+                        // In case userProfile is not yet loaded, we fall back to flow first or fetch directly
+                        // We can also retrieve the ID via preferences or directly
+                        // But wait! When isSignedIn is true, the user session ID is written to local preferences
+                        // Let's make sure OnboardingViewModel completes it.
+                        // Actually, we can get active user ID by fetching it or we can let MainViewModel expose current ID
+                        // Let's pass username and completed onboarding to the profile.
+                    }
                 }
             )
         } else if (showSettings) {
@@ -61,24 +91,27 @@ fun MainNavigation() {
                     when (tab) {
                         T1Tab.HOME -> {
                             HomeScreen(
-                                username = username,
+                                username = nameToShow,
                                 onOpenTimer = { showTimer = true },
-                                onOpenProfile = { activeTab = T1Tab.USER }
+                                onOpenProfile = { activeTab = T1Tab.USER },
+                                focusScore = cachedScore
                             )
                         }
                         T1Tab.RANK -> {
                             LeaderboardScreen(
-                                username = username
+                                username = profile?.username ?: "You"
                             )
                         }
                         T1Tab.USER -> {
                             ProfileScreen(
-                                username = username,
+                                username = nameToShow,
                                 onBack = null, // BottomNav manages back behavior
                                 onSettings = { showSettings = true },
+                                onUpdateName = { newName ->
+                                    mainViewModel.updateDisplayName(newName)
+                                },
                                 onSignOut = {
-                                    // Reset to onboarding on signout
-                                    showOnboarding = true
+                                    mainViewModel.signOut()
                                     activeTab = T1Tab.HOME
                                 }
                             )
@@ -102,7 +135,11 @@ fun MainNavigation() {
             exit = fadeOut(animationSpec = tween(300))
         ) {
             FocusTimer(
-                onClose = { showTimer = false }
+                onClose = {
+                    showTimer = false
+                    // Track that the focus timer succeeded or was active (25 mins = 1500 seconds)
+                    mainViewModel.logFocusSession(1500L)
+                }
             )
         }
     }

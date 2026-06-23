@@ -1,8 +1,22 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.hilt)
+  alias(libs.plugins.ksp)
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        load(FileInputStream(file))
+    }
+}
+val supabaseUrl = localProperties.getProperty("supabase.url") ?: ""
+val supabaseAnonKey = localProperties.getProperty("supabase.anon_key") ?: ""
 
 android {
     namespace = "com.example.t1"
@@ -13,6 +27,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {
@@ -28,8 +45,14 @@ android {
     buildFeatures {
       compose = true
       aidl = false
-      buildConfig = false
+      buildConfig = true
       shaders = false
+    }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
     }
 
     packaging {
@@ -84,4 +107,28 @@ dependencies {
   
   // Extended Icons
   implementation(libs.androidx.compose.material.icons.extended)
+
+  // Room Database
+  implementation(libs.androidx.room.runtime)
+  implementation(libs.androidx.room.ktx)
+  ksp(libs.androidx.room.compiler)
+
+  // Hilt Dependency Injection
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
+  implementation(libs.androidx.hilt.navigation.compose)
+
+  // DataStore Preferences
+  implementation(libs.androidx.datastore.preferences)
+
+  // Kotlinx Serialization JSON
+  implementation(libs.kotlinx.serialization.json)
+
+  // Supabase
+  implementation(platform(libs.supabase.bom))
+  implementation(libs.supabase.postgrest)
+  implementation(libs.supabase.auth)
+
+  // Ktor Client OkHttp
+  implementation(libs.ktor.client.okhttp)
 }

@@ -5,6 +5,9 @@ import androidx.room.Room
 import com.example.t1.data.database.T1Database
 import com.example.t1.data.database.dao.FocusSessionDao
 import com.example.t1.data.database.dao.UserProfileDao
+import com.example.t1.data.database.dao.DailyUsageDao
+import com.example.t1.data.database.dao.DailyBehaviourDao
+import com.example.t1.data.database.migration.MIGRATION_1_2
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +26,10 @@ object DatabaseModule {
             context,
             T1Database::class.java,
             "t1_database"
-        ).fallbackToDestructiveMigration().build()
+        )
+        .addMigrations(MIGRATION_1_2)
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides
@@ -35,4 +41,15 @@ object DatabaseModule {
     fun provideFocusSessionDao(database: T1Database): FocusSessionDao {
         return database.focusSessionDao()
     }
+
+    @Provides
+    fun provideDailyUsageDao(database: T1Database): DailyUsageDao {
+        return database.dailyUsageDao()
+    }
+
+    @Provides
+    fun provideDailyBehaviourDao(database: T1Database): DailyBehaviourDao {
+        return database.dailyBehaviourDao()
+    }
 }
+

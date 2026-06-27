@@ -1,19 +1,26 @@
 package com.example.t1.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.t1.domain.SessionManager
 import com.example.t1.domain.model.LeaderboardEntry
 import com.example.t1.domain.model.UserProfile
+import com.example.t1.domain.permission.UsagePermissionManager
+import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.domain.repository.UserRepository
+import com.example.t1.domain.repository.BehaviourRepository
 import com.example.t1.util.T1Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,8 +29,11 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userRepository: UserRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val usagePermissionManager: UsagePermissionManager,
+    private val behaviourRepository: BehaviourRepository
 ) : ViewModel() {
 
     /**
@@ -38,6 +48,60 @@ class MainViewModel @Inject constructor(
     val cachedFocusScore: StateFlow<Int> = userProfile.map { profile ->
         profile?.focusScore ?: 50
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 50)
+
+    private val _dashboardState = MutableStateFlow(DashboardUiState())
+    val dashboardState: StateFlow<DashboardUiState> = _dashboardState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            // Observe permission state reactively
+            usagePermissionManager.observePermissionState(context).collectLatest { permState ->
+                _dashboardState.update { it.copy(permissionState = permState) }
+                if (permState is UsagePermissionState.Granted) {
+                    refreshBehaviourData()
+                } else {
+                    _dashboardState.update { it.copy(collectionStatus = CollectionStatus.Idle) }
+                }
+            }
+        }
+    }
+
+    fun refreshBehaviourData() {
+        viewModelScope.launch {
+            val perm = _dashboardState.value.permissionState
+            if (perm !is UsagePermissionState.Granted) {
+                _dashboardState.update { it.copy(collectionStatus = CollectionStatus.Idle) }
+                return@launch
+            }
+            _dashboardState.update { it.copy(isLoading = true, collectionStatus = CollectionStatus.Collecting) }
+            val result = behaviourRepository.getTodayBehaviour()
+            if (result.isSuccess) {
+                val behaviour = result.getOrNull()
+                _dashboardState.update {
+                    it.copy(
+                        isLoading = false,
+                        collectionStatus = CollectionStatus.Success,
+                        todayBehaviour = behaviour,
+                        lastUpdated = System.currentTimeMillis(),
+                        error = null
+                    )
+                }
+            } else {
+                val errorMsg = result.exceptionOrNull()?.message ?: "Failed to collect behavior stats"
+                _dashboardState.update {
+                    it.copy(
+                        isLoading = false,
+                        collectionStatus = CollectionStatus.Failed(errorMsg),
+                        error = errorMsg
+                    )
+                }
+            }
+        }
+    }
+
+    fun openPermissionSettings() {
+        usagePermissionManager.openPermissionSettings(context)
+    }
 
     // Stubs for future Phase 2 leaderboard support
     private val _leaderboardState = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
@@ -77,3 +141,4 @@ class MainViewModel @Inject constructor(
         }
     }
 }
+

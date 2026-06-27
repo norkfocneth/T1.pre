@@ -1,6 +1,8 @@
 package com.example.t1.domain
 
 import android.content.Context
+import com.example.t1.data.database.dao.DailyUsageDao
+import com.example.t1.data.database.dao.DailyBehaviourDao
 import com.example.t1.domain.model.UserProfile
 import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.UserRepository
@@ -24,7 +26,9 @@ import javax.inject.Singleton
 open class SessionManager @Inject constructor(
     private val supabaseClient: SupabaseClient?,
     private val authRepository: AuthRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val dailyUsageDao: DailyUsageDao,
+    private val dailyBehaviourDao: DailyBehaviourDao
 ) {
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -37,6 +41,8 @@ open class SessionManager @Inject constructor(
                     if (status is SessionStatus.NotAuthenticated) {
                         T1Logger.i("Session invalid or expired. Cleaning Room cache to prevent session leakage.")
                         userRepository.clearCache()
+                        dailyUsageDao.clearAll()
+                        dailyBehaviourDao.clearAll()
                     }
                 }
             }
@@ -52,6 +58,8 @@ open class SessionManager @Inject constructor(
         if (restoreResult.isFailure) {
             T1Logger.w("No session restored: ${restoreResult.exceptionOrNull()?.message}")
             userRepository.clearCache()
+            dailyUsageDao.clearAll()
+            dailyBehaviourDao.clearAll()
             return Result.failure(restoreResult.exceptionOrNull() ?: Exception("No session"))
         }
 
@@ -77,6 +85,8 @@ open class SessionManager @Inject constructor(
             // Profile does not exist yet or onboarding not completed (New User flow)
             T1Logger.i("Profile does not exist or onboarding not completed for authenticated user.")
             userRepository.clearCache()
+            dailyUsageDao.clearAll()
+            dailyBehaviourDao.clearAll()
             return Result.success(null)
         }
 
@@ -86,6 +96,8 @@ open class SessionManager @Inject constructor(
             T1Logger.e("SECURITY FAILURE: Downloaded profile ID mismatch! Initiating emergency logout.")
             // Emergency clear and logout
             userRepository.clearCache()
+            dailyUsageDao.clearAll()
+            dailyBehaviourDao.clearAll()
             authRepository.signOut()
             return Result.failure(SecurityException("Security Validation Failed: profile.id != auth.uid()"))
         }
@@ -103,6 +115,9 @@ open class SessionManager @Inject constructor(
         T1Logger.i("Performing clean sign-out")
         val signOutResult = authRepository.signOut()
         userRepository.clearCache()
+        dailyUsageDao.clearAll()
+        dailyBehaviourDao.clearAll()
         return signOutResult
     }
 }
+

@@ -3,9 +3,13 @@ package com.example.t1.di
 import com.example.t1.data.repository.AuthRepositoryImpl
 import com.example.t1.data.repository.LeaderboardRepositoryImpl
 import com.example.t1.data.repository.UserRepositoryImpl
+import com.example.t1.data.repository.UsageRepositoryImpl
+import com.example.t1.data.repository.BehaviourRepositoryImpl
 import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.LeaderboardRepository
 import com.example.t1.domain.repository.UserRepository
+import com.example.t1.domain.repository.UsageRepository
+import com.example.t1.domain.repository.BehaviourRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -36,7 +40,20 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
+    abstract fun bindUsageRepository(
+        impl: UsageRepositoryImpl
+    ): UsageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBehaviourRepository(
+        impl: BehaviourRepositoryImpl
+    ): BehaviourRepository
+
+    @Binds
+    @Singleton
     abstract fun bindAuthProvider(
         impl: com.example.t1.data.remote.GoogleAuthProvider
     ): com.example.t1.data.remote.AuthProvider
 }
+

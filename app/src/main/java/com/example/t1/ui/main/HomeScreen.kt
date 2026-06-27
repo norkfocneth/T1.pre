@@ -29,6 +29,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -54,6 +56,8 @@ import androidx.compose.ui.unit.sp
 import com.example.t1.theme.*
 import com.example.t1.ui.components.FocusRing
 import com.example.t1.ui.onboarding.OnboardingBackground
+import com.example.t1.ui.viewmodel.DashboardUiState
+import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 
@@ -62,6 +66,8 @@ fun HomeScreen(
     username: String,
     onOpenTimer: () -> Unit,
     onOpenProfile: () -> Unit,
+    dashboardState: DashboardUiState,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     focusScore: Int = 85
 ) {
@@ -165,6 +171,39 @@ fun HomeScreen(
                         tint = MutedForeground,
                         modifier = Modifier.size(18.dp)
                     )
+                }
+            }
+
+            // Permission Warning Banner
+            if (dashboardState.permissionState is UsagePermissionState.Denied) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Danger.copy(alpha = 0.1f))
+                        .border(1.dp, Danger.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                        .clickable { onOpenSettings() }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Warning",
+                        tint = Danger,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Usage Stats Revoked",
+                            style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "Tap to grant permission in Settings.",
+                            style = BodySmall.copy(color = MutedForeground)
+                        )
+                    }
                 }
             }
 
@@ -314,17 +353,17 @@ fun HomeScreen(
                             .background(Border)
                     )
 
-                    // Sessions
+                    // Unlocks
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "24",
+                            text = "${dashboardState.todayBehaviour?.unlockCount ?: 0}",
                             style = HeadlineMedium.copy(
                                 color = Foreground,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
-                            text = "SESSIONS",
+                            text = "UNLOCKS",
                             style = TrackingNarrow.copy(
                                 color = MutedForeground,
                                 fontSize = 10.sp,
@@ -342,17 +381,17 @@ fun HomeScreen(
                             .background(Border)
                     )
 
-                    // Saved Hours
+                    // App Opens
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "5.5",
+                            text = "${dashboardState.todayBehaviour?.appOpenCount ?: 0}",
                             style = HeadlineMedium.copy(
                                 color = Foreground,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
-                            text = "SAVED HOURS",
+                            text = "OPENS",
                             style = TrackingNarrow.copy(
                                 color = MutedForeground,
                                 fontSize = 10.sp,
@@ -364,9 +403,111 @@ fun HomeScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 4. Real Collected Usage Breakdown Cards
+            if (dashboardState.permissionState is UsagePermissionState.Granted && dashboardState.todayBehaviour != null) {
+                val behaviour = dashboardState.todayBehaviour
+                val totalMin = behaviour.totalScreenTimeMs / 60000
+                val hours = totalMin / 60
+                val mins = totalMin % 60
+                val formattedScreenTime = if (hours > 0) "${hours}h ${mins}m" else "${mins}m"
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(20.dp)
+                ) {
+                    Text(
+                        text = "TODAY'S SCREEN TIME",
+                        style = TrackingNarrow.copy(
+                            color = MutedForeground,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = formattedScreenTime,
+                        style = HeadlineLarge.copy(
+                            color = Foreground,
+                            fontWeight = FontWeight.Black
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Categories breakdown progress bars
+                    Text(
+                        text = "CATEGORY BREAKDOWN",
+                        style = TrackingNarrow.copy(
+                            color = MutedForeground,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val categories = listOf(
+                        Triple("Productivity", behaviour.productiveTimeMs, Success),
+                        Triple("Social Time", behaviour.socialTimeMs, StreakSmall),
+                        Triple("Entertainment", behaviour.entertainmentTimeMs, Info),
+                        Triple("Education", behaviour.educationTimeMs, GlowPrimary)
+                    )
+
+                    categories.forEach { (label, durationMs, color) ->
+                        val durationMin = durationMs / 60000
+                        val hr = durationMin / 60
+                        val mn = durationMin % 60
+                        val timeStr = if (hr > 0) "${hr}h ${mn}m" else "${mn}m"
+
+                        val fraction = if (behaviour.totalScreenTimeMs > 0) {
+                            durationMs.toFloat() / behaviour.totalScreenTimeMs
+                        } else 0f
+
+                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Medium)
+                                )
+                                Text(
+                                    text = timeStr,
+                                    style = BodyMedium.copy(color = MutedForeground)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            // Custom progress track
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(Border)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(fraction)
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(color)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. Start Focus Session CTA Button
+            // 5. Start Focus Session CTA Button
             AnimatedVisibility(
                 visible = showCTA,
                 enter = fadeIn(animationSpec = tween(500)) + slideInVertically(

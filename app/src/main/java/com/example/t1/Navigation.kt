@@ -131,15 +131,27 @@ fun MainNavigation(
                 }
             }
             is AuthState.Dashboard -> {
-                DashboardShell(
-                    profile = state.profile,
-                    mainViewModel = mainViewModel,
-                    onSignOut = { authViewModel.signOut() }
-                )
+                val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
+                var dismissedPermission by remember { mutableStateOf(false) }
+
+                if (dashboardState.permissionState is com.example.t1.domain.permission.UsagePermissionState.Denied && !dismissedPermission) {
+                    com.example.t1.ui.permission.UsagePermissionScreen(
+                        onOpenSettings = { mainViewModel.openPermissionSettings() },
+                        onRetry = { mainViewModel.refreshBehaviourData() },
+                        onLater = { dismissedPermission = true }
+                    )
+                } else {
+                    DashboardShell(
+                        profile = state.profile,
+                        mainViewModel = mainViewModel,
+                        onSignOut = { authViewModel.signOut() }
+                    )
+                }
             }
         }
     }
 }
+
 
 /**
  * Container rendering the main dashboard with BottomNav, HomeScreen, Leaderboard, and Settings views.
@@ -158,6 +170,7 @@ fun DashboardShell(
 
     val nameToShow = profile.displayName ?: profile.username
     val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
+    val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
 
     Box(modifier = modifier.fillMaxSize()) {
         if (showSettings) {
@@ -180,6 +193,8 @@ fun DashboardShell(
                                 username = nameToShow,
                                 onOpenTimer = { showTimer = true },
                                 onOpenProfile = { activeTab = T1Tab.USER },
+                                dashboardState = dashboardState,
+                                onOpenSettings = { mainViewModel.openPermissionSettings() },
                                 focusScore = cachedScore
                             )
                         }

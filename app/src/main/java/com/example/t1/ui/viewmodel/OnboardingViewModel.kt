@@ -2,8 +2,8 @@ package com.example.t1.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.t1.domain.usecase.CheckUsernameAvailabilityUseCase
-import com.example.t1.domain.usecase.SaveOnboardingAnswersUseCase
+import com.example.t1.domain.repository.UserRepository
+import com.example.t1.domain.model.UserProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,10 +22,13 @@ sealed interface OnboardingUiState {
     data class Error(val message: String) : OnboardingUiState
 }
 
+/**
+ * OnboardingViewModel stubbed for Phase 1.
+ * Acts as a placeholder to allow UI compilation.
+ */
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val checkUsernameAvailabilityUseCase: CheckUsernameAvailabilityUseCase,
-    private val saveOnboardingAnswersUseCase: SaveOnboardingAnswersUseCase
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<OnboardingUiState>(OnboardingUiState.Idle)
@@ -47,35 +50,31 @@ class OnboardingViewModel @Inject constructor(
 
         _usernameStatus.value = UsernameStatus.CHECKING
         viewModelScope.launch {
-            checkUsernameAvailabilityUseCase(trimmed)
-                .onSuccess { available ->
-                    if (available) {
-                        _usernameStatus.value = UsernameStatus.AVAILABLE
-                        _suggestions.value = emptyList()
-                    } else {
-                        _usernameStatus.value = UsernameStatus.TAKEN
-                        val lowercase = trimmed.lowercase()
-                        _suggestions.value = listOf("_x", "2k", "_pro", ".go", "_hq").map { "$lowercase$it" }.take(3)
-                    }
-                }
-                .onFailure {
-                    // In case of error (e.g. offline checking), we fallback
-                    _usernameStatus.value = UsernameStatus.ERROR
-                    _suggestions.value = emptyList()
-                }
+            // Mock username check for Phase 1
+            _usernameStatus.value = UsernameStatus.AVAILABLE
+            _suggestions.value = emptyList()
         }
     }
 
     fun completeOnboarding(userId: String, username: String, displayName: String?, focusScore: Int) {
         _uiState.value = OnboardingUiState.Loading
         viewModelScope.launch {
-            saveOnboardingAnswersUseCase(userId, username, displayName, focusScore)
-                .onSuccess {
-                    _uiState.value = OnboardingUiState.Success
-                }
-                .onFailure { exception ->
-                    _uiState.value = OnboardingUiState.Error(exception.localizedMessage ?: "Failed to save profile")
-                }
+            try {
+                // Mock profile creation in cache to allow testing Phase 2 transition entry
+                val mockProfile = UserProfile(
+                    id = userId,
+                    username = username,
+                    usernameLower = username.lowercase(),
+                    displayName = displayName,
+                    focusScore = focusScore,
+                    onboardingCompleted = true,
+                    createdAt = System.currentTimeMillis()
+                )
+                userRepository.saveCachedProfile(mockProfile)
+                _uiState.value = OnboardingUiState.Success
+            } catch (e: Exception) {
+                _uiState.value = OnboardingUiState.Error(e.message ?: "Failed to save profile")
+            }
         }
     }
 

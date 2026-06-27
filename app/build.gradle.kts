@@ -17,12 +17,13 @@ val localProperties = Properties().apply {
 }
 val supabaseUrl = localProperties.getProperty("supabase.url") ?: ""
 val supabaseAnonKey = localProperties.getProperty("supabase.anon_key") ?: ""
+val googleWebClientId = localProperties.getProperty("google.web_client_id") ?: ""
 
 android {
     namespace = "com.example.t1"
     compileSdk = 36
     defaultConfig {
-        applicationId = "com.example.t1"
+        applicationId = "com.focneth.t1"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -30,6 +31,7 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -93,6 +95,8 @@ dependencies {
   // Local tests: jUnit, coroutines, Android runner
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockito.core)
+
 
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.core)
@@ -121,6 +125,9 @@ dependencies {
   // DataStore Preferences
   implementation(libs.androidx.datastore.preferences)
 
+  // Splash Screen
+  implementation(libs.androidx.splashscreen)
+
   // Kotlinx Serialization JSON
   implementation(libs.kotlinx.serialization.json)
 
@@ -131,4 +138,9 @@ dependencies {
 
   // Ktor Client OkHttp
   implementation(libs.ktor.client.okhttp)
+
+  // Credentials & Google Sign-In
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services.auth)
+  implementation(libs.googleid)
 }

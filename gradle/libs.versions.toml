@@ -21,6 +21,12 @@ supabase = "3.0.0"
 datastore = "1.1.1"
 serializationJson = "1.6.3"
 ktor = "3.0.3"
+splashscreen = "1.0.1"
+credentials = "1.2.2"
+googleid = "1.1.1"
+mockito = "5.11.0"
+
+
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -69,6 +75,17 @@ supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 
 # Ktor
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+
+# Splash Screen
+androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
+
+# Credentials & Google Sign-In
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

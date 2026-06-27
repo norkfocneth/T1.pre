@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.T1" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Base app theme -->
+    <style name="Theme.T1" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <!-- Splash screen theme — pure black, T1. logo, fast dismiss -->
+    <style name="Theme.T1.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#000000</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_t1</item>
+        <item name="windowSplashScreenIconBackgroundColor">#000000</item>
+        <item name="postSplashScreenTheme">@style/Theme.T1</item>
+    </style>
+
 </resources>

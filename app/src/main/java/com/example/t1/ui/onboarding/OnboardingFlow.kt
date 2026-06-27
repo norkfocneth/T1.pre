@@ -63,9 +63,7 @@ fun OnboardingFlow(
     ) { currentStep ->
         when (currentStep) {
             OnboardingStep.AUTH -> {
-                AuthScreen(
-                    onContinue = { step = OnboardingStep.QUESTIONS }
-                )
+                androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize())
             }
             OnboardingStep.QUESTIONS -> {
                 QuestionScreen(

@@ -31,8 +31,8 @@ class SupabaseServiceTest {
     fun testIsUsernameTaken() = runTest {
         try {
             val client = createSupabaseClient(
-                supabaseUrl = "https://kgfpezecyejofkivhkej.supabase.co",
-                supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnZnBlemVjeWVqb2ZraXZoa2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxOTc4NzMsImV4cCI6MjA5Nzc3Mzg3M30.V6EdbRbcw404mJhpdcrYlgRJNp7VmFLkYUdQz1GBuzc"
+                supabaseUrl = "https://ehukatpgqeqjkcgqhxtr.supabase.co",
+                supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVodWthdHBncWVxamtjZ3FoeHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDIwMjksImV4cCI6MjA5ODA3ODAyOX0.-YoeeLX4ZWn9YbeC-GVsV5yARR1HWnbqwraWBE1ZTsM"
             ) {
                 install(io.github.jan.supabase.auth.Auth) {
                     sessionManager = io.github.jan.supabase.auth.MemorySessionManager()

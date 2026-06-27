@@ -22,7 +22,10 @@ object NetworkModule {
             supabaseUrl = BuildConfig.SUPABASE_URL,
             supabaseKey = BuildConfig.SUPABASE_ANON_KEY
         ) {
-            install(Auth)
+            install(Auth) {
+                scheme = "t1"
+                host = "login-callback"
+            }
             install(Postgrest)
         }
     }

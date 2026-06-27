@@ -15,3 +15,5 @@
 local.properties
 /cloned_repo
 
+.agents/
+skills-lock.json

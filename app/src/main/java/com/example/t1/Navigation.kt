@@ -16,8 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.domain.model.UserProfile
 import com.example.t1.ui.components.BottomNav
 import com.example.t1.ui.components.FocusTimer
 import com.example.t1.ui.components.T1Tab
@@ -25,67 +27,109 @@ import com.example.t1.ui.main.HomeScreen
 import com.example.t1.ui.main.LeaderboardScreen
 import com.example.t1.ui.main.ProfileScreen
 import com.example.t1.ui.main.SettingsScreen
-import com.example.t1.ui.onboarding.OnboardingFlow
-import com.example.t1.ui.onboarding.OnboardingStep
+import com.example.t1.ui.onboarding.AuthErrorScreen
+import com.example.t1.ui.onboarding.AuthScreen
+import com.example.t1.ui.onboarding.OnboardingPlaceholderScreen
+import com.example.t1.ui.onboarding.SplashLoadingScreen
+import com.example.t1.ui.viewmodel.AuthState
+import com.example.t1.ui.viewmodel.AuthViewModel
 import com.example.t1.ui.viewmodel.MainViewModel
-import com.example.t1.ui.viewmodel.OnboardingViewModel
-import com.example.t1.ui.viewmodel.OnboardingUiState
 
+/**
+ * Main application navigation component.
+ * Maps deterministic AuthState transitions directly to visual screens.
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainNavigation(
-    mainViewModel: MainViewModel = hiltViewModel(),
-    onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val isSignedIn by mainViewModel.isSignedIn.collectAsStateWithLifecycle()
-    val onboardingCompleted by mainViewModel.onboardingCompleted.collectAsStateWithLifecycle()
-    val profile by mainViewModel.userProfile.collectAsStateWithLifecycle()
-    val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
+    val authState by authViewModel.authState.collectAsStateWithLifecycle()
 
+    AnimatedContent(
+        targetState = authState,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(250)).togetherWith(fadeOut(animationSpec = tween(250)))
+        },
+        label = "auth_state_routing",
+        modifier = Modifier.fillMaxSize()
+    ) { state ->
+        when (state) {
+            is AuthState.CheckingSession -> {
+                SplashLoadingScreen(message = "Restoring active session...")
+            }
+            is AuthState.Unauthenticated -> {
+                AuthScreen(viewModel = authViewModel)
+            }
+            is AuthState.Authenticating -> {
+                SplashLoadingScreen(message = "Connecting to Google...")
+            }
+            is AuthState.Authenticated -> {
+                SplashLoadingScreen(message = "Authenticating session with Supabase...")
+            }
+            is AuthState.LoadingProfile -> {
+                SplashLoadingScreen(message = "Synchronizing user profile...")
+            }
+            is AuthState.SigningOut -> {
+                SplashLoadingScreen(message = "Signing out safely...")
+            }
+            is AuthState.Error -> {
+                AuthErrorScreen(
+                    errorType = state.errorType,
+                    message = state.message,
+                    onRetry = { authViewModel.restoreSession() },
+                    onSignOut = { authViewModel.signOut() }
+                )
+            }
+            is AuthState.NavigateToOnboarding -> {
+                // In Phase 1, we show a clean onboarding entry placeholder allowing user to sign out and return
+                OnboardingPlaceholderScreen(
+                    onSignOut = { authViewModel.signOut() }
+                )
+            }
+            is AuthState.Dashboard -> {
+                DashboardShell(
+                    profile = state.profile,
+                    mainViewModel = mainViewModel,
+                    onSignOut = { authViewModel.signOut() }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Container rendering the main dashboard with BottomNav, HomeScreen, Leaderboard, and Settings views.
+ */
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun DashboardShell(
+    profile: UserProfile,
+    mainViewModel: MainViewModel,
+    onSignOut: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     var activeTab by remember { mutableStateOf(T1Tab.HOME) }
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
 
-    val nameToShow = profile?.displayName ?: profile?.username ?: "You"
+    val nameToShow = profile.displayName ?: profile.username
+    val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (!isSignedIn || !onboardingCompleted) {
-            val initialStep = if (!isSignedIn) OnboardingStep.AUTH else OnboardingStep.QUESTIONS
-            OnboardingFlow(
-                initialStep = initialStep,
-                onComplete = { username, displayName, score ->
-                    // Get current session user ID
-                    mainViewModel.currentUserId.value?.let { userId ->
-                        onboardingViewModel.completeOnboarding(
-                            userId = userId,
-                            username = username,
-                            displayName = displayName,
-                            focusScore = score
-                        )
-                    } ?: run {
-                        // In case userProfile is not yet loaded, we fall back to flow first or fetch directly
-                        // We can also retrieve the ID via preferences or directly
-                        // But wait! When isSignedIn is true, the user session ID is written to local preferences
-                        // Let's make sure OnboardingViewModel completes it.
-                        // Actually, we can get active user ID by fetching it or we can let MainViewModel expose current ID
-                        // Let's pass username and completed onboarding to the profile.
-                    }
-                }
-            )
-        } else if (showSettings) {
+    Box(modifier = modifier.fillMaxSize()) {
+        if (showSettings) {
             SettingsScreen(
                 onBack = { showSettings = false }
             )
         } else {
-            // Main Dashboard Shell with BottomNav
             Box(modifier = Modifier.fillMaxSize()) {
                 AnimatedContent(
                     targetState = activeTab,
                     transitionSpec = {
-                        // Replicate Framer Motion crossfade tab transitions
-                        fadeIn(animationSpec = tween(250)).togetherWith(fadeOut(animationSpec = tween(250)))
+                        fadeIn(animationSpec = tween(200)).togetherWith(fadeOut(animationSpec = tween(200)))
                     },
-                    label = "tabContent",
+                    label = "dashboard_tab_transition",
                     modifier = Modifier.fillMaxSize()
                 ) { tab ->
                     when (tab) {
@@ -99,27 +143,24 @@ fun MainNavigation(
                         }
                         T1Tab.RANK -> {
                             LeaderboardScreen(
-                                username = profile?.username ?: "You"
+                                username = profile.username
                             )
                         }
                         T1Tab.USER -> {
                             ProfileScreen(
                                 username = nameToShow,
-                                onBack = null, // BottomNav manages back behavior
+                                onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->
                                     mainViewModel.updateDisplayName(newName)
                                 },
-                                onSignOut = {
-                                    mainViewModel.signOut()
-                                    activeTab = T1Tab.HOME
-                                }
+                                onSignOut = onSignOut
                             )
                         }
                     }
                 }
 
-                // Bottom Navigation fixed at bottom
+                // Fixed bottom navigation bar
                 BottomNav(
                     active = activeTab,
                     onNavigate = { newTab -> activeTab = newTab },
@@ -128,7 +169,7 @@ fun MainNavigation(
             }
         }
 
-        // Timer Fullscreen Overlay (slides in/out or fades in/out)
+        // Fullscreen Focus Timer Overlay
         AnimatedVisibility(
             visible = showTimer,
             enter = fadeIn(animationSpec = tween(300)),
@@ -137,7 +178,6 @@ fun MainNavigation(
             FocusTimer(
                 onClose = {
                     showTimer = false
-                    // Track that the focus timer succeeded or was active (25 mins = 1500 seconds)
                     mainViewModel.logFocusSession(1500L)
                 }
             )

@@ -1,72 +1,71 @@
 package com.example.t1.data.repository
 
-import com.example.t1.data.preferences.UserPreferences
+import android.content.Context
+import com.example.t1.data.remote.AuthProvider
 import com.example.t1.domain.repository.AuthRepository
+import com.example.t1.util.T1Logger
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Concrete implementation of AuthRepository.
+ * Manages OAuth sessions via GoogleAuthProvider and maps Supabase session status flows.
+ */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val supabaseClient: SupabaseClient,
-    private val userPreferences: UserPreferences
+    private val authProvider: AuthProvider
 ) : AuthRepository {
 
     private val auth = supabaseClient.auth
 
-    override val isSignedIn: Flow<Boolean> = userPreferences.isSignedInFlow
+    override val isSignedIn: Flow<Boolean> = auth.sessionStatus.map { status ->
+        status is SessionStatus.Authenticated
+    }
 
-    override val currentUserId: Flow<String?> = userPreferences.userIdFlow
-
-    override suspend fun signUpWithEmail(email: String, password: String): Result<String> {
-        return try {
-            auth.signUpWith(Email) {
-                this.email = email
-                this.password = password
-            }
-            val currentUser = auth.currentUserOrNull()
-            if (currentUser != null) {
-                userPreferences.saveUserSession(currentUser.id, null, null)
-                Result.success(currentUser.id)
-            } else {
-                Result.failure(Exception("Registration succeeded, please check your email for verification."))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
+    override val currentUserId: Flow<String?> = auth.sessionStatus.map { status ->
+        when (status) {
+            is SessionStatus.Authenticated -> status.session.user?.id
+            else -> null
         }
     }
 
-    override suspend fun signInWithEmail(email: String, password: String): Result<String> {
+    override suspend fun signInWithGoogle(context: Context): Result<String> {
+        T1Logger.i("Sign-In with Google triggered in AuthRepository")
+        return authProvider.signIn(context)
+    }
+
+    override suspend fun restoreSession(): Result<String> {
+        T1Logger.i("Restoring active user session from local Supabase memory")
         return try {
-            auth.signInWith(Email) {
-                this.email = email
-                this.password = password
+            // Attempt to load existing session from local storage or trigger a token refresh
+            val currentSession = auth.currentSessionOrNull()
+            if (currentSession != null) {
+                val userId = currentSession.user?.id
+                if (userId != null) {
+                    T1Logger.i("Session successfully restored.")
+                    Result.success(userId)
+                } else {
+                    T1Logger.e("Restored session has null user ID")
+                    Result.failure(Exception("Session contains no user data"))
+                }
+            } else {
+                T1Logger.i("No active session found during restore")
+                Result.failure(Exception("No session available"))
             }
-            val currentUser = auth.currentUserOrNull()
-                ?: throw Exception("Failed to retrieve user after sign in")
-            
-            // Check if profile exists in Supabase
-            // (The profiles table might already contain onboarding Completed true/false)
-            userPreferences.saveUserSession(currentUser.id, null, null)
-            Result.success(currentUser.id)
         } catch (e: Exception) {
+            T1Logger.e("Error attempting to restore session", e)
             Result.failure(e)
         }
     }
 
     override suspend fun signOut(): Result<Unit> {
-        return try {
-            auth.signOut()
-            userPreferences.clearSession()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            // Even if network sign out fails, we clear local preferences to log the user out
-            userPreferences.clearSession()
-            Result.success(Unit)
-        }
+        T1Logger.i("Sign-Out triggered in AuthRepository")
+        return authProvider.signOut()
     }
 }

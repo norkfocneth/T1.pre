@@ -3,14 +3,30 @@ package com.example.t1.domain.repository
 import com.example.t1.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Repository interface for user profile operations.
+ * Isolates presentation layer from Supabase and Room cache.
+ */
 interface UserRepository {
-    val userProfileFlow: Flow<UserProfile?>
-    val onboardingCompleted: Flow<Boolean>
-    val cachedFocusScore: Flow<Int>
+    /**
+     * Flow emitting the currently cached user profile.
+     */
+    val cachedProfileFlow: Flow<UserProfile?>
 
-    suspend fun checkUsernameAvailable(username: String): Result<Boolean>
-    suspend fun saveOnboardingProfile(userId: String, username: String, displayName: String?, focusScore: Int): Result<Unit>
-    suspend fun getUserProfile(userId: String, forceRefresh: Boolean = false): Result<UserProfile?>
-    suspend fun saveFocusSession(durationSeconds: Long): Result<Unit>
-    suspend fun syncPendingEdits(): Result<Unit>
+    /**
+     * Fetches the user profile from the remote Supabase database.
+     * @param userId The unique user authenticated ID (auth.uid()).
+     * @return Result containing UserProfile if it exists, null if it does not, or failure.
+     */
+    suspend fun fetchProfile(userId: String): Result<UserProfile?>
+
+    /**
+     * Caches the user profile in local Room database, replacing any existing entry.
+     */
+    suspend fun saveCachedProfile(profile: UserProfile)
+
+    /**
+     * Clears all cached user profile data from local Room storage.
+     */
+    suspend fun clearCache()
 }

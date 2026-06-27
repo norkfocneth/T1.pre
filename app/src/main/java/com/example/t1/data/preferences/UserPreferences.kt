@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -16,87 +15,62 @@ import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "t1_settings")
 
+/**
+ * DataStore implementation managing non-authentication local application preferences only.
+ * Complies with Phase 1 safety requirements by storing no session, identity, or profile data.
+ */
 @Singleton
 class UserPreferences @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private val KEY_USER_ID = stringPreferencesKey("user_id")
-        private val KEY_USERNAME = stringPreferencesKey("username")
-        private val KEY_DISPLAY_NAME = stringPreferencesKey("display_name")
-        private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
-        private val KEY_FOCUS_SCORE = intPreferencesKey("focus_score")
-        private val KEY_IS_SIGNED_IN = booleanPreferencesKey("is_signed_in")
+        private val KEY_THEME = stringPreferencesKey("app_theme")
+        private val KEY_LANGUAGE = stringPreferencesKey("app_language")
+        private val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
-    val userIdFlow: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[KEY_USER_ID]
+    /**
+     * Emits the chosen theme. Defaults to "system".
+     */
+    val appThemeFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_THEME] ?: "system"
     }
 
-    val usernameFlow: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[KEY_USERNAME]
+    /**
+     * Emits the selected language code. Defaults to "en".
+     */
+    val appLanguageFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_LANGUAGE] ?: "en"
     }
 
-    val displayNameFlow: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[KEY_DISPLAY_NAME]
+    /**
+     * Emits notification configuration. Defaults to true.
+     */
+    val notificationsEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_NOTIFICATIONS_ENABLED] ?: true
     }
 
-    val onboardingCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[KEY_ONBOARDING_COMPLETED] ?: false
-    }
-
-    val focusScoreFlow: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[KEY_FOCUS_SCORE] ?: 50
-    }
-
-    val isSignedInFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[KEY_IS_SIGNED_IN] ?: false
-    }
-
-    suspend fun saveUserSession(userId: String, username: String?, displayName: String?) {
+    suspend fun saveTheme(theme: String) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_USER_ID] = userId
-            preferences[KEY_IS_SIGNED_IN] = true
-            if (username != null) {
-                preferences[KEY_USERNAME] = username
-            }
-            if (displayName != null) {
-                preferences[KEY_DISPLAY_NAME] = displayName
-            }
+            preferences[KEY_THEME] = theme
         }
     }
 
-    suspend fun saveUsernameAndDisplayName(username: String, displayName: String?) {
+    suspend fun saveLanguage(languageCode: String) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_USERNAME] = username
-            if (displayName != null) {
-                preferences[KEY_DISPLAY_NAME] = displayName
-            } else {
-                preferences.remove(KEY_DISPLAY_NAME)
-            }
+            preferences[KEY_LANGUAGE] = languageCode
         }
     }
 
-    suspend fun saveOnboardingCompleted(completed: Boolean) {
+    suspend fun saveNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_ONBOARDING_COMPLETED] = completed
+            preferences[KEY_NOTIFICATIONS_ENABLED] = enabled
         }
     }
 
-    suspend fun saveFocusScore(score: Int) {
+    suspend fun clearPreferences() {
         context.dataStore.edit { preferences ->
-            preferences[KEY_FOCUS_SCORE] = score
-        }
-    }
-
-    suspend fun clearSession() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(KEY_USER_ID)
-            preferences.remove(KEY_USERNAME)
-            preferences.remove(KEY_DISPLAY_NAME)
-            preferences[KEY_ONBOARDING_COMPLETED] = false
-            preferences[KEY_FOCUS_SCORE] = 50
-            preferences[KEY_IS_SIGNED_IN] = false
+            preferences.clear()
         }
     }
 }

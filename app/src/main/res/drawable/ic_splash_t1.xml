@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <!-- Thin "T" letter -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62,100 L148,100 L148,110 L109,110 L109,195 L101,195 L101,110 L62,110 Z" />
+
+    <!-- Thin "1" letter -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M160,100 L170,100 L170,195 L162,195 L162,112 L150,118 L146,110 Z" />
+
+    <!-- Dot "." -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M180,185 L190,185 L190,195 L180,195 Z" />
+
+</vector>

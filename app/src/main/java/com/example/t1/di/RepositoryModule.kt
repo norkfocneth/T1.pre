@@ -33,4 +33,10 @@ abstract class RepositoryModule {
     abstract fun bindLeaderboardRepository(
         impl: LeaderboardRepositoryImpl
     ): LeaderboardRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthProvider(
+        impl: com.example.t1.data.remote.GoogleAuthProvider
+    ): com.example.t1.data.remote.AuthProvider
 }

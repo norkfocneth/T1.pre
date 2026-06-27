@@ -50,8 +50,18 @@ class OnboardingViewModel @Inject constructor(
 
         _usernameStatus.value = UsernameStatus.CHECKING
         viewModelScope.launch {
-            // Mock username check for Phase 1
-            _usernameStatus.value = UsernameStatus.AVAILABLE
+            try {
+                val fullUsername = "${trimmed.lowercase()}.t1"
+                val isTaken = userRepository.isUsernameTaken(fullUsername)
+                if (isTaken) {
+                    _usernameStatus.value = UsernameStatus.TAKEN
+                } else {
+                    _usernameStatus.value = UsernameStatus.AVAILABLE
+                }
+            } catch (e: Exception) {
+                com.example.t1.util.T1Logger.e("Error checking username availability", e)
+                _usernameStatus.value = UsernameStatus.ERROR
+            }
             _suggestions.value = emptyList()
         }
     }
@@ -60,8 +70,7 @@ class OnboardingViewModel @Inject constructor(
         _uiState.value = OnboardingUiState.Loading
         viewModelScope.launch {
             try {
-                // Mock profile creation in cache to allow testing Phase 2 transition entry
-                val mockProfile = UserProfile(
+                val profile = UserProfile(
                     id = userId,
                     username = username,
                     usernameLower = username.lowercase(),
@@ -70,8 +79,13 @@ class OnboardingViewModel @Inject constructor(
                     onboardingCompleted = true,
                     createdAt = System.currentTimeMillis()
                 )
-                userRepository.saveCachedProfile(mockProfile)
-                _uiState.value = OnboardingUiState.Success
+                val result = userRepository.saveProfile(profile)
+                if (result.isSuccess) {
+                    _uiState.value = OnboardingUiState.Success
+                } else {
+                    val error = result.exceptionOrNull()
+                    _uiState.value = OnboardingUiState.Error(error?.message ?: "Failed to save profile")
+                }
             } catch (e: Exception) {
                 _uiState.value = OnboardingUiState.Error(e.message ?: "Failed to save profile")
             }

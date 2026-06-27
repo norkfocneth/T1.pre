@@ -69,6 +69,41 @@ class UserRepositoryImpl @Inject constructor(
         T1Logger.i("Local cache cleared successfully")
     }
 
+    override suspend fun saveProfile(profile: UserProfile): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            T1Logger.i("Saving profile remotely to Supabase")
+            val epochString = java.time.Instant.ofEpochMilli(profile.createdAt).toString()
+            val profileDto = com.example.t1.data.remote.model.ProfileDto(
+                id = profile.id,
+                username = profile.username,
+                usernameLower = profile.usernameLower,
+                displayName = profile.displayName,
+                focusScore = profile.focusScore,
+                onboardingCompleted = profile.onboardingCompleted,
+                createdAt = epochString
+            )
+            val success = supabaseService.upsertProfile(profileDto)
+            if (!success) {
+                return@withContext Result.failure(Exception("Failed to upsert profile to Supabase"))
+            }
+            T1Logger.i("Profile upserted to Supabase successfully. Saving to local Room cache.")
+            saveCachedProfile(profile)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            T1Logger.e("Exception saving user profile", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun isUsernameTaken(username: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            supabaseService.isUsernameTaken(username)
+        } catch (e: Exception) {
+            T1Logger.e("Exception checking if username is taken", e)
+            false
+        }
+    }
+
     // --- Mappers ---
 
     private fun com.example.t1.data.remote.model.ProfileDto.toDomain(): UserProfile {

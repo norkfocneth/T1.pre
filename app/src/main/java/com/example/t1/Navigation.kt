@@ -31,9 +31,14 @@ import com.example.t1.ui.onboarding.AuthErrorScreen
 import com.example.t1.ui.onboarding.AuthScreen
 import com.example.t1.ui.onboarding.OnboardingPlaceholderScreen
 import com.example.t1.ui.onboarding.SplashLoadingScreen
+import com.example.t1.ui.onboarding.OnboardingFlow
+import com.example.t1.ui.onboarding.OnboardingStep
 import com.example.t1.ui.viewmodel.AuthState
 import com.example.t1.ui.viewmodel.AuthViewModel
 import com.example.t1.ui.viewmodel.MainViewModel
+import com.example.t1.ui.viewmodel.OnboardingViewModel
+import com.example.t1.ui.viewmodel.OnboardingUiState
+import androidx.compose.runtime.LaunchedEffect
 
 /**
  * Main application navigation component.
@@ -83,10 +88,47 @@ fun MainNavigation(
                 )
             }
             is AuthState.NavigateToOnboarding -> {
-                // In Phase 1, we show a clean onboarding entry placeholder allowing user to sign out and return
-                OnboardingPlaceholderScreen(
-                    onSignOut = { authViewModel.signOut() }
-                )
+                val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+                val onboardingState by onboardingViewModel.uiState.collectAsStateWithLifecycle()
+                val userId = state.userId
+
+                LaunchedEffect(onboardingState) {
+                    if (onboardingState is OnboardingUiState.Success) {
+                        com.example.t1.util.T1Logger.i("Onboarding completed successfully. Restoring session.")
+                        authViewModel.restoreSession()
+                        onboardingViewModel.resetState()
+                    }
+                }
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    OnboardingFlow(
+                        initialStep = OnboardingStep.QUESTIONS,
+                        onComplete = { username, displayName, focusScore ->
+                            com.example.t1.util.T1Logger.i("Onboarding quiz finished. Saving profile.")
+                            onboardingViewModel.completeOnboarding(
+                                userId = userId,
+                                username = username,
+                                displayName = displayName,
+                                focusScore = focusScore
+                            )
+                        }
+                    )
+
+                    when (val oState = onboardingState) {
+                        is OnboardingUiState.Loading -> {
+                            SplashLoadingScreen(message = "Saving your profile...")
+                        }
+                        is OnboardingUiState.Error -> {
+                            AuthErrorScreen(
+                                errorType = com.example.t1.domain.model.AuthError.SUPABASE_ERROR,
+                                message = oState.message,
+                                onRetry = { onboardingViewModel.resetState() },
+                                onSignOut = { authViewModel.signOut() }
+                            )
+                        }
+                        else -> {}
+                    }
+                }
             }
             is AuthState.Dashboard -> {
                 DashboardShell(

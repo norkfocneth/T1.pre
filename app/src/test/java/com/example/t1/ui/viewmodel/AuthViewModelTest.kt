@@ -215,5 +215,15 @@ class AuthViewModelTest {
             cachedProfile = null
             cacheCleared = true
         }
+
+        override suspend fun saveProfile(profile: UserProfile): Result<Unit> {
+            remoteProfiles[profile.id] = profile
+            cachedProfile = profile
+            return Result.success(Unit)
+        }
+
+        override suspend fun isUsernameTaken(username: String): Boolean {
+            return remoteProfiles.values.any { it.usernameLower == username.lowercase() }
+        }
     }
 }

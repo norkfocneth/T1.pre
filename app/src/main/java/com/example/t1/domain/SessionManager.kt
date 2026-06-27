@@ -73,9 +73,9 @@ open class SessionManager @Inject constructor(
         }
 
         val profile = fetchResult.getOrNull()
-        if (profile == null) {
-            // Profile does not exist yet (New User flow)
-            T1Logger.i("Profile does not exist for authenticated user.")
+        if (profile == null || !profile.onboardingCompleted) {
+            // Profile does not exist yet or onboarding not completed (New User flow)
+            T1Logger.i("Profile does not exist or onboarding not completed for authenticated user.")
             userRepository.clearCache()
             return Result.success(null)
         }

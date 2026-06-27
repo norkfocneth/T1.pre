@@ -29,4 +29,14 @@ interface UserRepository {
      * Clears all cached user profile data from local Room storage.
      */
     suspend fun clearCache()
+
+    /**
+     * Creates or updates the user profile remotely in Supabase and locally in Room.
+     */
+    suspend fun saveProfile(profile: UserProfile): Result<Unit>
+
+    /**
+     * Checks if the username is already registered.
+     */
+    suspend fun isUsernameTaken(username: String): Boolean
 }

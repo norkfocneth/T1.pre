@@ -17,3 +17,6 @@ local.properties
 
 .agents/
 skills-lock.json
+
+app-debug.apk
+$null

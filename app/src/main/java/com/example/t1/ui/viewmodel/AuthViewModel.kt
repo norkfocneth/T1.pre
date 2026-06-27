@@ -28,7 +28,7 @@ sealed interface AuthState {
     object Authenticated : AuthState
     object LoadingProfile : AuthState
     data class Dashboard(val profile: UserProfile) : AuthState
-    object NavigateToOnboarding : AuthState
+    data class NavigateToOnboarding(val userId: String) : AuthState
     object SigningOut : AuthState
     data class Error(val errorType: AuthError, val message: String) : AuthState
 }
@@ -69,7 +69,7 @@ class AuthViewModel @Inject constructor(
                                 _authState.value = AuthState.Dashboard(profile)
                             } else {
                                 T1Logger.i("OAuth profile sync success but profile is null. Routing to Onboarding.")
-                                _authState.value = AuthState.NavigateToOnboarding
+                                _authState.value = AuthState.NavigateToOnboarding(userId)
                             }
                         } else {
                             val error = syncResult.exceptionOrNull()
@@ -103,7 +103,8 @@ class AuthViewModel @Inject constructor(
                     _authState.value = AuthState.Dashboard(profile)
                 } else {
                     T1Logger.i("Active session found but user profile is missing. Routing to Onboarding.")
-                    _authState.value = AuthState.NavigateToOnboarding
+                    val userId = authRepository.restoreSession().getOrNull() ?: ""
+                    _authState.value = AuthState.NavigateToOnboarding(userId)
                 }
             } else {
                 val error = result.exceptionOrNull()

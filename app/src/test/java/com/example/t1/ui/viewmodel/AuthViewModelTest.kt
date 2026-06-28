@@ -8,6 +8,8 @@ import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.data.database.dao.DailyUsageDao
 import com.example.t1.data.database.dao.DailyBehaviourDao
+import com.example.t1.data.database.dao.DailyBehaviourScoreDao
+import com.example.t1.data.database.dao.DailyFocusScoreDao
 import io.github.jan.supabase.SupabaseClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +39,8 @@ class AuthViewModelTest {
     private lateinit var fakeSupabaseClient: SupabaseClient
     private lateinit var mockDailyUsageDao: DailyUsageDao
     private lateinit var mockDailyBehaviourDao: DailyBehaviourDao
+    private lateinit var mockDailyBehaviourScoreDao: DailyBehaviourScoreDao
+    private lateinit var mockDailyFocusScoreDao: DailyFocusScoreDao
     private lateinit var viewModel: AuthViewModel
 
     @Before
@@ -48,6 +52,8 @@ class AuthViewModelTest {
         fakeSupabaseClient = mock(SupabaseClient::class.java)
         mockDailyUsageDao = mock(DailyUsageDao::class.java)
         mockDailyBehaviourDao = mock(DailyBehaviourDao::class.java)
+        mockDailyBehaviourScoreDao = mock(DailyBehaviourScoreDao::class.java)
+        mockDailyFocusScoreDao = mock(DailyFocusScoreDao::class.java)
     }
 
     @After
@@ -70,7 +76,7 @@ class AuthViewModelTest {
         )
 
         // Initialize SessionManager with our fakes and null SupabaseClient
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
             override suspend fun restoreSessionAndProfile(): Result<UserProfile?> {
                 val uid = fakeAuthRepository.restoreSession().getOrNull() ?: return Result.failure(Exception("No session"))
                 return Result.success(fakeUserRepository.remoteProfiles[uid])
@@ -93,7 +99,7 @@ class AuthViewModelTest {
         // Setup session but NO profile
         fakeAuthRepository.restoreUserId = "user-456"
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
             override suspend fun restoreSessionAndProfile(): Result<UserProfile?> {
                 return Result.success(null) // no profile
             }
@@ -111,7 +117,7 @@ class AuthViewModelTest {
         fakeAuthRepository.loginUserId = "new-user-789"
         // Remote returns null profile
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
             override suspend fun syncProfileAndCache(userId: String): Result<UserProfile?> {
                 return Result.success(null) // new user
             }
@@ -135,7 +141,7 @@ class AuthViewModelTest {
     fun testSecurityValidationFailure() = testScope.runTest {
         fakeAuthRepository.loginUserId = "legit-user"
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
             override suspend fun syncProfileAndCache(userId: String): Result<UserProfile?> {
                 // Return mismatched ID profile to trigger security failure
                 return Result.failure(SecurityException("SECURITY FAILURE: ID mismatch"))
@@ -157,7 +163,7 @@ class AuthViewModelTest {
 
     @Test
     fun testLogoutDropsCache() = testScope.runTest {
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
             override suspend fun performSignOut(): Result<Unit> {
                 fakeUserRepository.clearCache()
                 return Result.success(Unit)
@@ -184,6 +190,9 @@ class AuthViewModelTest {
         override val isSignedIn: Flow<Boolean> = flowOf(false)
         private val _currentUserId = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
         override val currentUserId: Flow<String?> = _currentUserId
+
+        override val currentUserIdSync: String?
+            get() = _currentUserId.value ?: restoreUserId ?: loginUserId
 
         override suspend fun signInWithGoogle(context: Context): Result<String> {
             return loginUserId?.let {
@@ -230,6 +239,10 @@ class AuthViewModelTest {
 
         override suspend fun isUsernameTaken(username: String): Boolean {
             return remoteProfiles.values.any { it.usernameLower == username.lowercase() }
+        }
+
+        override suspend fun getLocalProfile(userId: String): UserProfile? {
+            return if (cachedProfile?.id == userId) cachedProfile else null
         }
     }
 }

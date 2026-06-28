@@ -69,7 +69,12 @@ fun FocusRing(
     score: Int,
     onTap: () -> Unit,
     showBreakdown: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    breakdownSegments: List<BreakdownSegment> = listOf(
+        BreakdownSegment("Social", 35, BreakdownSocial),
+        BreakdownSegment("Productive", 45, BreakdownProductive),
+        BreakdownSegment("Idle", 20, MutedForeground)
+    )
 ) {
     val animatedScore = remember { Animatable(0f) }
 
@@ -195,7 +200,7 @@ fun FocusRing(
 
                 var accumulatedAngle = -90f
 
-                breakdownData.forEach { segment ->
+                breakdownSegments.forEach { segment ->
                     val sweepAngle = (segment.value / 100f) * 360f
 
                     // Draw arc segment (reducing angle slightly to add a small gap)
@@ -235,7 +240,7 @@ fun FocusRing(
                         horizontalAlignment = Alignment.Start,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        breakdownData.forEach { segment ->
+                        breakdownSegments.forEach { segment ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {

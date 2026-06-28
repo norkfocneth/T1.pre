@@ -104,6 +104,15 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getLocalProfile(userId: String): UserProfile? = withContext(Dispatchers.IO) {
+        val entity = userProfileDao.getProfile()
+        if (entity != null && entity.id == userId) {
+            entity.toDomain()
+        } else {
+            null
+        }
+    }
+
     // --- Mappers ---
 
     private fun com.example.t1.data.remote.model.ProfileDto.toDomain(): UserProfile {

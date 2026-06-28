@@ -21,6 +21,9 @@ interface DailyBehaviourDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: DailyBehaviourEntity)
 
+    @Query("SELECT COUNT(DISTINCT date) FROM daily_behaviour WHERE userId = :userId")
+    suspend fun getVerifiedDaysCount(userId: String): Int
+
     @Query("DELETE FROM daily_behaviour WHERE userId = :userId")
     suspend fun deleteAllForUser(userId: String)
 

@@ -19,6 +19,11 @@ interface AuthRepository {
     val currentUserId: Flow<String?>
 
     /**
+     * Synchronously returns the currently authenticated user's ID or null if unauthenticated.
+     */
+    val currentUserIdSync: String?
+
+    /**
      * Attempts to sign in using Google Auth.
      * @param context Context needed for Android Credential Manager bottom sheet.
      * @return Result containing the unique authenticated ID (auth.uid) on success.

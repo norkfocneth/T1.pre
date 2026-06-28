@@ -2,6 +2,7 @@ package com.example.t1.data.remote
 
 import com.example.t1.data.remote.model.ProfileDto
 import com.example.t1.data.remote.model.LeaderboardEntryDto
+import com.example.t1.data.remote.model.DailyFocusScoreDto
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -66,6 +67,32 @@ class SupabaseService @Inject constructor(
             response.decodeList<LeaderboardEntryDto>()
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    suspend fun upsertDailyFocusScore(score: DailyFocusScoreDto): Boolean {
+        return try {
+            postgrest.from("daily_focus_scores").upsert(score)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error upserting daily focus score: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun getDailyFocusScore(userId: String, date: String): DailyFocusScoreDto? {
+        return try {
+            val response = postgrest.from("daily_focus_scores")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                        eq("date", date)
+                    }
+                }
+            response.decodeList<DailyFocusScoreDto>().firstOrNull()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching daily focus score: ${e.message}", e)
+            null
         }
     }
 }

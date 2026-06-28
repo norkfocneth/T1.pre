@@ -24,6 +24,8 @@ ktor = "3.0.3"
 splashscreen = "1.0.1"
 credentials = "1.2.2"
 googleid = "1.1.1"
+androidxWork = "2.10.0"
+androidxHilt = "1.2.0"
 mockito = "5.11.0"
 
 
@@ -84,6 +86,9 @@ androidx-credentials = { module = "androidx.credentials:credentials", version.re
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidxWork" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "androidxHilt" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidxHilt" }
 
 
 

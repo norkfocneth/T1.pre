@@ -28,7 +28,9 @@ open class SessionManager @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val dailyUsageDao: DailyUsageDao,
-    private val dailyBehaviourDao: DailyBehaviourDao
+    private val dailyBehaviourDao: DailyBehaviourDao,
+    private val dailyBehaviourScoreDao: com.example.t1.data.database.dao.DailyBehaviourScoreDao,
+    private val dailyFocusScoreDao: com.example.t1.data.database.dao.DailyFocusScoreDao
 ) {
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -43,6 +45,8 @@ open class SessionManager @Inject constructor(
                         userRepository.clearCache()
                         dailyUsageDao.clearAll()
                         dailyBehaviourDao.clearAll()
+                        dailyBehaviourScoreDao.clearAll()
+                        dailyFocusScoreDao.clearAll()
                     }
                 }
             }
@@ -60,6 +64,8 @@ open class SessionManager @Inject constructor(
             userRepository.clearCache()
             dailyUsageDao.clearAll()
             dailyBehaviourDao.clearAll()
+            dailyBehaviourScoreDao.clearAll()
+            dailyFocusScoreDao.clearAll()
             return Result.failure(restoreResult.exceptionOrNull() ?: Exception("No session"))
         }
 
@@ -87,6 +93,8 @@ open class SessionManager @Inject constructor(
             userRepository.clearCache()
             dailyUsageDao.clearAll()
             dailyBehaviourDao.clearAll()
+            dailyBehaviourScoreDao.clearAll()
+            dailyFocusScoreDao.clearAll()
             return Result.success(null)
         }
 
@@ -98,6 +106,8 @@ open class SessionManager @Inject constructor(
             userRepository.clearCache()
             dailyUsageDao.clearAll()
             dailyBehaviourDao.clearAll()
+            dailyBehaviourScoreDao.clearAll()
+            dailyFocusScoreDao.clearAll()
             authRepository.signOut()
             return Result.failure(SecurityException("Security Validation Failed: profile.id != auth.uid()"))
         }
@@ -117,6 +127,8 @@ open class SessionManager @Inject constructor(
         userRepository.clearCache()
         dailyUsageDao.clearAll()
         dailyBehaviourDao.clearAll()
+        dailyBehaviourScoreDao.clearAll()
+        dailyFocusScoreDao.clearAll()
         return signOutResult
     }
 }

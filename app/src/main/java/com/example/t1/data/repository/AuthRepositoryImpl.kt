@@ -35,6 +35,9 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override val currentUserIdSync: String?
+        get() = auth.currentSessionOrNull()?.user?.id ?: auth.currentUserOrNull()?.id
+
     override suspend fun signInWithGoogle(context: Context): Result<String> {
         T1Logger.i("Sign-In with Google triggered in AuthRepository")
         return authProvider.signIn(context)

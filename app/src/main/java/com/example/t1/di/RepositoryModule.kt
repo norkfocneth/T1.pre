@@ -10,6 +10,10 @@ import com.example.t1.domain.repository.LeaderboardRepository
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.domain.repository.UsageRepository
 import com.example.t1.domain.repository.BehaviourRepository
+import com.example.t1.domain.repository.BehaviourScoreRepository
+import com.example.t1.domain.repository.FocusScoreRepository
+import com.example.t1.data.repository.BehaviourScoreRepositoryImpl
+import com.example.t1.data.repository.FocusScoreRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -49,6 +53,18 @@ abstract class RepositoryModule {
     abstract fun bindBehaviourRepository(
         impl: BehaviourRepositoryImpl
     ): BehaviourRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBehaviourScoreRepository(
+        impl: BehaviourScoreRepositoryImpl
+    ): BehaviourScoreRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFocusScoreRepository(
+        impl: FocusScoreRepositoryImpl
+    ): FocusScoreRepository
 
     @Binds
     @Singleton

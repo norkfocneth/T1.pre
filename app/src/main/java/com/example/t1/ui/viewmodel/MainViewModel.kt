@@ -10,6 +10,7 @@ import com.example.t1.domain.permission.UsagePermissionManager
 import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.domain.repository.BehaviourRepository
+import com.example.t1.domain.repository.FocusScoreRepository
 import com.example.t1.util.T1Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,7 +34,8 @@ class MainViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val sessionManager: SessionManager,
     private val usagePermissionManager: UsagePermissionManager,
-    private val behaviourRepository: BehaviourRepository
+    private val behaviourRepository: BehaviourRepository,
+    private val focusScoreRepository: FocusScoreRepository
 ) : ViewModel() {
 
     /**
@@ -64,6 +66,44 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            userProfile.collectLatest { profile ->
+                if (profile != null) {
+                    loadLatestCalculatedScore(profile.focusScore)
+                }
+            }
+        }
+    }
+
+    private fun loadLatestCalculatedScore(defaultScore: Int) {
+        viewModelScope.launch {
+            val todayStr = java.time.LocalDate.now().toString()
+            val scoreEntity = focusScoreRepository.getScoreForDate(todayStr)
+                ?: focusScoreRepository.getScoreHistory().lastOrNull()
+            
+            if (scoreEntity != null) {
+                _dashboardState.update {
+                    it.copy(
+                        currentFocusScore = scoreEntity.finalFocusScore,
+                        behaviourScore = scoreEntity.behaviourScore,
+                        confidence = scoreEntity.confidence,
+                        trend = scoreEntity.trend,
+                        timeSaved = scoreEntity.timeSaved
+                    )
+                }
+            } else {
+                _dashboardState.update {
+                    it.copy(
+                        currentFocusScore = defaultScore,
+                        behaviourScore = 0,
+                        confidence = 0,
+                        trend = "Stable",
+                        timeSaved = 0L
+                    )
+                }
+            }
+        }
     }
 
     fun refreshBehaviourData() {
@@ -77,13 +117,24 @@ class MainViewModel @Inject constructor(
             val result = behaviourRepository.getTodayBehaviour()
             if (result.isSuccess) {
                 val behaviour = result.getOrNull()
+
+                // Calculate today's focus score
+                val todayStr = java.time.LocalDate.now().toString()
+                val scoreCalcResult = focusScoreRepository.calculateAndSaveFocusScore(todayStr)
+                val currentScore = scoreCalcResult.getOrNull()
+
                 _dashboardState.update {
                     it.copy(
                         isLoading = false,
                         collectionStatus = CollectionStatus.Success,
                         todayBehaviour = behaviour,
                         lastUpdated = System.currentTimeMillis(),
-                        error = null
+                        error = null,
+                        currentFocusScore = currentScore?.finalFocusScore ?: it.currentFocusScore,
+                        behaviourScore = currentScore?.behaviourScore ?: it.behaviourScore,
+                        confidence = currentScore?.confidence ?: it.confidence,
+                        trend = currentScore?.trend ?: it.trend,
+                        timeSaved = currentScore?.timeSaved ?: it.timeSaved
                     )
                 }
             } else {

@@ -39,4 +39,9 @@ interface UserRepository {
      * Checks if the username is already registered.
      */
     suspend fun isUsernameTaken(username: String): Boolean
+
+    /**
+     * Gets the locally cached user profile.
+     */
+    suspend fun getLocalProfile(userId: String): UserProfile?
 }

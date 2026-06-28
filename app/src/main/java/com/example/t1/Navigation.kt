@@ -195,7 +195,7 @@ fun DashboardShell(
                                 onOpenProfile = { activeTab = T1Tab.USER },
                                 dashboardState = dashboardState,
                                 onOpenSettings = { mainViewModel.openPermissionSettings() },
-                                focusScore = cachedScore
+                                focusScore = dashboardState.currentFocusScore
                             )
                         }
                         T1Tab.RANK -> {

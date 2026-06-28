@@ -17,6 +17,8 @@ import javax.inject.Inject
 import android.content.Intent
 import com.example.t1.util.T1Logger
 
+import com.example.t1.data.worker.DailyAnalysisScheduler
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -27,6 +29,9 @@ class MainActivity : ComponentActivity() {
     val splashScreen = installSplashScreen()
 
     super.onCreate(savedInstanceState)
+
+    // Schedule the daily analysis worker
+    DailyAnalysisScheduler.schedule(applicationContext)
 
     // Handle deep link on cold start
     T1Logger.i("MainActivity onCreate intent data: ${intent?.data}")

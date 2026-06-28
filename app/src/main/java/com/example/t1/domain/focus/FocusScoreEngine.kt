@@ -39,6 +39,13 @@ object FocusScoreEngine {
         pastFocusScores: List<Int>, // Last 6 days of final Focus Scores
         pastBehaviourScores: List<Int> // Last 3 days of Behaviour Scores
     ): FocusScoreResult {
+        if (confidence <= 0) {
+            return FocusScoreResult(
+                finalScore = questionnaireScore,
+                trend = "Stable"
+            )
+        }
+
         // 1. Calculate Adaptive Blend
         val (qw, bw) = calculateWeights(confidence)
         val rawBlended = (questionnaireScore * qw) + (behaviourScore * bw)

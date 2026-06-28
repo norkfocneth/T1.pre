@@ -37,6 +37,13 @@ class FocusScoreRepositoryImpl @Inject constructor(
             // 1. Get Questionnaire Score (from local Profile)
             val profile = userRepository.getLocalProfile(userId)
                 ?: return@withContext Result.failure(Exception("User profile not found locally"))
+
+            // Security Validation Check: profile.id == auth.uid()
+            if (profile.id != userId) {
+                authRepository.signOut()
+                return@withContext Result.failure(SecurityException("Security violation: profile.id != auth.uid()"))
+            }
+
             val questionnaireScore = profile.focusScore
 
             // 2. Fetch or Calculate Behaviour Score for today

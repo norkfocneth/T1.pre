@@ -286,161 +286,9 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // 2B. Focus Intelligence Summary Card
-                AnimatedVisibility(
-                    visible = showStats,
-                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
-                        initialOffsetY = { 10 },
-                        animationSpec = tween(500)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Card.copy(alpha = 0.8f))
-                            .border(1.dp, Border, RoundedCornerShape(16.dp))
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "FOCUS METRICS",
-                                style = TrackingNarrow.copy(
-                                    color = MutedForeground,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                            val lastSyncStr = dashboardState.lastUpdated?.let {
-                                val time = java.time.Instant.ofEpochMilli(it)
-                                    .atZone(java.time.ZoneId.systemDefault())
-                                    .toLocalTime()
-                                "Updated: ${time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))}"
-                            } ?: "Score: Local"
-                            Text(
-                                text = lastSyncStr,
-                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Behaviour Score
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "${dashboardState.behaviourScore}",
-                                    style = HeadlineLarge.copy(
-                                        color = Success,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                )
-                                Text(
-                                    text = "BEHAVIOUR",
-                                    style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                )
-                            }
-
-                            // Confidence
-                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = "${dashboardState.confidence}%",
-                                    style = HeadlineLarge.copy(
-                                        color = GlowPrimary,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                )
-                                Text(
-                                    text = "CONFIDENCE",
-                                    style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                )
-                            }
-
-                            // Trend
-                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                                val trendColor = when (dashboardState.trend) {
-                                    "Improving" -> Success
-                                    "Declining" -> StreakSmall
-                                    else -> Foreground
-                                }
-                                Text(
-                                    text = dashboardState.trend.uppercase(),
-                                    style = HeadlineSmall.copy(
-                                        color = trendColor,
-                                        fontWeight = FontWeight.Black
-                                    ),
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
-                                Text(
-                                    text = "DAILY TREND",
-                                    style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        }
-
-                        if (dashboardState.timeSaved != 0L) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(Border)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            val isSaved = dashboardState.timeSaved > 0
-                            val absSavedMin = kotlin.math.abs(dashboardState.timeSaved) / 60000
-                            val hr = absSavedMin / 60
-                            val mn = absSavedMin % 60
-                            val timeSavedStr = if (hr > 0) "${hr}h ${mn}m" else "${mn}m"
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = if (isSaved) "Time Saved vs Yesterday" else "Time Lost vs Yesterday",
-                                    style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Medium)
-                                )
-                                Text(
-                                    text = (if (isSaved) "+" else "-") + timeSavedStr,
-                                    style = BodyLarge.copy(
-                                        color = if (isSaved) Success else StreakSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // Linear Gradient Divider
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .padding(horizontal = 8.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(Color.Transparent, Border, Color.Transparent)
-                        )
-                    )
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // 3. Stats Card Row
             AnimatedVisibility(
@@ -703,6 +551,144 @@ fun HomeScreen(
                                 letterSpacing = 0.5.sp
                             )
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 6. Focus Intelligence Summary Card (FOCUS METRICS)
+            AnimatedVisibility(
+                visible = showStats,
+                enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                    initialOffsetY = { 10 },
+                    animationSpec = tween(500)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "FOCUS METRICS",
+                            style = TrackingNarrow.copy(
+                                color = MutedForeground,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        val lastSyncStr = dashboardState.lastUpdated?.let {
+                            val time = java.time.Instant.ofEpochMilli(it)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalTime()
+                            "Updated: ${time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))}"
+                        } ?: "Score: Local"
+                        Text(
+                            text = lastSyncStr,
+                            style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Behaviour Score
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "${dashboardState.behaviourScore}",
+                                style = HeadlineLarge.copy(
+                                    color = Success,
+                                    fontWeight = FontWeight.Black
+                                )
+                            )
+                            Text(
+                                text = "BEHAVIOUR",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
+
+                        // Confidence
+                        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "${dashboardState.confidence}%",
+                                style = HeadlineLarge.copy(
+                                    color = GlowPrimary,
+                                    fontWeight = FontWeight.Black
+                                )
+                            )
+                            Text(
+                                text = "CONFIDENCE",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
+
+                        // Trend
+                        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                            val trendColor = when (dashboardState.trend) {
+                                "Improving" -> Success
+                                "Declining" -> StreakSmall
+                                else -> Foreground
+                            }
+                            Text(
+                                text = dashboardState.trend.uppercase(),
+                                style = HeadlineSmall.copy(
+                                    color = trendColor,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                            Text(
+                                text = "DAILY TREND",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+
+                    if (dashboardState.timeSaved != 0L) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(Border)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        val isSaved = dashboardState.timeSaved > 0
+                        val absSavedMin = kotlin.math.abs(dashboardState.timeSaved) / 60000
+                        val hr = absSavedMin / 60
+                        val mn = absSavedMin % 60
+                        val timeSavedStr = if (hr > 0) "${hr}h ${mn}m" else "${mn}m"
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (isSaved) "Time Saved vs Yesterday" else "Time Lost vs Yesterday",
+                                style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Medium)
+                            )
+                            Text(
+                                text = (if (isSaved) "+" else "-") + timeSavedStr,
+                                style = BodyLarge.copy(
+                                    color = if (isSaved) Success else StreakSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 }
             }

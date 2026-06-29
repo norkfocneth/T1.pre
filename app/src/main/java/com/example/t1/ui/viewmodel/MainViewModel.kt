@@ -15,6 +15,7 @@ import com.example.t1.domain.repository.FocusScoreRepository
 import com.example.t1.domain.repository.ResearchBenchmarkRepository
 import com.example.t1.domain.repository.AppCategoryRepository
 import com.example.t1.domain.repository.EngineCategory
+import com.example.t1.data.database.dao.FocusSessionDao
 import com.example.t1.util.T1Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -42,7 +43,8 @@ class MainViewModel @Inject constructor(
     private val focusScoreRepository: FocusScoreRepository,
     private val researchBenchmarkRepository: ResearchBenchmarkRepository,
     private val appCategoryRepository: AppCategoryRepository,
-    private val leaderboardRepository: LeaderboardRepository
+    private val leaderboardRepository: LeaderboardRepository,
+    private val focusSessionDao: FocusSessionDao
 ) : ViewModel() {
 
     /**
@@ -57,6 +59,15 @@ class MainViewModel @Inject constructor(
     val cachedFocusScore: StateFlow<Int> = userProfile.map { profile ->
         profile?.focusScore ?: 50
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 50)
+
+    private val _totalFocusSessions = MutableStateFlow(0)
+    val totalFocusSessions: StateFlow<Int> = _totalFocusSessions.asStateFlow()
+
+    private val _totalFocusDuration = MutableStateFlow(0L)
+    val totalFocusDuration: StateFlow<Long> = _totalFocusDuration.asStateFlow()
+
+    private val _weeklyTrend = MutableStateFlow<List<Int>>(List(7) { 0 })
+    val weeklyTrend: StateFlow<List<Int>> = _weeklyTrend.asStateFlow()
 
     private val _dashboardState = MutableStateFlow(DashboardUiState())
     val dashboardState: StateFlow<DashboardUiState> = _dashboardState.asStateFlow()
@@ -79,6 +90,36 @@ class MainViewModel @Inject constructor(
                 if (profile != null) {
                     loadLatestCalculatedScore(profile.focusScore)
                     refreshLeaderboard(forceRefresh = false)
+                    
+                    launch {
+                        focusSessionDao.getTotalFocusSessionCountFlow(profile.id).collect {
+                            _totalFocusSessions.value = it
+                        }
+                    }
+                    launch {
+                        focusSessionDao.getTotalFocusDurationFlow(profile.id).collect {
+                            _totalFocusDuration.value = it ?: 0L
+                        }
+                    }
+                    launch {
+                        focusScoreRepository.getScoreHistoryFlow(profile.id).collect { history ->
+                            val today = java.time.LocalDate.now()
+                            val monday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+                            val historyMap = history.associateBy { it.date }
+                            
+                            val trend = List(7) { i ->
+                                val date = monday.plusDays(i.toLong())
+                                if (date.isAfter(today)) {
+                                    0
+                                } else if (date == today) {
+                                    profile.focusScore
+                                } else {
+                                    historyMap[date.toString()]?.finalFocusScore ?: 0
+                                }
+                            }
+                            _weeklyTrend.value = trend
+                        }
+                    }
                 }
             }
         }
@@ -241,10 +282,34 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Helper to log focus sessions (placeholder for future phases).
+     * Logs the completed focus session to the local database,
+     * updates the profile's total sessions count, and upserts it.
      */
     fun logFocusSession(durationSeconds: Long) {
-        T1Logger.i("Focus session logged (duration: $durationSeconds s) - (Phase 2 feature)")
+        viewModelScope.launch {
+            val profile = userProfile.value
+            if (profile != null) {
+                T1Logger.i("Logging focus session: $durationSeconds seconds for user ${profile.id}")
+                
+                // 1. Insert session to local database
+                val session = com.example.t1.data.database.entity.FocusSessionEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    userId = profile.id,
+                    durationSeconds = durationSeconds,
+                    timestamp = System.currentTimeMillis(),
+                    synced = false
+                )
+                focusSessionDao.insertSession(session)
+                
+                // 2. Fetch updated total session count (duration >= 60 seconds)
+                val totalSessions = focusSessionDao.getTotalFocusSessionCount(profile.id)
+                
+                // 3. Update profile entity with new session count and save/sync
+                val updatedProfile = profile.copy(totalFocusSessions = totalSessions)
+                userRepository.saveProfile(updatedProfile)
+                T1Logger.i("Focus session logged successfully. Total sessions: $totalSessions")
+            }
+        }
     }
 
     /**

@@ -13,11 +13,17 @@ interface FocusSessionDao {
     @Query("SELECT * FROM focus_sessions ORDER BY timestamp DESC")
     fun getAllSessionsFlow(): Flow<List<FocusSessionEntity>>
 
-    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND timestamp BETWEEN :startTime AND :endTime")
+    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND durationSeconds >= 30 AND timestamp BETWEEN :startTime AND :endTime")
     suspend fun getFocusSessionCountForDay(userId: String, startTime: Long, endTime: Long): Int
 
-    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId")
+    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND durationSeconds >= 30")
     suspend fun getTotalFocusSessionCount(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND durationSeconds >= 30")
+    fun getTotalFocusSessionCountFlow(userId: String): Flow<Int>
+
+    @Query("SELECT SUM(durationSeconds) FROM focus_sessions WHERE userId = :userId")
+    fun getTotalFocusDurationFlow(userId: String): Flow<Long?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: FocusSessionEntity)

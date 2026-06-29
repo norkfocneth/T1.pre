@@ -66,7 +66,7 @@ val PRESETS = listOf(15, 25, 45, 60)
 
 @Composable
 fun FocusTimer(
-    onClose: () -> Unit,
+    onClose: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -77,8 +77,11 @@ fun FocusTimer(
     var isRunning by remember { mutableStateOf(false) }
     var hasStarted by remember { mutableStateOf(false) }
 
+    val totalSeconds = duration * 60
+    val elapsedSeconds = if (hasStarted) (totalSeconds - timeLeft).toLong() else 0L
+
     BackHandler {
-        onClose()
+        onClose(elapsedSeconds)
     }
 
     // Sync timeLeft to duration before start
@@ -102,7 +105,6 @@ fun FocusTimer(
         }
     }
 
-    val totalSeconds = duration * 60
     val progress = if (hasStarted) (totalSeconds - timeLeft).toFloat() / totalSeconds else 0f
     val minutes = timeLeft / 60
     val seconds = timeLeft % 60
@@ -124,7 +126,7 @@ fun FocusTimer(
                     .align(Alignment.TopEnd)
                     .clickable {
                         Haptics.playLight(view)
-                        onClose()
+                        onClose(elapsedSeconds)
                     },
                 contentAlignment = Alignment.Center
             ) {

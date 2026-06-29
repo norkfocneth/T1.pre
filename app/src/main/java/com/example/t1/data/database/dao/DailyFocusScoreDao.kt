@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.t1.data.database.entity.DailyFocusScoreEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DailyFocusScoreDao {
@@ -16,6 +17,9 @@ interface DailyFocusScoreDao {
 
     @Query("SELECT * FROM daily_focus_score WHERE userId = :userId ORDER BY date ASC")
     suspend fun getScoreHistory(userId: String): List<DailyFocusScoreEntity>
+
+    @Query("SELECT * FROM daily_focus_score WHERE userId = :userId ORDER BY date ASC")
+    fun getScoreHistoryFlow(userId: String): Flow<List<DailyFocusScoreEntity>>
 
     @Query("SELECT * FROM daily_focus_score WHERE userId = :userId AND synced = 0")
     suspend fun getUnsyncedScores(userId: String): List<DailyFocusScoreEntity>

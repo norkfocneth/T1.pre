@@ -171,6 +171,9 @@ fun DashboardShell(
     val nameToShow = profile.displayName ?: profile.username
     val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
     val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
+    val totalFocusSessions by mainViewModel.totalFocusSessions.collectAsStateWithLifecycle()
+    val totalFocusDuration by mainViewModel.totalFocusDuration.collectAsStateWithLifecycle()
+    val weeklyTrend by mainViewModel.weeklyTrend.collectAsStateWithLifecycle()
 
     Box(modifier = modifier.fillMaxSize()) {
         if (showSettings) {
@@ -207,6 +210,9 @@ fun DashboardShell(
                         T1Tab.USER -> {
                             ProfileScreen(
                                 username = nameToShow,
+                                totalFocusSessions = totalFocusSessions,
+                                totalFocusDuration = totalFocusDuration,
+                                weeklyTrend = weeklyTrend,
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->
@@ -234,9 +240,9 @@ fun DashboardShell(
             exit = fadeOut(animationSpec = tween(300))
         ) {
             FocusTimer(
-                onClose = {
+                onClose = { elapsedSeconds ->
                     showTimer = false
-                    mainViewModel.logFocusSession(1500L)
+                    mainViewModel.logFocusSession(elapsedSeconds)
                 }
             )
         }

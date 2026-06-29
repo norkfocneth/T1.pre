@@ -13,6 +13,7 @@ import com.example.t1.domain.repository.BehaviourScoreRepository
 import com.example.t1.domain.repository.FocusScoreRepository
 import com.example.t1.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -167,6 +168,10 @@ class FocusScoreRepositoryImpl @Inject constructor(
     override suspend fun getScoreHistory(): List<DailyFocusScoreEntity> = withContext(Dispatchers.IO) {
         val userId = authRepository.currentUserIdSync ?: return@withContext emptyList()
         dailyFocusScoreDao.getScoreHistory(userId)
+    }
+
+    override fun getScoreHistoryFlow(userId: String): Flow<List<DailyFocusScoreEntity>> {
+        return dailyFocusScoreDao.getScoreHistoryFlow(userId)
     }
 
     override suspend fun getUnsyncedScores(): List<DailyFocusScoreEntity> = withContext(Dispatchers.IO) {

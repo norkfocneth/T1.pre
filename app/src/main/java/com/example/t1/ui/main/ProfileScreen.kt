@@ -76,7 +76,6 @@ import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 
-val weeklyScores = listOf(72, 68, 75, 80, 78, 85, 82)
 val weekDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 data class Achievement(
@@ -98,6 +97,9 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     onSignOut: () -> Unit,
     username: String,
+    totalFocusSessions: Int,
+    totalFocusDuration: Long,
+    weeklyTrend: List<Int>,
     onUpdateName: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -122,7 +124,7 @@ fun ProfileScreen(
         onUpdateName?.invoke(editName)
     }
 
-    val maxScore = remember { weeklyScores.maxOrNull() ?: 100 }
+    val maxScore = remember(weeklyTrend) { weeklyTrend.maxOrNull()?.coerceAtLeast(1) ?: 100 }
 
     OnboardingBackground(modifier = modifier) {
         Column(
@@ -335,6 +337,11 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Stat numbers card
+            val hours = totalFocusDuration / 3600
+            val minutes = (totalFocusDuration % 3600) / 60
+            val seconds = totalFocusDuration % 60
+            val durationText = "${hours}h ${minutes}m ${seconds}s"
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -346,13 +353,17 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1.2f)
+                ) {
                     Text(
-                        text = "412",
-                        style = ScoreLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                        text = durationText,
+                        style = ScoreMedium.copy(color = Foreground, fontWeight = FontWeight.Bold),
+                        maxLines = 1
                     )
                     Text(
-                        text = "FOCUS HOURS",
+                        text = "FOCUS TIME",
                         style = TrackingNarrow.copy(
                             color = MutedForeground,
                             fontSize = 9.sp,
@@ -369,9 +380,12 @@ fun ProfileScreen(
                         .background(Border)
                 )
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(0.8f)
+                ) {
                     Text(
-                        text = "84",
+                        text = totalFocusSessions.toString(),
                         style = ScoreLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
                     )
                     Text(
@@ -422,9 +436,10 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    weeklyScores.forEachIndexed { i, score ->
+                    val todayIdx = java.time.LocalDate.now().dayOfWeek.value - 1
+                    weeklyTrend.forEachIndexed { i, score ->
                         val ratio = score.toFloat() / maxScore
-                        val isToday = i == weeklyScores.size - 1
+                        val isToday = i == todayIdx
 
                         var heightFraction by remember { mutableStateOf(0f) }
                         LaunchedEffect(Unit) {

@@ -31,64 +31,107 @@ class LeaderboardRepositoryImpl @Inject constructor(
 
     override suspend fun getLeaderboard(forceRefresh: Boolean): Result<List<LeaderboardEntry>> = withContext(Dispatchers.IO) {
         val todayStr = LocalDate.now().toString()
+        val yesterdayStr = LocalDate.now().minusDays(1).toString()
         
         if (cachedLeaderboard.isNotEmpty() && cachedDate == todayStr && !forceRefresh) {
             return@withContext Result.success(cachedLeaderboard)
         }
 
         try {
-            // 1. Fetch locally first
-            val localList = leaderboardDailyDao.getLeaderboardForDate(todayStr)
-            if (localList.isNotEmpty() && !forceRefresh) {
-                val mapped = localList.map { it.toDomain() }
-                cachedLeaderboard = mapped
-                cachedDate = todayStr
-                return@withContext Result.success(mapped)
-            }
-
-            // 2. Fetch from Supabase
-            val remoteList = supabaseService.getDailyLeaderboard(todayStr)
-            if (remoteList.isNotEmpty()) {
-                val entities = remoteList.map { dto ->
-                    LeaderboardDailyEntity(
-                        snapshotDate = dto.snapshotDate,
-                        userId = dto.userId,
-                        username = dto.username,
-                        displayName = dto.displayName,
-                        focusScore = dto.focusScore,
-                        behaviourScore = dto.behaviourScore,
-                        percentile = dto.percentile,
-                        rank = dto.rank,
-                        rankMovement = dto.rankMovement,
-                        badge = dto.badge,
-                        rankReason = dto.rankReason,
-                        streak = dto.streak,
-                        createdAt = try { java.time.Instant.parse(dto.createdAt).toEpochMilli() } catch (e: Exception) { System.currentTimeMillis() }
-                    )
+            // 1. Fetch all profiles where onboarding_completed is true
+            val profiles = supabaseService.getAllProfiles()
+            if (profiles.isEmpty()) {
+                // Fallback to local database cache if offline or error
+                val localList = leaderboardDailyDao.getLeaderboardForDate(todayStr)
+                if (localList.isNotEmpty()) {
+                    val mapped = localList.map { it.toDomain() }
+                    cachedLeaderboard = mapped
+                    cachedDate = todayStr
+                    return@withContext Result.success(mapped)
                 }
-                leaderboardDailyDao.deleteForDate(todayStr)
-                leaderboardDailyDao.insertOrReplace(entities)
+                return@withContext Result.success(emptyList())
+            }
+
+            // 2. Fetch yesterday's daily leaderboard to compute movement
+            val yesterdayEntries = leaderboardDailyDao.getLeaderboardForDate(yesterdayStr)
+                .associateBy { it.userId }
+            
+            // 3. Sort profiles according to Tie-Breaking Rules:
+            val sortedProfiles = profiles.sortedWith(
+                compareByDescending<com.example.t1.data.remote.model.ProfileDto> { it.focusScore }
+                    .thenByDescending { it.behaviourScore }
+                    .thenBy { it.socialRatio }
+                    .thenByDescending { it.productivityRatio }
+                    .thenByDescending { it.totalFocusSessions }
+                    .thenBy {
+                        try { java.time.Instant.parse(it.createdAt).toEpochMilli() } catch (e: Exception) { 0L }
+                    }
+                    .thenBy { it.id }
+            )
+
+            // 4. Map to domain models with dynamic rank, movement, percentile, and badge
+            val leaderboardList = sortedProfiles.mapIndexed { index, profile ->
+                val rank = index + 1
+                val yesterdayEntry = yesterdayEntries[profile.id]
                 
-                val mapped = entities.map { it.toDomain() }
-                cachedLeaderboard = mapped
-                cachedDate = todayStr
-                return@withContext Result.success(mapped)
+                val movement = if (yesterdayEntry != null) {
+                    val diff = yesterdayEntry.rank - rank
+                    when {
+                        diff > 0 -> "▲$diff"
+                        diff < 0 -> "▼${abs(diff)}"
+                        else -> "—"
+                    }
+                } else {
+                    "NEW"
+                }
+
+                val pct = researchBenchmarkRepository.getPercentile(profile.focusScore)
+                val badge = performanceBadgeRepository.resolveBadge(pct)
+
+                LeaderboardEntry(
+                    username = profile.username,
+                    displayName = profile.displayName,
+                    focusScore = profile.focusScore,
+                    streak = profile.streak,
+                    rank = rank,
+                    percentile = pct,
+                    badge = badge,
+                    rankMovement = movement
+                )
             }
 
-            // 3. Fallback: Load yesterday's snapshot if today's is missing
-            val yesterdayStr = LocalDate.now().minusDays(1).toString()
-            val yesterdayList = leaderboardDailyDao.getLeaderboardForDate(yesterdayStr)
-            if (yesterdayList.isNotEmpty()) {
-                val mapped = yesterdayList.map { it.toDomain() }
-                return@withContext Result.success(mapped)
+            // 5. Update local cache database with today's entries
+            val entities = leaderboardList.map { entry ->
+                val profile = sortedProfiles.first { it.username == entry.username }
+                LeaderboardDailyEntity(
+                    snapshotDate = todayStr,
+                    userId = profile.id,
+                    username = entry.username,
+                    displayName = entry.displayName,
+                    focusScore = entry.focusScore,
+                    behaviourScore = profile.behaviourScore,
+                    percentile = entry.percentile,
+                    rank = entry.rank,
+                    rankMovement = entry.rankMovement,
+                    badge = entry.badge,
+                    rankReason = if (yesterdayEntries.containsKey(profile.id)) "NO_CHANGE" else "NEW_USER",
+                    streak = entry.streak,
+                    createdAt = try { java.time.Instant.parse(profile.createdAt).toEpochMilli() } catch (e: Exception) { System.currentTimeMillis() }
+                )
             }
+            
+            leaderboardDailyDao.deleteForDate(todayStr)
+            leaderboardDailyDao.insertOrReplace(entities)
 
-            // If absolutely nothing exists, return empty list
-            Result.success(emptyList())
+            cachedLeaderboard = leaderboardList
+            cachedDate = todayStr
+
+            Result.success(leaderboardList)
         } catch (e: Exception) {
-            T1Logger.e("Exception loading leaderboard", e)
-            if (cachedLeaderboard.isNotEmpty()) {
-                Result.success(cachedLeaderboard)
+            T1Logger.e("Exception loading leaderboard dynamically", e)
+            val localList = leaderboardDailyDao.getLeaderboardForDate(todayStr)
+            if (localList.isNotEmpty()) {
+                Result.success(localList.map { it.toDomain() })
             } else {
                 Result.failure(e)
             }

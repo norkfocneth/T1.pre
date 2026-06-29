@@ -158,7 +158,27 @@ fun LeaderboardScreen(
     val top3 = currentData.take(3)
     val rest = currentData.drop(3)
 
-    val userEntryFromList = currentData.firstOrNull { it.name.lowercase().contains(username.lowercase()) }
+    val userEntryFromList = leaderboardEntries.firstOrNull {
+        it.username.lowercase() == username.lowercase()
+    }?.let { entry ->
+        val formattedName = entry.displayName ?: entry.username
+        val (movementDirection, movementVal) = when {
+            entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement == "NEW" -> "up" to 0
+            else -> "same" to 0
+        }
+        LeaderboardUser(
+            rank = entry.rank,
+            name = formattedName,
+            score = entry.focusScore.toFloat(),
+            streak = entry.streak,
+            percentile = "top ${entry.percentile}%",
+            badge = entry.badge,
+            movement = movementDirection,
+            movementVal = movementVal
+        )
+    }
     val userScoreState = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
     
     val finalUserRank = temporaryRank ?: 1

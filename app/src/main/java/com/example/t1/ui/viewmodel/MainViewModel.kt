@@ -215,11 +215,12 @@ class MainViewModel @Inject constructor(
 
     fun loadTemporaryRank() {
         viewModelScope.launch {
-            val profile = userProfile.value
-            if (profile != null) {
-                val result = leaderboardRepository.getTemporaryRank(profile.id, profile.focusScore)
-                if (result.isSuccess) {
-                    _temporaryRank.value = result.getOrNull()
+            userProfile.collectLatest { profile ->
+                if (profile != null) {
+                    val result = leaderboardRepository.getTemporaryRank(profile.id, profile.focusScore)
+                    if (result.isSuccess) {
+                        _temporaryRank.value = result.getOrNull()
+                    }
                 }
             }
         }

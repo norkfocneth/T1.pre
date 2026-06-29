@@ -74,8 +74,8 @@ fun HomeScreen(
     val view = LocalView.current
     val context = LocalContext.current
 
-    val score = focusScore
-    val percentile = 76
+    val score = dashboardState.currentFocusScore
+    val percentile = dashboardState.percentile
     var showBreakdown by remember { mutableStateOf(false) }
 
     // Streak parameters
@@ -444,10 +444,11 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     val categories = listOf(
-                        Triple("Productivity", behaviour.productiveTimeMs, Success),
-                        Triple("Social Time", behaviour.socialTimeMs, StreakSmall),
-                        Triple("Entertainment", behaviour.entertainmentTimeMs, Info),
-                        Triple("Education", behaviour.educationTimeMs, GlowPrimary)
+                        Triple("Productivity", dashboardState.categoryTimes["Productivity"] ?: behaviour.productiveTimeMs, Success),
+                        Triple("Social Time", dashboardState.categoryTimes["Social"] ?: behaviour.socialTimeMs, StreakSmall),
+                        Triple("Entertainment", dashboardState.categoryTimes["Entertainment"] ?: behaviour.entertainmentTimeMs, Info),
+                        Triple("Education", dashboardState.categoryTimes["Education"] ?: behaviour.educationTimeMs, GlowPrimary),
+                        Triple("Utility", dashboardState.categoryTimes["Utility"] ?: 0L, MutedForeground)
                     )
 
                     categories.forEach { (label, durationMs, color) ->

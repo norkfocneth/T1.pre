@@ -14,6 +14,10 @@ import com.example.t1.domain.repository.BehaviourScoreRepository
 import com.example.t1.domain.repository.FocusScoreRepository
 import com.example.t1.data.repository.BehaviourScoreRepositoryImpl
 import com.example.t1.data.repository.FocusScoreRepositoryImpl
+import com.example.t1.domain.repository.AppCategoryRepository
+import com.example.t1.data.repository.AppCategoryRepositoryImpl
+import com.example.t1.domain.repository.ResearchBenchmarkRepository
+import com.example.t1.data.repository.ResearchBenchmarkRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -23,6 +27,18 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindAppCategoryRepository(
+        impl: AppCategoryRepositoryImpl
+    ): AppCategoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindResearchBenchmarkRepository(
+        impl: ResearchBenchmarkRepositoryImpl
+    ): ResearchBenchmarkRepository
 
     @Binds
     @Singleton

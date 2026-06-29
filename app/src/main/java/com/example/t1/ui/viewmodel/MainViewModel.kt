@@ -11,6 +11,9 @@ import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.domain.repository.BehaviourRepository
 import com.example.t1.domain.repository.FocusScoreRepository
+import com.example.t1.domain.repository.ResearchBenchmarkRepository
+import com.example.t1.domain.repository.AppCategoryRepository
+import com.example.t1.domain.repository.EngineCategory
 import com.example.t1.util.T1Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -35,7 +38,9 @@ class MainViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val usagePermissionManager: UsagePermissionManager,
     private val behaviourRepository: BehaviourRepository,
-    private val focusScoreRepository: FocusScoreRepository
+    private val focusScoreRepository: FocusScoreRepository,
+    private val researchBenchmarkRepository: ResearchBenchmarkRepository,
+    private val appCategoryRepository: AppCategoryRepository
 ) : ViewModel() {
 
     /**
@@ -83,23 +88,28 @@ class MainViewModel @Inject constructor(
                 ?: focusScoreRepository.getScoreHistory().lastOrNull()
             
             if (scoreEntity != null) {
+                val score = scoreEntity.finalFocusScore
+                val pct = researchBenchmarkRepository.getPercentile(score)
                 _dashboardState.update {
                     it.copy(
-                        currentFocusScore = scoreEntity.finalFocusScore,
+                        currentFocusScore = score,
                         behaviourScore = scoreEntity.behaviourScore,
                         confidence = scoreEntity.confidence,
                         trend = scoreEntity.trend,
-                        timeSaved = scoreEntity.timeSaved
+                        timeSaved = scoreEntity.timeSaved,
+                        percentile = pct
                     )
                 }
             } else {
+                val pct = researchBenchmarkRepository.getPercentile(defaultScore)
                 _dashboardState.update {
                     it.copy(
                         currentFocusScore = defaultScore,
                         behaviourScore = 0,
                         confidence = 0,
                         trend = "Stable",
-                        timeSaved = 0L
+                        timeSaved = 0L,
+                        percentile = pct
                     )
                 }
             }
@@ -118,10 +128,32 @@ class MainViewModel @Inject constructor(
             if (result.isSuccess) {
                 val behaviour = result.getOrNull()
 
+                // Calculate category times dynamically using AppCategoryRepository
+                val categoryTimes = mutableMapOf(
+                    "Productivity" to 0L,
+                    "Education" to 0L,
+                    "Social" to 0L,
+                    "Entertainment" to 0L,
+                    "Utility" to 0L
+                )
+                behaviour?.topUsedApps?.forEach { app ->
+                    val cat = appCategoryRepository.getCategory(app.packageName)
+                    val catName = when (cat) {
+                        EngineCategory.PRODUCTIVITY -> "Productivity"
+                        EngineCategory.EDUCATION -> "Education"
+                        EngineCategory.SOCIAL -> "Social"
+                        EngineCategory.ENTERTAINMENT -> "Entertainment"
+                        EngineCategory.UTILITY -> "Utility"
+                    }
+                    categoryTimes[catName] = (categoryTimes[catName] ?: 0L) + app.usageDurationMs
+                }
+
                 // Calculate today's focus score
                 val todayStr = java.time.LocalDate.now().toString()
                 val scoreCalcResult = focusScoreRepository.calculateAndSaveFocusScore(todayStr)
                 val currentScore = scoreCalcResult.getOrNull()
+                val score = currentScore?.finalFocusScore ?: _dashboardState.value.currentFocusScore
+                val pct = researchBenchmarkRepository.getPercentile(score)
 
                 _dashboardState.update {
                     it.copy(
@@ -130,11 +162,13 @@ class MainViewModel @Inject constructor(
                         todayBehaviour = behaviour,
                         lastUpdated = System.currentTimeMillis(),
                         error = null,
-                        currentFocusScore = currentScore?.finalFocusScore ?: it.currentFocusScore,
+                        currentFocusScore = score,
                         behaviourScore = currentScore?.behaviourScore ?: it.behaviourScore,
                         confidence = currentScore?.confidence ?: it.confidence,
                         trend = currentScore?.trend ?: it.trend,
-                        timeSaved = currentScore?.timeSaved ?: it.timeSaved
+                        timeSaved = currentScore?.timeSaved ?: it.timeSaved,
+                        percentile = pct,
+                        categoryTimes = categoryTimes
                     )
                 }
             } else {

@@ -13,6 +13,9 @@ interface FocusSessionDao {
     @Query("SELECT * FROM focus_sessions ORDER BY timestamp DESC")
     fun getAllSessionsFlow(): Flow<List<FocusSessionEntity>>
 
+    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND timestamp BETWEEN :startTime AND :endTime")
+    suspend fun getFocusSessionCountForDay(userId: String, startTime: Long, endTime: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: FocusSessionEntity)
 

@@ -37,10 +37,50 @@ fun OnboardingFlow(
     }
 
     val handleQuestionsComplete: (List<Int>) -> Unit = { answers ->
-        val base = 55
-        val seriousness = answers.getOrNull(5) ?: 0
-        val bonus = seriousness * 8 + (Math.random() * 15).toInt()
-        focusScore = min(base + bonus, 92)
+        var points = 0
+        
+        // Q1: Be honest — what eats most of your time?
+        points += when (answers.getOrNull(0)) {
+            1 -> 3 // Studying / productive work
+            else -> 0
+        }
+        
+        // Q2: How many hours are you actually on your phone?
+        points += when (answers.getOrNull(1)) {
+            0 -> 3 // 2–3 hours
+            1 -> 2 // 3–5 hours
+            2 -> 1 // 5–7 hours
+            else -> 0 // 7+ hours
+        }
+        
+        // Q3: focus completely collapse (neutral)
+        points += 1
+        
+        // Q4: deep down wasting time
+        points += when (answers.getOrNull(3)) {
+            0 -> 2 // Not really
+            1 -> 1 // Sometimes
+            else -> 0 // Yes, often
+        }
+        
+        // Q5: want to fix (neutral)
+        points += 1
+        
+        // Q6: how serious
+        points += when (answers.getOrNull(5)) {
+            2 -> 4 // Fully committed
+            1 -> 2 // Somewhat serious
+            else -> 0 // Just exploring
+        }
+        
+        // Map 2..14 points to 40..74 range
+        val minPoints = 2
+        val maxPoints = 14
+        val minScore = 40
+        val maxScore = 74
+        val calculated = minScore + ((points - minPoints).toFloat() / (maxPoints - minPoints).toFloat() * (maxScore - minScore).toFloat()).toInt()
+        
+        focusScore = calculated.coerceIn(40, 74)
         step = OnboardingStep.PERMISSIONS
     }
 

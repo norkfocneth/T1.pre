@@ -9,6 +9,8 @@ import com.example.t1.domain.model.behaviour.AppUsageSummary
 import com.example.t1.domain.model.behaviour.DailyBehaviourSummary
 import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.BehaviourScoreRepository
+import com.example.t1.domain.repository.AppCategoryRepository
+import com.example.t1.data.database.dao.FocusSessionDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -20,7 +22,9 @@ import javax.inject.Singleton
 class BehaviourScoreRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     private val dailyBehaviourDao: DailyBehaviourDao,
-    private val dailyBehaviourScoreDao: DailyBehaviourScoreDao
+    private val dailyBehaviourScoreDao: DailyBehaviourScoreDao,
+    private val focusSessionDao: FocusSessionDao,
+    private val appCategoryRepository: AppCategoryRepository
 ) : BehaviourScoreRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -45,9 +49,19 @@ class BehaviourScoreRepositoryImpl @Inject constructor(
             // Fetch verified days count
             val verifiedDaysCount = dailyBehaviourDao.getVerifiedDaysCount(userId)
 
+            // Fetch completed focus sessions count for the day
+            val startOfDay = LocalDate.parse(dateStr).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val endOfDay = LocalDate.parse(dateStr).plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
+            val completedFocusSessions = focusSessionDao.getFocusSessionCountForDay(userId, startOfDay, endOfDay)
+
             // Compute Behaviour Score on Dispatchers.Default
             val scoreResult = withContext(Dispatchers.Default) {
-                BehaviourScoreEngine.calculateBehaviourScore(todaySummary, yesterdaySummary, verifiedDaysCount)
+                BehaviourScoreEngine.calculateBehaviourScore(
+                    today = todaySummary,
+                    completedFocusSessionsCount = completedFocusSessions,
+                    verifiedDaysCount = verifiedDaysCount,
+                    appCategoryRepository = appCategoryRepository
+                )
             }
 
             when (scoreResult) {

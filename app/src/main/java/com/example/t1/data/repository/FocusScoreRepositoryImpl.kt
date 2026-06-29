@@ -68,21 +68,16 @@ class FocusScoreRepositoryImpl @Inject constructor(
                 }
             }
 
-            // 3. Load past Focus Scores (last 6 days) and Behaviour Scores (last 3 days)
+            // 3. Load past Focus Scores (last 3 days)
             val allFocusHistory = dailyFocusScoreDao.getScoreHistory(userId)
             val pastFocusScores = allFocusHistory
                 .filter { it.date < dateStr }
-                .takeLast(6)
+                .takeLast(3)
                 .map { it.finalFocusScore }
 
             val yesterdayFocusScore = allFocusHistory
                 .lastOrNull { it.date < dateStr }
                 ?.finalFocusScore
-
-            val pastBehaviourScores = dailyBehaviourScoreDao.getScoreHistory(userId)
-                .filter { it.date < dateStr }
-                .takeLast(3)
-                .map { it.behaviourScore }
 
             // 4. Compute Focus Score on Dispatchers.Default
             val focusResult = withContext(Dispatchers.Default) {
@@ -91,8 +86,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
                     behaviourScore = behaviourScore,
                     confidence = confidence,
                     yesterdayFocusScore = yesterdayFocusScore,
-                    pastFocusScores = pastFocusScores,
-                    pastBehaviourScores = pastBehaviourScores
+                    pastFocusScores = pastFocusScores
                 )
             }
 

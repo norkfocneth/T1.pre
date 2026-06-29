@@ -21,5 +21,7 @@ data class DashboardUiState(
     val behaviourScore: Int = 0,
     val confidence: Int = 0,
     val trend: String = "Stable",
-    val timeSaved: Long = 0L
+    val timeSaved: Long = 0L,
+    val percentile: Int = 76,
+    val categoryTimes: Map<String, Long> = emptyMap()
 )

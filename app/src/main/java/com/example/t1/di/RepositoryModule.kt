@@ -18,6 +18,8 @@ import com.example.t1.domain.repository.AppCategoryRepository
 import com.example.t1.data.repository.AppCategoryRepositoryImpl
 import com.example.t1.domain.repository.ResearchBenchmarkRepository
 import com.example.t1.data.repository.ResearchBenchmarkRepositoryImpl
+import com.example.t1.domain.repository.PerformanceBadgeRepository
+import com.example.t1.data.repository.PerformanceBadgeRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -57,6 +59,12 @@ abstract class RepositoryModule {
     abstract fun bindLeaderboardRepository(
         impl: LeaderboardRepositoryImpl
     ): LeaderboardRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPerformanceBadgeRepository(
+        impl: PerformanceBadgeRepositoryImpl
+    ): PerformanceBadgeRepository
 
     @Binds
     @Singleton

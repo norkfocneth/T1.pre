@@ -7,5 +7,11 @@ data class UserProfile(
     val displayName: String?,
     val focusScore: Int,
     val onboardingCompleted: Boolean,
-    val createdAt: Long
+    val createdAt: Long,
+    val streak: Int = 0,
+    val lastActiveDate: String? = null,
+    val behaviourScore: Int = 0,
+    val socialRatio: Double = 0.0,
+    val productivityRatio: Double = 0.0,
+    val totalFocusSessions: Int = 0
 )

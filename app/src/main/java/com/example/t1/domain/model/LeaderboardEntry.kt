@@ -5,5 +5,8 @@ data class LeaderboardEntry(
     val displayName: String?,
     val focusScore: Int,
     val streak: Int,
-    val rank: Int
+    val rank: Int,
+    val percentile: Int,
+    val badge: String,
+    val rankMovement: String
 )

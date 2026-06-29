@@ -9,8 +9,10 @@ import com.example.t1.data.database.dao.DailyUsageDao
 import com.example.t1.data.database.dao.DailyBehaviourDao
 import com.example.t1.data.database.migration.MIGRATION_1_2
 import com.example.t1.data.database.migration.MIGRATION_2_3
+import com.example.t1.data.database.migration.MIGRATION_3_4
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
+import com.example.t1.data.database.dao.LeaderboardDailyDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +32,7 @@ object DatabaseModule {
             T1Database::class.java,
             "t1_database"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
         .fallbackToDestructiveMigration()
         .build()
     }
@@ -63,6 +65,11 @@ object DatabaseModule {
     @Provides
     fun provideDailyFocusScoreDao(database: T1Database): DailyFocusScoreDao {
         return database.dailyFocusScoreDao()
+    }
+
+    @Provides
+    fun provideLeaderboardDailyDao(database: T1Database): LeaderboardDailyDao {
+        return database.leaderboardDailyDao()
     }
 }
 

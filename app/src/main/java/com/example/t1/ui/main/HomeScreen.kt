@@ -69,7 +69,8 @@ fun HomeScreen(
     dashboardState: DashboardUiState,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    focusScore: Int = 85
+    focusScore: Int = 85,
+    streak: Int = 12
 ) {
     val view = LocalView.current
     val context = LocalContext.current
@@ -79,7 +80,6 @@ fun HomeScreen(
     var showBreakdown by remember { mutableStateOf(false) }
 
     // Streak parameters
-    val streak = 12
     val streakColor = when {
         streak >= 14 -> StreakIntense
         streak >= 7 -> StreakMedium

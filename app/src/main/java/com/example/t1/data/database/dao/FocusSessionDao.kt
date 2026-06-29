@@ -16,6 +16,9 @@ interface FocusSessionDao {
     @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId AND timestamp BETWEEN :startTime AND :endTime")
     suspend fun getFocusSessionCountForDay(userId: String, startTime: Long, endTime: Long): Int
 
+    @Query("SELECT COUNT(*) FROM focus_sessions WHERE userId = :userId")
+    suspend fun getTotalFocusSessionCount(userId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: FocusSessionEntity)
 

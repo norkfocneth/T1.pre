@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.FocusScoreRepository
+import com.example.t1.domain.repository.LeaderboardRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.LocalDate
@@ -15,7 +16,8 @@ class DailyAnalysisWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val authRepository: AuthRepository,
-    private val focusScoreRepository: FocusScoreRepository
+    private val focusScoreRepository: FocusScoreRepository,
+    private val leaderboardRepository: LeaderboardRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -35,12 +37,17 @@ class DailyAnalysisWorker @AssistedInject constructor(
         val result = focusScoreRepository.calculateAndSaveFocusScore(dateStr)
 
         return if (result.isSuccess) {
-            android.util.Log.i("DailyAnalysisWorker", "Daily analysis succeeded for date: $dateStr")
-            Result.success()
+            android.util.Log.i("DailyAnalysisWorker", "Daily analysis succeeded for date: $dateStr. Recalculating daily snapshot.")
+            val leaderboardResult = leaderboardRepository.generateDailySnapshot(dateStr)
+            if (leaderboardResult.isSuccess) {
+                Result.success()
+            } else {
+                android.util.Log.e("DailyAnalysisWorker", "Leaderboard snapshot generation failed: ${leaderboardResult.exceptionOrNull()?.message}")
+                Result.retry()
+            }
         } else {
             val exception = result.exceptionOrNull()
             android.util.Log.e("DailyAnalysisWorker", "Daily analysis failed: ${exception?.message}", exception)
-            // If it is a transient error (e.g. network failure is handled inside sync, but other exceptions can retry)
             Result.retry()
         }
     }

@@ -18,5 +18,17 @@ data class ProfileDto(
     @SerialName("onboarding_completed")
     val onboardingCompleted: Boolean,
     @SerialName("created_at")
-    val createdAt: String
+    val createdAt: String,
+    @SerialName("current_streak")
+    val streak: Int = 0,
+    @SerialName("last_active_date")
+    val lastActiveDate: String? = null,
+    @SerialName("behaviour_score")
+    val behaviourScore: Int = 0,
+    @SerialName("social_ratio")
+    val socialRatio: Double = 0.0,
+    @SerialName("productivity_ratio")
+    val productivityRatio: Double = 0.0,
+    @SerialName("total_focus_sessions")
+    val totalFocusSessions: Int = 0
 )

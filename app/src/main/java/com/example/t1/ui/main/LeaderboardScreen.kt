@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.domain.model.LeaderboardEntry
 import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.theme.*
 import com.example.t1.ui.onboarding.OnboardingBackground
@@ -125,38 +126,33 @@ fun LeaderboardScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
-    var activeTab by remember { mutableStateOf(LeaderboardTab.WEEK) }
-
-    val dayData = remember { generateLeaderboardUsers(0) }
-    val weekData = remember { generateLeaderboardUsers(1) }
-    val allData = remember { generateLeaderboardUsers(2) }
-
+    var activeTab by remember { mutableStateOf(LeaderboardTab.DAY) }
     val leaderboardEntries by mainViewModel.leaderboardState.collectAsStateWithLifecycle()
+    val temporaryRank by mainViewModel.temporaryRank.collectAsStateWithLifecycle()
+    val userProfile by mainViewModel.userProfile.collectAsStateWithLifecycle()
 
-    val currentData = if (leaderboardEntries.isNotEmpty()) {
-        leaderboardEntries.map { entry ->
-            val formattedName = if (entry.displayName != null) {
-                "${entry.displayName} (${entry.username})"
-            } else {
-                entry.username
-            }
-            LeaderboardUser(
-                rank = entry.rank,
-                name = formattedName,
-                score = entry.focusScore.toFloat(),
-                streak = entry.streak,
-                percentile = "top ${max(1, entry.rank * 2)}%",
-                badge = "Gold badge",
-                movement = "same",
-                movementVal = 0
-            )
+    LaunchedEffect(Unit) {
+        mainViewModel.loadTemporaryRank()
+    }
+
+    val currentData = leaderboardEntries.map { entry ->
+        val formattedName = entry.displayName ?: entry.username
+        val (movementDirection, movementVal) = when {
+            entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement == "NEW" -> "up" to 0
+            else -> "same" to 0
         }
-    } else {
-        when (activeTab) {
-            LeaderboardTab.DAY -> dayData
-            LeaderboardTab.WEEK -> weekData
-            LeaderboardTab.ALL -> allData
-        }
+        LeaderboardUser(
+            rank = entry.rank,
+            name = formattedName,
+            score = entry.focusScore.toFloat(),
+            streak = entry.streak,
+            percentile = "top ${entry.percentile}%",
+            badge = entry.badge,
+            movement = movementDirection,
+            movementVal = movementVal
+        )
     }
 
     val top3 = currentData.take(3)
@@ -164,15 +160,28 @@ fun LeaderboardScreen(
 
     val userEntryFromList = currentData.firstOrNull { it.name.lowercase().contains(username.lowercase()) }
     val userScoreState = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
+    
+    val finalUserRank = temporaryRank ?: 1
     val userEntry = userEntryFromList ?: LeaderboardUser(
-        rank = if (currentData.isNotEmpty()) currentData.size + 1 else 9,
-        name = if (username.endsWith(".t1")) username else "$username.t1",
+        rank = finalUserRank,
+        name = userProfile?.displayName ?: userProfile?.username ?: username,
         score = userScoreState.value.toFloat(),
-        streak = 12,
-        percentile = "top 42%",
-        badge = "Silver badge",
-        movement = "down",
-        movementVal = 3
+        streak = userProfile?.streak ?: 0,
+        percentile = "top ${max(1, (finalUserRank * 100) / max(1, currentData.size))}%",
+        badge = if (userProfile != null) {
+            val pct = max(1, (finalUserRank * 100) / max(1, currentData.size))
+            when {
+                pct <= 1 -> "Apex Predator"
+                pct <= 5 -> "Elite Focus"
+                pct <= 10 -> "Deep Worker"
+                pct <= 20 -> "Top Performer"
+                pct <= 35 -> "Consistent Builder"
+                pct <= 50 -> "Balanced Performer"
+                else -> "Getting Started"
+            }
+        } else "Getting Started",
+        movement = "same",
+        movementVal = 0
     )
 
     OnboardingBackground(modifier = modifier) {
@@ -257,13 +266,9 @@ fun LeaderboardScreen(
                 label = "leaderboardContent",
                 modifier = Modifier.weight(1f)
             ) { targetTab ->
-                val tabData = when (targetTab) {
-                    LeaderboardTab.DAY -> dayData
-                    LeaderboardTab.WEEK -> weekData
-                    LeaderboardTab.ALL -> allData
-                }
-                val tabTop3 = tabData.take(3)
-                val tabRest = tabData.drop(3)
+                val tabData = currentData
+                val tabTop3 = top3
+                val tabRest = rest
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Podium Cards Row: displays 2nd (idx 1), 1st (idx 0), 3rd (idx 2)

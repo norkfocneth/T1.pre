@@ -3,6 +3,7 @@ package com.example.t1.data.repository
 import com.example.t1.data.database.dao.DailyBehaviourDao
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
+import com.example.t1.data.database.dao.FocusSessionDao
 import com.example.t1.data.database.entity.DailyFocusScoreEntity
 import com.example.t1.data.remote.SupabaseService
 import com.example.t1.data.remote.model.DailyFocusScoreDto
@@ -26,6 +27,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
     private val dailyBehaviourDao: DailyBehaviourDao,
     private val dailyBehaviourScoreDao: DailyBehaviourScoreDao,
     private val dailyFocusScoreDao: DailyFocusScoreDao,
+    private val focusSessionDao: FocusSessionDao,
     private val supabaseService: SupabaseService
 ) : FocusScoreRepository {
 
@@ -119,6 +121,32 @@ class FocusScoreRepositoryImpl @Inject constructor(
 
             dailyFocusScoreDao.insertOrReplace(focusEntity)
 
+            // Update User Profile with latest daily stats
+            val totalNonUtility = if (todayBehaviour != null) {
+                todayBehaviour.productiveTimeMs + todayBehaviour.educationTimeMs +
+                todayBehaviour.entertainmentTimeMs + todayBehaviour.socialTimeMs
+            } else 0L
+
+            val currentSocialRatio = if (totalNonUtility > 0 && todayBehaviour != null) {
+                todayBehaviour.socialTimeMs.toDouble() / totalNonUtility
+            } else 0.0
+
+            val currentProductivityRatio = if (totalNonUtility > 0 && todayBehaviour != null) {
+                todayBehaviour.productiveTimeMs.toDouble() / totalNonUtility
+            } else 0.0
+
+            val totalSessions = focusSessionDao.getTotalFocusSessionCount(userId)
+
+            val updatedProfile = profile.copy(
+                focusScore = focusResult.finalScore,
+                behaviourScore = behaviourScore,
+                socialRatio = currentSocialRatio,
+                productivityRatio = currentProductivityRatio,
+                totalFocusSessions = totalSessions
+            )
+            // Save & Sync updated profile
+            userRepository.saveProfile(updatedProfile)
+
             // 7. Perform Intelligent Sync & Conflict Resolution with Cloud
             val syncResult = syncSingleScore(focusEntity)
             if (syncResult.isSuccess) {
@@ -189,7 +217,15 @@ class FocusScoreRepositoryImpl @Inject constructor(
         }
 
         // 2. Newest Timestamp (generatedAt)
-        val serverGeneratedAt = try { serverDto.generatedAt.toLong() } catch (e: Exception) { 0L }
+        val serverGeneratedAt = try {
+            java.time.Instant.parse(serverDto.generatedAt).toEpochMilli()
+        } catch (e: Exception) {
+            try {
+                serverDto.generatedAt.toLong()
+            } catch (ex: Exception) {
+                0L
+            }
+        }
         if (serverGeneratedAt > local.generatedAt) {
             overwriteLocalWithServer(serverDto)
             return Result.success(Unit)
@@ -223,7 +259,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
             finalFocusScore = local.finalFocusScore,
             trend = local.trend,
             timeSaved = local.timeSaved,
-            generatedAt = local.generatedAt.toString(),
+            generatedAt = try { java.time.Instant.ofEpochMilli(local.generatedAt).toString() } catch (e: Exception) { local.generatedAt.toString() },
             engineVersion = local.version,
             verified = local.verified
         )
@@ -231,7 +267,15 @@ class FocusScoreRepositoryImpl @Inject constructor(
     }
 
     private suspend fun overwriteLocalWithServer(server: DailyFocusScoreDto) {
-        val localGeneratedAt = try { server.generatedAt.toLong() } catch (e: Exception) { System.currentTimeMillis() }
+        val localGeneratedAt = try {
+            java.time.Instant.parse(server.generatedAt).toEpochMilli()
+        } catch (e: Exception) {
+            try {
+                server.generatedAt.toLong()
+            } catch (ex: Exception) {
+                System.currentTimeMillis()
+            }
+        }
         val entity = DailyFocusScoreEntity(
             userId = server.userId,
             date = server.date,

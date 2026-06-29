@@ -3,6 +3,7 @@ package com.example.t1.data.remote
 import com.example.t1.data.remote.model.ProfileDto
 import com.example.t1.data.remote.model.LeaderboardEntryDto
 import com.example.t1.data.remote.model.DailyFocusScoreDto
+import com.example.t1.data.remote.model.LeaderboardDailyDto
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -36,6 +37,7 @@ class SupabaseService @Inject constructor(
             postgrest.from("profiles").upsert(profile)
             true
         } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error upserting profile: ${e.message}", e)
             false
         }
     }
@@ -67,6 +69,46 @@ class SupabaseService @Inject constructor(
             response.decodeList<LeaderboardEntryDto>()
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    suspend fun getAllProfiles(): List<ProfileDto> {
+        return try {
+            val response = postgrest.from("profiles")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("onboarding_completed", true)
+                    }
+                }
+            response.decodeList<ProfileDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching all profiles: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    suspend fun getDailyLeaderboard(date: String): List<LeaderboardDailyDto> {
+        return try {
+            val response = postgrest.from("leaderboard_daily")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("snapshot_date", date)
+                    }
+                }
+            response.decodeList<LeaderboardDailyDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching daily leaderboard for date $date: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    suspend fun upsertDailyLeaderboard(entries: List<LeaderboardDailyDto>): Boolean {
+        return try {
+            postgrest.from("leaderboard_daily").upsert(entries)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error upserting daily leaderboard: ${e.message}", e)
+            false
         }
     }
 

@@ -80,7 +80,13 @@ class UserRepositoryImpl @Inject constructor(
                 displayName = profile.displayName,
                 focusScore = profile.focusScore,
                 onboardingCompleted = profile.onboardingCompleted,
-                createdAt = epochString
+                createdAt = epochString,
+                streak = profile.streak,
+                lastActiveDate = profile.lastActiveDate,
+                behaviourScore = profile.behaviourScore,
+                socialRatio = profile.socialRatio,
+                productivityRatio = profile.productivityRatio,
+                totalFocusSessions = profile.totalFocusSessions
             )
             val success = supabaseService.upsertProfile(profileDto)
             if (!success) {
@@ -129,7 +135,13 @@ class UserRepositoryImpl @Inject constructor(
             displayName = displayName,
             focusScore = focusScore,
             onboardingCompleted = onboardingCompleted,
-            createdAt = epochMillis
+            createdAt = epochMillis,
+            streak = streak,
+            lastActiveDate = lastActiveDate,
+            behaviourScore = behaviourScore,
+            socialRatio = socialRatio,
+            productivityRatio = productivityRatio,
+            totalFocusSessions = totalFocusSessions
         )
     }
 
@@ -141,7 +153,13 @@ class UserRepositoryImpl @Inject constructor(
             displayName = displayName,
             focusScore = focusScore,
             onboardingCompleted = onboardingCompleted,
-            createdAt = createdAt
+            createdAt = createdAt,
+            streak = streak,
+            lastActiveDate = lastActiveDate,
+            behaviourScore = behaviourScore,
+            socialRatio = socialRatio,
+            productivityRatio = productivityRatio,
+            totalFocusSessions = totalFocusSessions
         )
     }
 
@@ -154,7 +172,13 @@ class UserRepositoryImpl @Inject constructor(
             focusScore = focusScore,
             onboardingCompleted = onboardingCompleted,
             createdAt = createdAt,
-            synced = true // Always synced since it comes directly from cloud
+            synced = true, // Always synced since it comes directly from cloud
+            streak = streak,
+            lastActiveDate = lastActiveDate,
+            behaviourScore = behaviourScore,
+            socialRatio = socialRatio,
+            productivityRatio = productivityRatio,
+            totalFocusSessions = totalFocusSessions
         )
     }
 }

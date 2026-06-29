@@ -3,6 +3,7 @@ package com.example.t1.data.repository
 import com.example.t1.data.database.dao.DailyBehaviourDao
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
+import com.example.t1.data.database.dao.FocusSessionDao
 import com.example.t1.data.database.entity.DailyBehaviourScoreEntity
 import com.example.t1.data.database.entity.DailyFocusScoreEntity
 import com.example.t1.data.remote.SupabaseService
@@ -28,6 +29,7 @@ class FocusScoreRepositoryTest {
     private lateinit var mockDailyBehaviourDao: DailyBehaviourDao
     private lateinit var mockDailyBehaviourScoreDao: DailyBehaviourScoreDao
     private lateinit var mockDailyFocusScoreDao: DailyFocusScoreDao
+    private lateinit var mockFocusSessionDao: FocusSessionDao
     private lateinit var mockSupabaseService: SupabaseService
 
     private lateinit var repository: FocusScoreRepositoryImpl
@@ -35,7 +37,7 @@ class FocusScoreRepositoryTest {
     private val testUserId = "user-123"
     private val testDate = "2026-06-28"
 
-    private val dummyDto = DailyFocusScoreDto("", "", 0, 0, 0, 0, "", 0L, "", "", false)
+    private val dummyDto = DailyFocusScoreDto("", "", 0, 0, 0, 0, "", 0L, "2026-06-29T12:00:00Z", "", false)
     private val dummyEntity = DailyFocusScoreEntity("", "", 0, 0, 0, 0, "", 0L, 0L, "", false, false)
 
     @Before
@@ -46,6 +48,7 @@ class FocusScoreRepositoryTest {
         mockDailyBehaviourDao = Mockito.mock(DailyBehaviourDao::class.java)
         mockDailyBehaviourScoreDao = Mockito.mock(DailyBehaviourScoreDao::class.java)
         mockDailyFocusScoreDao = Mockito.mock(DailyFocusScoreDao::class.java)
+        mockFocusSessionDao = Mockito.mock(FocusSessionDao::class.java)
         mockSupabaseService = Mockito.mock(SupabaseService::class.java)
 
         repository = FocusScoreRepositoryImpl(
@@ -55,8 +58,16 @@ class FocusScoreRepositoryTest {
             dailyBehaviourDao = mockDailyBehaviourDao,
             dailyBehaviourScoreDao = mockDailyBehaviourScoreDao,
             dailyFocusScoreDao = mockDailyFocusScoreDao,
+            focusSessionDao = mockFocusSessionDao,
             supabaseService = mockSupabaseService
         )
+
+        kotlinx.coroutines.runBlocking {
+            Mockito.`when`(mockUserRepository.saveProfile(anyNonNull(UserProfile::class.java)))
+                .thenReturn(Result.success(Unit))
+            Mockito.`when`(mockFocusSessionDao.getTotalFocusSessionCount(Mockito.anyString()))
+                .thenReturn(0)
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -65,6 +76,7 @@ class FocusScoreRepositoryTest {
         return when (clazz) {
             DailyFocusScoreDto::class.java -> dummyDto as T
             DailyFocusScoreEntity::class.java -> dummyEntity as T
+            UserProfile::class.java -> UserProfile("test", "test", "test", null, 50, true, 1000L) as T
             else -> null as T
         }
     }
@@ -157,7 +169,7 @@ class FocusScoreRepositoryTest {
             finalFocusScore = 88,
             trend = "Improving",
             timeSaved = 0L,
-            generatedAt = (System.currentTimeMillis() + 10000).toString(),
+            generatedAt = java.time.Instant.now().plusSeconds(10).toString(),
             engineVersion = "ENGINE_V1",
             verified = true
         )

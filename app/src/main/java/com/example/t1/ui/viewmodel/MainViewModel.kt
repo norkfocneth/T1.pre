@@ -8,6 +8,7 @@ import com.example.t1.domain.model.LeaderboardEntry
 import com.example.t1.domain.model.UserProfile
 import com.example.t1.domain.permission.UsagePermissionManager
 import com.example.t1.domain.permission.UsagePermissionState
+import com.example.t1.domain.repository.LeaderboardRepository
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.domain.repository.BehaviourRepository
 import com.example.t1.domain.repository.FocusScoreRepository
@@ -40,7 +41,8 @@ class MainViewModel @Inject constructor(
     private val behaviourRepository: BehaviourRepository,
     private val focusScoreRepository: FocusScoreRepository,
     private val researchBenchmarkRepository: ResearchBenchmarkRepository,
-    private val appCategoryRepository: AppCategoryRepository
+    private val appCategoryRepository: AppCategoryRepository,
+    private val leaderboardRepository: LeaderboardRepository
 ) : ViewModel() {
 
     /**
@@ -76,6 +78,7 @@ class MainViewModel @Inject constructor(
             userProfile.collectLatest { profile ->
                 if (profile != null) {
                     loadLatestCalculatedScore(profile.focusScore)
+                    refreshLeaderboard(forceRefresh = false)
                 }
             }
         }
@@ -188,12 +191,39 @@ class MainViewModel @Inject constructor(
         usagePermissionManager.openPermissionSettings(context)
     }
 
-    // Stubs for future Phase 2 leaderboard support
     private val _leaderboardState = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
     val leaderboardState: StateFlow<List<LeaderboardEntry>> = _leaderboardState.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    fun refreshLeaderboard(forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            val result = leaderboardRepository.getLeaderboard(forceRefresh)
+            if (result.isSuccess) {
+                _leaderboardState.value = result.getOrDefault(emptyList())
+            } else {
+                T1Logger.e("Failed to refresh leaderboard", result.exceptionOrNull())
+            }
+            _isRefreshing.value = false
+        }
+    }
+
+    private val _temporaryRank = MutableStateFlow<Int?>(null)
+    val temporaryRank: StateFlow<Int?> = _temporaryRank.asStateFlow()
+
+    fun loadTemporaryRank() {
+        viewModelScope.launch {
+            val profile = userProfile.value
+            if (profile != null) {
+                val result = leaderboardRepository.getTemporaryRank(profile.id, profile.focusScore)
+                if (result.isSuccess) {
+                    _temporaryRank.value = result.getOrNull()
+                }
+            }
+        }
+    }
 
     /**
      * Updates display name in local cache and remote (if online).

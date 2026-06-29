@@ -112,10 +112,41 @@ open class SessionManager @Inject constructor(
             return Result.failure(SecurityException("Security Validation Failed: profile.id != auth.uid()"))
         }
 
-        // Complete Cache Replacement
-        userRepository.saveCachedProfile(profile)
+        // Streak check & validation logic
+        val todayStr = java.time.LocalDate.now().toString()
+        val lastActive = profile.lastActiveDate
+        val currentStreak = profile.streak
+        
+        val updatedProfile = if (lastActive != todayStr) {
+            val newStreak = if (lastActive == null) {
+                1
+            } else {
+                val lastDate = java.time.LocalDate.parse(lastActive)
+                val daysBetween = java.time.temporal.ChronoUnit.DAYS.between(lastDate, java.time.LocalDate.now())
+                if (daysBetween == 1L) {
+                    currentStreak + 1
+                } else if (daysBetween > 1L) {
+                    1
+                } else {
+                    currentStreak // User opened app again on same day/past timezone change
+                }
+            }
+            profile.copy(streak = newStreak, lastActiveDate = todayStr)
+        } else {
+            profile
+        }
+
+        val finalProfile = if (updatedProfile != profile) {
+            T1Logger.i("Updating profile streak to: ${updatedProfile.streak} (last active was: $lastActive)")
+            val saveResult = userRepository.saveProfile(updatedProfile)
+            if (saveResult.isSuccess) updatedProfile else profile
+        } else {
+            userRepository.saveCachedProfile(profile)
+            profile
+        }
+
         T1Logger.i("Profile synchronized and cached successfully in Room.")
-        return Result.success(profile)
+        return Result.success(finalProfile)
     }
 
     /**

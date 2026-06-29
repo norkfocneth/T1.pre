@@ -15,6 +15,9 @@ import com.example.t1.data.database.entity.DailyFocusScoreEntity
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
 
+import com.example.t1.data.database.entity.LeaderboardDailyEntity
+import com.example.t1.data.database.dao.LeaderboardDailyDao
+
 @Database(
     entities = [
         UserProfileEntity::class,
@@ -22,9 +25,10 @@ import com.example.t1.data.database.dao.DailyFocusScoreDao
         DailyUsageEntity::class,
         DailyBehaviourEntity::class,
         DailyBehaviourScoreEntity::class,
-        DailyFocusScoreEntity::class
+        DailyFocusScoreEntity::class,
+        LeaderboardDailyEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class T1Database : RoomDatabase() {
@@ -34,5 +38,6 @@ abstract class T1Database : RoomDatabase() {
     abstract fun dailyBehaviourDao(): DailyBehaviourDao
     abstract fun dailyBehaviourScoreDao(): DailyBehaviourScoreDao
     abstract fun dailyFocusScoreDao(): DailyFocusScoreDao
+    abstract fun leaderboardDailyDao(): LeaderboardDailyDao
 }
 

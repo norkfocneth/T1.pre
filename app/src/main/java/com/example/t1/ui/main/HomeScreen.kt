@@ -60,6 +60,11 @@ import com.example.t1.ui.viewmodel.DashboardUiState
 import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.geometry.Offset
+import com.example.t1.domain.focus.AICoachEngine
 
 @Composable
 fun HomeScreen(
@@ -78,6 +83,7 @@ fun HomeScreen(
     val score = dashboardState.currentFocusScore
     val percentile = dashboardState.percentile
     var showBreakdown by remember { mutableStateOf(false) }
+    var showAICoach by remember { mutableStateOf(false) }
 
     // Streak parameters
     val streakColor = when {
@@ -111,8 +117,9 @@ fun HomeScreen(
         showTapHint = true
     }
 
-    OnboardingBackground(modifier = modifier) {
-        Column(
+    Box(modifier = Modifier.fillMaxSize()) {
+        OnboardingBackground(modifier = modifier) {
+            Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
@@ -695,4 +702,262 @@ fun HomeScreen(
             }
         }
     }
+
+    // Floating AI Coach Button
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 90.dp, end = 24.dp), // Positioned above the BottomNav
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(GlowPrimary, Info)
+                    )
+                )
+                .clickable {
+                    Haptics.playMedium(view)
+                    showAICoach = true
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // Draw a beautiful geometric Megatron/Transformer face logo
+            androidx.compose.foundation.Canvas(modifier = Modifier.size(24.dp)) {
+                val w = size.width
+                val h = size.height
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    // Decepticon / Transformer geometric crest
+                    moveTo(w * 0.2f, h * 0.1f)
+                    lineTo(w * 0.8f, h * 0.1f)
+                    lineTo(w * 0.9f, h * 0.4f)
+                    lineTo(w * 0.6f, h * 0.6f)
+                    lineTo(w * 0.7f, h * 0.9f)
+                    lineTo(w * 0.5f, h * 0.7f)
+                    lineTo(w * 0.3f, h * 0.9f)
+                    lineTo(w * 0.4f, h * 0.6f)
+                    lineTo(w * 0.1f, h * 0.4f)
+                    close()
+                }
+                drawPath(path, color = Color.White)
+                
+                // Small glowing red eyes
+                drawCircle(color = Destructive, radius = 2.dp.toPx(), center = Offset(w * 0.4f, h * 0.35f))
+                drawCircle(color = Destructive, radius = 2.dp.toPx(), center = Offset(w * 0.6f, h * 0.35f))
+            }
+        }
+    }
+
+    // Floating AI Coach Overlay
+    if (showAICoach) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .clickable { showAICoach = false }, // Click outside to close
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            var userInput by remember { mutableStateOf("") }
+            
+            // Chat history state
+            val messagesList = remember {
+                val initialGreeting = AICoachEngine.generateInitialGreeting(
+                    focusScore = dashboardState.currentFocusScore,
+                    behaviourScore = dashboardState.behaviourScore,
+                    confidence = dashboardState.confidence,
+                    timeSavedMs = dashboardState.timeSaved,
+                    screenTimeMs = dashboardState.todayBehaviour?.totalScreenTimeMs ?: 0L,
+                    unlocks = dashboardState.todayBehaviour?.unlockCount ?: 0,
+                    categoryTimes = dashboardState.categoryTimes
+                )
+                mutableStateListOf(
+                    "coach" to initialGreeting
+                )
+            }
+
+            // Chat card
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.75f)
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 100.dp) // Floating above the BottomNav
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Card)
+                    .border(1.dp, Border, RoundedCornerShape(24.dp))
+                    .clickable(enabled = false) {} // Prevent click-through
+                    .padding(24.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Megatron-like styled icon
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(GlowPrimary, Info)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.foundation.Canvas(modifier = Modifier.size(20.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                val path = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(w * 0.2f, h * 0.1f)
+                                    lineTo(w * 0.8f, h * 0.1f)
+                                    lineTo(w * 0.9f, h * 0.4f)
+                                    lineTo(w * 0.5f, h * 0.95f)
+                                    lineTo(w * 0.1f, h * 0.4f)
+                                    close()
+                                }
+                                drawPath(path, color = Color.White)
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "T1 AI Coach",
+                                style = HeadlineSmall.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = "Offline Insights Engine",
+                                style = BodySmall.copy(color = Success, fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                    }
+
+                    // Close button
+                    Text(
+                        text = "CLOSE",
+                        style = LabelMedium.copy(color = MutedForeground, fontWeight = FontWeight.Bold),
+                        modifier = Modifier
+                            .clickable {
+                                Haptics.playLight(view)
+                                showAICoach = false
+                            }
+                            .padding(8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier.height(1.dp).fillMaxWidth().background(Border))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Message history list
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(messagesList.size) { index ->
+                        val msg = messagesList[index]
+                        val isCoach = msg.first == "coach"
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = if (isCoach) Arrangement.Start else Arrangement.End
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            topEnd = 16.dp,
+                                            bottomStart = if (isCoach) 4.dp else 16.dp,
+                                            bottomEnd = if (isCoach) 16.dp else 4.dp
+                                        )
+                                    )
+                                    .background(if (isCoach) SurfaceRaised else GlowPrimary)
+                                    .border(
+                                        1.dp,
+                                        if (isCoach) Border else Color.Transparent,
+                                        RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            topEnd = 16.dp,
+                                            bottomStart = if (isCoach) 4.dp else 16.dp,
+                                            bottomEnd = if (isCoach) 16.dp else 4.dp
+                                        )
+                                    )
+                                    .padding(14.dp)
+                                    .widthIn(max = 260.dp)
+                            ) {
+                                Text(
+                                    text = msg.second,
+                                    style = BodyMedium.copy(color = if (isCoach) Foreground else Background)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Input Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceRaised)
+                        .border(1.dp, Border, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = userInput,
+                        onValueChange = { userInput = it },
+                        modifier = Modifier.weight(1f),
+                        textStyle = BodyMedium.copy(color = Foreground),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(Foreground),
+                        decorationBox = { innerTextField ->
+                            Box {
+                                if (userInput.isEmpty()) {
+                                    Text(
+                                        text = "Ask coach about your focus...",
+                                        style = BodyMedium.copy(color = MutedForeground)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
+                    
+                    Text(
+                        text = "SEND",
+                        style = LabelMedium.copy(color = GlowPrimary, fontWeight = FontWeight.Bold),
+                        modifier = Modifier
+                            .clickable {
+                                if (userInput.isNotBlank()) {
+                                    Haptics.playLight(view)
+                                    val query = userInput
+                                    messagesList.add("user" to query)
+                                    userInput = ""
+                                    
+                                    // Calculate response
+                                    val reply = AICoachEngine.getResponse(
+                                        query = query,
+                                        focusScore = dashboardState.currentFocusScore,
+                                        behaviourScore = dashboardState.behaviourScore,
+                                        screenTimeMs = dashboardState.todayBehaviour?.totalScreenTimeMs ?: 0L,
+                                        unlocks = dashboardState.todayBehaviour?.unlockCount ?: 0,
+                                        categoryTimes = dashboardState.categoryTimes
+                                    )
+                                    messagesList.add("coach" to reply)
+                                }
+                            }
+                            .padding(8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
 }

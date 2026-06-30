@@ -126,7 +126,7 @@ fun LeaderboardScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
-    var activeTab by remember { mutableStateOf(LeaderboardTab.DAY) }
+    var activeTab by remember { mutableStateOf(LeaderboardTab.WEEK) }
     val leaderboardEntries by mainViewModel.leaderboardState.collectAsStateWithLifecycle()
     val temporaryRank by mainViewModel.temporaryRank.collectAsStateWithLifecycle()
     val userProfile by mainViewModel.userProfile.collectAsStateWithLifecycle()
@@ -264,7 +264,11 @@ fun LeaderboardScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = tab.name,
+                            text = when (tab) {
+                                LeaderboardTab.WEEK -> "GLOBAL"
+                                LeaderboardTab.DAY -> "COLLEGE"
+                                LeaderboardTab.ALL -> "FRIENDS"
+                            },
                             style = LabelMedium.copy(
                                 color = if (isSelected) Background else Foreground,
                                 fontWeight = FontWeight.Bold,
@@ -286,11 +290,33 @@ fun LeaderboardScreen(
                 label = "leaderboardContent",
                 modifier = Modifier.weight(1f)
             ) { targetTab ->
-                val tabData = currentData
-                val tabTop3 = top3
-                val tabRest = rest
+                if (targetTab == LeaderboardTab.DAY || targetTab == LeaderboardTab.ALL) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Coming soon in updates",
+                            style = HeadlineMedium.copy(
+                                color = GlowPrimary,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "We are building community spaces just for you.",
+                            style = BodyMedium.copy(color = MutedForeground),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    val tabData = currentData
+                    val tabTop3 = top3
+                    val tabRest = rest
 
-                Column(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
                     // Podium Cards Row: displays 2nd (idx 1), 1st (idx 0), 3rd (idx 2)
                     Row(
                         modifier = Modifier
@@ -601,6 +627,7 @@ fun LeaderboardScreen(
                             }
                         }
                     }
+                }
                 }
             }
         }

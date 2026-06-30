@@ -517,8 +517,8 @@ fun LeaderboardScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .padding(bottom = 180.dp)
+                            .padding(horizontal = 24.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 120.dp)
                     ) {
                         itemsIndexed(tabRest) { idx, entry ->
                             var itemVisible by remember { mutableStateOf(false) }

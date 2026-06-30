@@ -12,6 +12,7 @@ import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.BehaviourScoreRepository
 import com.example.t1.domain.repository.FocusScoreRepository
 import com.example.t1.domain.repository.UserRepository
+import com.example.t1.domain.repository.BehaviourRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -29,7 +30,8 @@ class FocusScoreRepositoryImpl @Inject constructor(
     private val dailyBehaviourScoreDao: DailyBehaviourScoreDao,
     private val dailyFocusScoreDao: DailyFocusScoreDao,
     private val focusSessionDao: FocusSessionDao,
-    private val supabaseService: SupabaseService
+    private val supabaseService: SupabaseService,
+    private val behaviourRepository: BehaviourRepository
 ) : FocusScoreRepository {
 
     override suspend fun calculateAndSaveFocusScore(dateStr: String): Result<DailyFocusScoreEntity> = withContext(Dispatchers.IO) {
@@ -94,9 +96,11 @@ class FocusScoreRepositoryImpl @Inject constructor(
             }
 
             // 5. Calculate Time Saved (Yesterday screen time - Today screen time)
-            val todayBehaviour = dailyBehaviourDao.getForDate(userId, dateStr)
-            val yesterdayDateStr = LocalDate.parse(dateStr).minusDays(1).toString()
-            val yesterdayBehaviour = dailyBehaviourDao.getForDate(userId, yesterdayDateStr)
+            val todayDate = LocalDate.parse(dateStr)
+            val yesterdayDate = todayDate.minusDays(1)
+            
+            val todayBehaviour = behaviourRepository.getBehaviourForDate(todayDate).getOrNull()
+            val yesterdayBehaviour = behaviourRepository.getBehaviourForDate(yesterdayDate).getOrNull()
 
             val timeSaved = if (todayBehaviour != null && yesterdayBehaviour != null) {
                 yesterdayBehaviour.totalScreenTimeMs - todayBehaviour.totalScreenTimeMs

@@ -81,7 +81,7 @@ fun OnboardingFlow(
         val calculated = minScore + ((points - minPoints).toFloat() / (maxPoints - minPoints).toFloat() * (maxScore - minScore).toFloat()).toInt()
         
         focusScore = calculated.coerceIn(40, 74)
-        step = OnboardingStep.PERMISSIONS
+        step = OnboardingStep.ANALYSIS
     }
 
     AnimatedContent(

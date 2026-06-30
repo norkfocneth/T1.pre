@@ -137,4 +137,19 @@ class SupabaseService @Inject constructor(
             null
         }
     }
+
+    suspend fun getAllDailyFocusScores(userId: String): List<DailyFocusScoreDto> {
+        return try {
+            val response = postgrest.from("daily_focus_scores")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+            response.decodeList<DailyFocusScoreDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching all daily focus scores: ${e.message}", e)
+            emptyList()
+        }
+    }
 }

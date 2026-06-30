@@ -92,6 +92,9 @@ class MainViewModel @Inject constructor(
                     refreshLeaderboard(forceRefresh = false)
                     
                     launch {
+                        focusScoreRepository.syncWithCloud()
+                    }
+                    launch {
                         focusSessionDao.getTotalFocusSessionCountFlow(profile.id).collect {
                             _totalFocusSessions.value = it
                         }

@@ -189,11 +189,32 @@ class FocusScoreRepositoryImpl @Inject constructor(
             val userId = authRepository.currentUserIdSync
                 ?: return@withContext Result.failure(Exception("User not authenticated"))
 
+            // 1. Upload unsynced local scores
             val unsynced = dailyFocusScoreDao.getUnsyncedScores(userId)
             for (score in unsynced) {
                 val res = syncSingleScore(score)
                 if (res.isSuccess) {
                     dailyFocusScoreDao.markSynced(userId, score.date)
+                }
+            }
+
+            // 2. Download and reconcile all scores from server
+            val serverScores = supabaseService.getAllDailyFocusScores(userId)
+            for (serverDto in serverScores) {
+                val localEntity = dailyFocusScoreDao.getScoreForDate(userId, serverDto.date)
+                if (localEntity == null) {
+                    overwriteLocalWithServer(serverDto)
+                } else {
+                    val serverGeneratedAt = try {
+                        java.time.Instant.parse(serverDto.generatedAt).toEpochMilli()
+                    } catch (e: Exception) {
+                        try { serverDto.generatedAt.toLong() } catch (ex: Exception) { 0L }
+                    }
+                    if (serverDto.verified && !localEntity.verified) {
+                        overwriteLocalWithServer(serverDto)
+                    } else if (serverGeneratedAt > localEntity.generatedAt) {
+                        overwriteLocalWithServer(serverDto)
+                    }
                 }
             }
             Result.success(Unit)

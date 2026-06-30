@@ -11,6 +11,7 @@ import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.BehaviourScoreRepository
 import com.example.t1.domain.repository.AppCategoryRepository
 import com.example.t1.data.database.dao.FocusSessionDao
+import com.example.t1.data.database.dao.DailyFocusScoreDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -24,7 +25,8 @@ class BehaviourScoreRepositoryImpl @Inject constructor(
     private val dailyBehaviourDao: DailyBehaviourDao,
     private val dailyBehaviourScoreDao: DailyBehaviourScoreDao,
     private val focusSessionDao: FocusSessionDao,
-    private val appCategoryRepository: AppCategoryRepository
+    private val appCategoryRepository: AppCategoryRepository,
+    private val dailyFocusScoreDao: DailyFocusScoreDao
 ) : BehaviourScoreRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -46,8 +48,11 @@ class BehaviourScoreRepositoryImpl @Inject constructor(
 
             val yesterdaySummary = yesterdayEntity?.let { mapEntityToDomain(it) }
 
-            // Fetch verified days count
-            val verifiedDaysCount = dailyBehaviourDao.getVerifiedDaysCount(userId)
+            // Fetch verified days count dynamically from focus score history plus target date
+            val focusHistory = dailyFocusScoreDao.getScoreHistory(userId)
+            val datesSet = focusHistory.map { it.date }.toMutableSet()
+            datesSet.add(dateStr)
+            val verifiedDaysCount = datesSet.size
 
             // Fetch completed focus sessions count for the day
             val startOfDay = LocalDate.parse(dateStr).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()

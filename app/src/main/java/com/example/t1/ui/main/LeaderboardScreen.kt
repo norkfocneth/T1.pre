@@ -518,7 +518,7 @@ fun LeaderboardScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
-                            .padding(bottom = 80.dp)
+                            .padding(bottom = 180.dp)
                     ) {
                         itemsIndexed(tabRest) { idx, entry ->
                             var itemVisible by remember { mutableStateOf(false) }

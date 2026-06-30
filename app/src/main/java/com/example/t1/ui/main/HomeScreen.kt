@@ -125,7 +125,7 @@ fun HomeScreen(
                 .statusBarsPadding()
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(top = 16.dp, bottom = 100.dp) // Extra bottom padding for BottomNav
+                .padding(top = 16.dp, bottom = 180.dp) // Extra bottom padding for BottomNav and FAB
         ) {
             // 1. Header (Logo + Profile Button)
             Row(

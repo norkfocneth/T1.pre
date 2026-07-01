@@ -164,6 +164,7 @@ fun DashboardShell(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var activeTab by remember { mutableStateOf(T1Tab.HOME) }
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
@@ -209,14 +210,23 @@ fun DashboardShell(
                         }
                         T1Tab.USER -> {
                             ProfileScreen(
-                                username = nameToShow,
+                                displayName = profile.displayName,
+                                username = profile.username,
                                 totalFocusSessions = totalFocusSessions,
                                 totalFocusDuration = totalFocusDuration,
                                 weeklyTrend = weeklyTrend,
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->
-                                    mainViewModel.updateDisplayName(newName)
+                                    mainViewModel.updateDisplayName(newName) { success ->
+                                        if (!success) {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Failed to sync name changes. Please check connection.",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
                                 },
                                 onSignOut = onSignOut
                             )

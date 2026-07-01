@@ -136,7 +136,7 @@ fun LeaderboardScreen(
     }
 
     val currentData = leaderboardEntries.map { entry ->
-        val formattedName = entry.displayName ?: entry.username
+        val formattedName = entry.username
         val (movementDirection, movementVal) = when {
             entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
             entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
@@ -161,7 +161,7 @@ fun LeaderboardScreen(
     val userEntryFromList = leaderboardEntries.firstOrNull {
         it.username.lowercase() == username.lowercase()
     }?.let { entry ->
-        val formattedName = entry.displayName ?: entry.username
+        val formattedName = entry.username
         val (movementDirection, movementVal) = when {
             entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
             entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)

@@ -273,13 +273,22 @@ class MainViewModel @Inject constructor(
     /**
      * Updates display name in local cache and remote (if online).
      */
-    fun updateDisplayName(displayName: String) {
+    fun updateDisplayName(displayName: String, onResult: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
             val currentProfile = userProfile.value
             if (currentProfile != null) {
-                val updatedProfile = currentProfile.copy(displayName = displayName)
-                userRepository.saveCachedProfile(updatedProfile)
-                T1Logger.i("Updated display name to: $displayName")
+                val resolvedName = displayName.trim().takeIf { it.isNotEmpty() }
+                val updatedProfile = currentProfile.copy(displayName = resolvedName)
+                val result = userRepository.saveProfile(updatedProfile)
+                if (result.isSuccess) {
+                    T1Logger.i("Updated display name to: $resolvedName")
+                    onResult?.invoke(true)
+                } else {
+                    T1Logger.e("Failed to sync updated display name remotely", result.exceptionOrNull())
+                    onResult?.invoke(false)
+                }
+            } else {
+                onResult?.invoke(false)
             }
         }
     }

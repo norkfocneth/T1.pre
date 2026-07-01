@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExitToApp
@@ -96,6 +97,7 @@ fun ProfileScreen(
     onBack: (() -> Unit)?,
     onSettings: () -> Unit,
     onSignOut: () -> Unit,
+    displayName: String?,
     username: String,
     totalFocusSessions: Int,
     totalFocusDuration: Long,
@@ -104,24 +106,27 @@ fun ProfileScreen(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var focusReminders by remember { mutableStateOf(false) }
     var privacyMode by remember { mutableStateOf(true) }
     var isEditing by remember { mutableStateOf(false) }
 
-    var name by remember(username) { mutableStateOf(username) }
+    val currentDisplayName = displayName.takeIf { !it.isNullOrBlank() } ?: username
+    var name by remember(displayName, username) { mutableStateOf(currentDisplayName) }
     var title by remember { mutableStateOf("Deep Work Enthusiast") }
 
-    var editName by remember { mutableStateOf(name) }
+    var editName by remember(isEditing) { mutableStateOf(displayName ?: "") }
     var editTitle by remember { mutableStateOf(title) }
 
     var showSignOut by remember { mutableStateOf(false) }
 
     val handleSaveEdit = {
-        name = editName
+        val trimmed = editName.trim()
+        name = trimmed.takeIf { it.isNotEmpty() } ?: username
         title = editTitle
         isEditing = false
-        onUpdateName?.invoke(editName)
+        onUpdateName?.invoke(trimmed)
     }
 
     val maxScore = remember(weeklyTrend) { weeklyTrend.maxOrNull()?.coerceAtLeast(1) ?: 100 }
@@ -255,7 +260,24 @@ fun ProfileScreen(
                             .clip(RoundedCornerShape(8.dp))
                             .background(Secondary)
                             .border(1.dp, Border, RoundedCornerShape(8.dp))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        decorationBox = { innerTextField ->
+                            Box(contentAlignment = Alignment.Center) {
+                                if (editName.isEmpty()) {
+                                    Text(
+                                        text = "Display Name (Optional)",
+                                        style = TextStyle(
+                                            fontFamily = SpaceGrotesk,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MutedForeground.copy(alpha = 0.4f),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
                     )
 
                     // Title Edit Input
@@ -323,6 +345,37 @@ fun ProfileScreen(
                         )
                     )
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            Haptics.playLight(view)
+                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            val clip = android.content.ClipData.newPlainText("T1 Username", username)
+                            clipboard.setPrimaryClip(clip)
+                            android.widget.Toast.makeText(context, "Username copied!", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "@$username",
+                        style = BodyMedium.copy(
+                            color = MutedForeground,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "Copy Username",
+                        tint = MutedForeground,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = title.uppercase(),
                     style = TrackingWide.copy(

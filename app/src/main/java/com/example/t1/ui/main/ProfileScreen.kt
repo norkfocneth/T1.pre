@@ -44,6 +44,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.draw.blur
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Icon
@@ -85,13 +87,6 @@ data class Achievement(
     val unlocked: Boolean
 )
 
-val achievements = listOf(
-    Achievement(Icons.Default.LocalFireDepartment, "7 Day Streak", true),
-    Achievement(Icons.Default.Star, "Top 10% Performer", true),
-    Achievement(Icons.Default.FlashOn, "100 Focus Hours", true),
-    Achievement(Icons.Default.EmojiEvents, "Elite Rank", false)
-)
-
 @Composable
 fun ProfileScreen(
     onBack: (() -> Unit)?,
@@ -102,10 +97,20 @@ fun ProfileScreen(
     totalFocusSessions: Int,
     totalFocusDuration: Long,
     weeklyTrend: List<Int>,
+    streak: Int,
     onUpdateName: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
+
+    val achievements = remember(streak, totalFocusSessions, totalFocusDuration) {
+        listOf(
+            Achievement(Icons.Default.LocalFireDepartment, "7 Day Streak", streak >= 7),
+            Achievement(Icons.Default.Star, "Top Performer", totalFocusSessions >= 10),
+            Achievement(Icons.Default.FlashOn, "100 Focus Hours", totalFocusDuration >= 100 * 3600),
+            Achievement(Icons.Default.EmojiEvents, "Elite Rank", streak >= 10 || totalFocusSessions >= 20)
+        )
+    }
     val context = androidx.compose.ui.platform.LocalContext.current
 
     var focusReminders by remember { mutableStateOf(false) }
@@ -773,8 +778,8 @@ fun AchievementCard(
     achievement: Achievement,
     modifier: Modifier = Modifier
 ) {
-    val alpha = if (achievement.unlocked) 1.0f else 0.4f
-    val bg = if (achievement.unlocked) Card else Secondary.copy(alpha = 0.5f)
+    val alpha = if (achievement.unlocked) 1.0f else 0.5f
+    val bg = if (achievement.unlocked) Card else Secondary.copy(alpha = 0.3f)
     val borderColor = if (achievement.unlocked) Border.copy(alpha = 0.8f) else Border
 
     Row(
@@ -785,24 +790,37 @@ fun AchievementCard(
             .background(bg)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Icon(
-            imageVector = achievement.icon,
-            contentDescription = achievement.label,
-            tint = if (achievement.unlocked) Foreground else MutedForeground,
-            modifier = Modifier.size(14.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = achievement.label,
-            style = LabelSmall.copy(
-                fontSize = 11.sp,
-                color = if (achievement.unlocked) Foreground else MutedForeground,
-                fontWeight = FontWeight.Medium
-            ),
-            maxLines = 1
-        )
+        Row(
+            modifier = Modifier.weight(1f, fill = false),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = achievement.icon,
+                contentDescription = achievement.label,
+                tint = if (achievement.unlocked) Foreground else MutedForeground,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = achievement.label,
+                style = LabelSmall.copy(
+                    fontSize = 11.sp,
+                    color = if (achievement.unlocked) Foreground else MutedForeground,
+                    fontWeight = FontWeight.Medium
+                ),
+                maxLines = 1
+            )
+        }
+        if (!achievement.unlocked) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "Locked",
+                tint = MutedForeground.copy(alpha = 0.7f),
+                modifier = Modifier.size(12.dp)
+            )
+        }
     }
 }
 

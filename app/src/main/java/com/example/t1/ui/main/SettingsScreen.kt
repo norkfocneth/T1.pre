@@ -75,8 +75,8 @@ fun SettingsScreen(
     val uriHandler = LocalUriHandler.current
 
     var darkMode by remember { mutableStateOf(true) }
-    var soundEffects by remember { mutableStateOf(true) }
-    var hapticFeedback by remember { mutableStateOf(true) }
+    var soundEffects by remember { mutableStateOf(Haptics.isSoundEnabled) }
+    var hapticFeedback by remember { mutableStateOf(Haptics.isEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
@@ -171,8 +171,9 @@ fun SettingsScreen(
                         T1Toggle(
                             value = soundEffects,
                             onValueChange = {
-                                Haptics.playLight(view)
                                 soundEffects = it
+                                Haptics.save(context, hapticsEnabled = hapticFeedback, soundsEnabled = it)
+                                Haptics.playLight(view)
                             }
                         )
                     }
@@ -186,8 +187,9 @@ fun SettingsScreen(
                         T1Toggle(
                             value = hapticFeedback,
                             onValueChange = {
-                                Haptics.playLight(view)
                                 hapticFeedback = it
+                                Haptics.save(context, hapticsEnabled = it, soundsEnabled = soundEffects)
+                                Haptics.playLight(view)
                             }
                         )
                     }

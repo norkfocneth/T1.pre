@@ -33,6 +33,9 @@ class MainActivity : ComponentActivity() {
     // Schedule the daily analysis worker
     DailyAnalysisScheduler.schedule(applicationContext)
 
+    // Initialize haptics and sound settings
+    com.example.t1.util.Haptics.init(applicationContext)
+
     // Handle deep link on cold start
     T1Logger.i("MainActivity onCreate intent data: ${intent?.data}")
     intent?.let { supabaseClient.handleDeeplinks(it) }

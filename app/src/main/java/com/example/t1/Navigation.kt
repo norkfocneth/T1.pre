@@ -225,6 +225,7 @@ fun DashboardShell(
                                 totalFocusSessions = totalFocusSessions,
                                 totalFocusDuration = totalFocusDuration,
                                 weeklyTrend = weeklyTrend,
+                                streak = profile.streak,
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->

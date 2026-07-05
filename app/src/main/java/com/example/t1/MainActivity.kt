@@ -25,6 +25,9 @@ class MainActivity : ComponentActivity() {
   @Inject
   lateinit var supabaseClient: SupabaseClient
 
+  @Inject
+  lateinit var t1NotificationManager: com.example.t1.notification.T1NotificationManager
+
   override fun onCreate(savedInstanceState: Bundle?) {
     val splashScreen = installSplashScreen()
 
@@ -35,6 +38,17 @@ class MainActivity : ComponentActivity() {
 
     // Initialize haptics and sound settings
     com.example.t1.util.Haptics.init(applicationContext)
+
+    // Initialize notification channels and scheduler
+    t1NotificationManager.createNotificationChannels()
+    com.example.t1.notification.T1NotificationScheduler.schedule(applicationContext)
+
+    // Prompt for notification permission on Android 13+ (API 33+)
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+      if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+      }
+    }
 
     // Handle deep link on cold start
     T1Logger.i("MainActivity onCreate intent data: ${intent?.data}")

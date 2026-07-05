@@ -44,8 +44,19 @@ class MainViewModel @Inject constructor(
     private val researchBenchmarkRepository: ResearchBenchmarkRepository,
     private val appCategoryRepository: AppCategoryRepository,
     private val leaderboardRepository: LeaderboardRepository,
-    private val focusSessionDao: FocusSessionDao
+    private val focusSessionDao: FocusSessionDao,
+    private val userPreferences: com.example.t1.data.preferences.UserPreferences,
+    private val t1NotificationManager: com.example.t1.notification.T1NotificationManager
 ) : ViewModel() {
+
+    val notificationsEnabled: StateFlow<Boolean> = userPreferences.notificationsEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.saveNotificationsEnabled(enabled)
+        }
+    }
 
     /**
      * Flow of the currently logged-in user profile, sourced from Room.
@@ -244,9 +255,38 @@ class MainViewModel @Inject constructor(
     fun refreshLeaderboard(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _isRefreshing.value = true
+            val oldLeaderboard = _leaderboardState.value
             val result = leaderboardRepository.getLeaderboard(forceRefresh)
             if (result.isSuccess) {
-                _leaderboardState.value = result.getOrDefault(emptyList())
+                val newLeaderboard = result.getOrDefault(emptyList())
+                _leaderboardState.value = newLeaderboard
+
+                val profileVal = userProfile.value
+                if (profileVal != null && oldLeaderboard.isNotEmpty()) {
+                    val oldIndex = oldLeaderboard.indexOfFirst { it.username == profileVal.username }
+                    val newIndex = newLeaderboard.indexOfFirst { it.username == profileVal.username }
+                    if (oldIndex != -1 && newIndex != -1 && oldIndex != newIndex) {
+                        val oldRank = oldIndex + 1
+                        val newRank = newIndex + 1
+                        if (newRank < oldRank) {
+                            t1NotificationManager.postNotification(
+                                id = 3001,
+                                title = "Rank Improved",
+                                text = "You moved up ${oldRank - newRank} places on the leaderboard. Keep going.",
+                                channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                                type = "rank_improved"
+                            )
+                        } else if (newRank > oldRank) {
+                            t1NotificationManager.postNotification(
+                                id = 3002,
+                                title = "Rank Dropped",
+                                text = "You dropped ${newRank - oldRank} places today. One good day can recover it.",
+                                channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                                type = "rank_down"
+                            )
+                        }
+                    }
+                }
             } else {
                 T1Logger.e("Failed to refresh leaderboard", result.exceptionOrNull())
             }
@@ -320,6 +360,25 @@ class MainViewModel @Inject constructor(
                 val updatedProfile = profile.copy(totalFocusSessions = totalSessions)
                 userRepository.saveProfile(updatedProfile)
                 T1Logger.i("Focus session logged successfully. Total sessions: $totalSessions")
+
+                // 4. Trigger token earned and milestone notifications
+                t1NotificationManager.postNotification(
+                    id = 3003,
+                    title = "Tokens Earned",
+                    text = "+25 T1 Tokens earned. Reward added to your wallet.",
+                    channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                    type = "token_reward"
+                )
+
+                if (totalSessions == 10 || totalSessions == 25 || totalSessions == 50 || totalSessions == 100) {
+                    t1NotificationManager.postNotification(
+                        id = 3004,
+                        title = "Milestone Achieved",
+                        text = "Congratulations. $totalSessions Focus Sessions completed.",
+                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                        type = "milestone"
+                    )
+                }
             }
         }
     }

@@ -219,6 +219,7 @@ fun DashboardShell(
                             )
                         }
                         T1Tab.USER -> {
+                            val notificationsEnabled by mainViewModel.notificationsEnabled.collectAsStateWithLifecycle()
                             ProfileScreen(
                                 displayName = profile.displayName,
                                 username = profile.username,
@@ -226,6 +227,8 @@ fun DashboardShell(
                                 totalFocusDuration = totalFocusDuration,
                                 weeklyTrend = weeklyTrend,
                                 streak = profile.streak,
+                                focusRemindersEnabled = notificationsEnabled,
+                                onFocusRemindersChange = { mainViewModel.setNotificationsEnabled(it) },
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->

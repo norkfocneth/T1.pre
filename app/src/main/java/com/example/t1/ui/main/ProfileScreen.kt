@@ -98,6 +98,8 @@ fun ProfileScreen(
     totalFocusDuration: Long,
     weeklyTrend: List<Int>,
     streak: Int,
+    focusRemindersEnabled: Boolean,
+    onFocusRemindersChange: (Boolean) -> Unit,
     onUpdateName: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -113,7 +115,6 @@ fun ProfileScreen(
     }
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    var focusReminders by remember { mutableStateOf(false) }
     var privacyMode by remember { mutableStateOf(true) }
     var isEditing by remember { mutableStateOf(false) }
 
@@ -635,10 +636,10 @@ fun ProfileScreen(
                     title = "Focus Reminders",
                     trailing = {
                         T1Toggle(
-                            value = focusReminders,
+                            value = focusRemindersEnabled,
                             onValueChange = {
                                 Haptics.playLight(view)
-                                focusReminders = it
+                                onFocusRemindersChange(it)
                             }
                         )
                     }

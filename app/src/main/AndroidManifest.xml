@@ -42,6 +42,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- NotificationDismissedReceiver -->
+        <receiver android:name=".notification.NotificationDismissedReceiver" android:exported="false" />
+
+        <!-- TestNotificationReceiver -->
+        <receiver android:name=".notification.TestNotificationReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.t1.TRIGGER_TEST_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
         <!-- Disable auto-init so HiltWorkerFactory takes over -->
         <provider
             android:name="androidx.startup.InitializationProvider"

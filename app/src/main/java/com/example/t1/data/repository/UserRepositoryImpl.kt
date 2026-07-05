@@ -119,6 +119,24 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteProfile(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            T1Logger.i("Deleting profile remotely from Supabase for user $userId")
+            supabaseService.postgrest.from("profiles").delete {
+                filter {
+                    eq("id", userId)
+                }
+            }
+            T1Logger.i("Profile deleted from Supabase. Clearing local cache.")
+            clearCache()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            T1Logger.e("Failed to delete user profile", e)
+            Result.failure(e)
+        }
+    }
+
+
     // --- Mappers ---
 
     private fun com.example.t1.data.remote.model.ProfileDto.toDomain(): UserProfile {

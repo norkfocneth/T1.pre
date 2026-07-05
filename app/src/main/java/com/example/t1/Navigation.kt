@@ -179,7 +179,17 @@ fun DashboardShell(
     Box(modifier = modifier.fillMaxSize()) {
         if (showSettings) {
             SettingsScreen(
-                onBack = { showSettings = false }
+                onBack = { showSettings = false },
+                onDeleteAccount = { onSuccess, onFailure ->
+                    mainViewModel.deleteUserAccount(
+                        onSuccess = {
+                            showSettings = false
+                            onSignOut()
+                            onSuccess()
+                        },
+                        onFailure = onFailure
+                    )
+                }
             )
         } else {
             Box(modifier = Modifier.fillMaxSize()) {

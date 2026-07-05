@@ -44,4 +44,10 @@ interface UserRepository {
      * Gets the locally cached user profile.
      */
     suspend fun getLocalProfile(userId: String): UserProfile?
+
+    /**
+     * Deletes the user profile remotely from Supabase and clears local Room cache.
+     */
+    suspend fun deleteProfile(userId: String): Result<Unit>
 }
+

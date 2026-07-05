@@ -333,5 +333,34 @@ class MainViewModel @Inject constructor(
             sessionManager.performSignOut()
         }
     }
+
+    /**
+     * Deletes the user account and signs out.
+     */
+    fun deleteUserAccount(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        viewModelScope.launch {
+            val profile = userProfile.value
+            if (profile == null) {
+                onFailure("No active user session found.")
+                return@launch
+            }
+            T1Logger.i("Delete user account triggered for user ID: ${profile.id}")
+            val deleteResult = userRepository.deleteProfile(profile.id)
+            if (deleteResult.isSuccess) {
+                T1Logger.i("Profile deleted successfully. Performing final sign-out.")
+                val signOutResult = sessionManager.performSignOut()
+                if (signOutResult.isSuccess) {
+                    onSuccess()
+                } else {
+                    onFailure(signOutResult.exceptionOrNull()?.message ?: "Failed to sign out after deletion.")
+                }
+            } else {
+                val errorMsg = deleteResult.exceptionOrNull()?.message ?: "Failed to delete user profile from server."
+                T1Logger.e(errorMsg)
+                onFailure(errorMsg)
+            }
+        }
+    }
 }
+
 

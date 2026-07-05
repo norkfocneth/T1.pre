@@ -52,6 +52,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import android.widget.Toast
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,22 +67,30 @@ import kotlinx.coroutines.delay
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onDeleteAccount: (onSuccess: () -> Unit, onFailure: (String) -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
 
     var darkMode by remember { mutableStateOf(true) }
     var soundEffects by remember { mutableStateOf(true) }
     var hapticFeedback by remember { mutableStateOf(true) }
     var showResetConfirm by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
 
     BackHandler {
         if (showResetConfirm) {
             showResetConfirm = false
-        } else {
+        } else if (showDeleteConfirm && !isDeleting) {
+            showDeleteConfirm = false
+        } else if (!isDeleting) {
             onBack()
         }
     }
+
 
     OnboardingBackground(modifier = modifier) {
         Column(
@@ -229,14 +240,28 @@ fun SettingsScreen(
                 PreferenceRow(
                     icon = Icons.Default.PrivacyTip,
                     title = "Privacy Policy",
-                    onClick = { Haptics.playLight(view) }
+                    onClick = {
+                        Haptics.playLight(view)
+                        try {
+                            uriHandler.openUri("https://focneth.com/t1/privacy")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
                 // Help & Support
                 PreferenceRow(
                     icon = Icons.Default.HelpOutline,
                     title = "Help & Support",
-                    onClick = { Haptics.playLight(view) }
+                    onClick = {
+                        Haptics.playLight(view)
+                        try {
+                            uriHandler.openUri("mailto:support.t1.help@gmail.com")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open email client", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
                 // DANGER ZONE Section
@@ -261,6 +286,18 @@ fun SettingsScreen(
                         showResetConfirm = true
                     }
                 )
+
+                // Delete Account
+                PreferenceRow(
+                    icon = Icons.Default.Warning,
+                    title = "Delete Account",
+                    titleColor = Destructive,
+                    onClick = {
+                        Haptics.playLight(view)
+                        showDeleteConfirm = true
+                    }
+                )
+
 
                 // App version details
                 Spacer(modifier = Modifier.height(48.dp))
@@ -383,5 +420,123 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // Delete Account Confirmation Overlay Modal
+        if (showDeleteConfirm) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .clickable {
+                        if (!isDeleting) showDeleteConfirm = false
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedVisibility(
+                    visible = showDeleteConfirm,
+                    enter = fadeIn() + scaleIn(initialScale = 0.9f),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(320.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .border(1.dp, Destructive.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                            .background(Card)
+                            .clickable(enabled = false) {}
+                            .padding(24.dp)
+                    ) {
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = "Warning",
+                                    tint = Destructive,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Delete Account?",
+                                    style = HeadlineSmall.copy(
+                                        color = Foreground,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "This will permanently delete your profile, scores, and historical focus sessions from both your device and cloud servers. This cannot be undone.",
+                                style = BodyMedium.copy(
+                                    color = MutedForeground,
+                                    lineHeight = 20.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            if (isDeleting) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    androidx.compose.material3.CircularProgressIndicator(color = Destructive)
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp)
+                                            .clip(RoundedCornerShape(24.dp))
+                                            .border(1.dp, Border, RoundedCornerShape(24.dp))
+                                            .clickable { showDeleteConfirm = false },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Cancel",
+                                            style = LabelLarge.copy(color = Foreground)
+                                        )
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp)
+                                            .clip(RoundedCornerShape(24.dp))
+                                            .background(Destructive)
+                                            .clickable {
+                                                Haptics.playMedium(view)
+                                                isDeleting = true
+                                                onDeleteAccount(
+                                                    {
+                                                        isDeleting = false
+                                                        showDeleteConfirm = false
+                                                        Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_LONG).show()
+                                                    },
+                                                    { error ->
+                                                        isDeleting = false
+                                                        showDeleteConfirm = false
+                                                        Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
+                                                    }
+                                                )
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Delete",
+                                            style = LabelLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+

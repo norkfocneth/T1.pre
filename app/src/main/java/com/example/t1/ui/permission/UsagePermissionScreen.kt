@@ -30,14 +30,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import android.widget.Toast
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,7 +60,10 @@ fun UsagePermissionScreen(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val scrollState = rememberScrollState()
+    var isConsented by remember { mutableStateOf(false) }
 
     OnboardingBackground(modifier = modifier) {
         Column(
@@ -203,12 +212,40 @@ fun UsagePermissionScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Explicit Consent Checkbox Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { isConsented = !isConsented }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.Checkbox(
+                    checked = isConsented,
+                    onCheckedChange = { isConsented = it },
+                    colors = androidx.compose.material3.CheckboxDefaults.colors(
+                        checkedColor = GlowPrimary,
+                        uncheckedColor = Border,
+                        checkmarkColor = Background
+                    )
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "I read the Privacy Policy and consent to T1 aggregating and analyzing my usage data.",
+                    style = BodyMedium.copy(color = MutedForeground),
+                    lineHeight = 18.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Action Buttons
             val openSettingsInteraction = remember { MutableInteractionSource() }
             val isOpenSettingsPressed by openSettingsInteraction.collectIsPressedAsState()
-            val openSettingsScale = if (isOpenSettingsPressed) 0.95f else 1f
+            val openSettingsScale = if (isOpenSettingsPressed && isConsented) 0.95f else 1f
 
             Box(
                 modifier = Modifier
@@ -216,13 +253,18 @@ fun UsagePermissionScreen(
                     .height(56.dp)
                     .scale(openSettingsScale)
                     .clip(RoundedCornerShape(28.dp))
+                    .alpha(if (isConsented) 1f else 0.5f)
                     .background(Brush.verticalGradient(listOf(ButtonGradientStart, ButtonGradientEnd)))
                     .clickable(
                         interactionSource = openSettingsInteraction,
                         indication = null,
                         onClick = {
-                            Haptics.playMedium(view)
-                            onOpenSettings()
+                            if (isConsented) {
+                                Haptics.playMedium(view)
+                                onOpenSettings()
+                            } else {
+                                Toast.makeText(context, "Please accept the consent checkbox to proceed.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -310,6 +352,24 @@ fun UsagePermissionScreen(
                     )
                 )
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "View Privacy Policy",
+                style = LabelLarge.copy(
+                    color = GlowPrimary,
+                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                ),
+                modifier = Modifier
+                    .clickable {
+                        try {
+                            uriHandler.openUri("https://focneth.com/t1/privacy")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+            )
         }
     }
 }

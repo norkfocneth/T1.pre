@@ -811,7 +811,8 @@ fun HomeScreen(
                                                     if (yesterdayDuration > 0 && diffMin != 0L) {
                                                         val isImproved = diffMin < 0
                                                         val arrow = if (isImproved) "↓" else "↑"
-                                                        val diffText = "$arrow ${kotlin.math.abs(diffMin)} min yesterday"
+                                                        val label = if (isImproved) "less than yesterday" else "more than yesterday"
+                                                        val diffText = "$arrow ${kotlin.math.abs(diffMin)} min $label"
                                                         val diffColor = if (isImproved) Success else Warning
                                                         Text(
                                                             text = diffText,

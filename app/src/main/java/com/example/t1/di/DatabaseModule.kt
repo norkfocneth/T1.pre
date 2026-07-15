@@ -10,9 +10,12 @@ import com.example.t1.data.database.dao.DailyBehaviourDao
 import com.example.t1.data.database.migration.MIGRATION_1_2
 import com.example.t1.data.database.migration.MIGRATION_2_3
 import com.example.t1.data.database.migration.MIGRATION_3_4
+import com.example.t1.data.database.migration.MIGRATION_4_5
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
 import com.example.t1.data.database.dao.LeaderboardDailyDao
+import com.example.t1.data.database.dao.TokenWalletDao
+import com.example.t1.data.database.dao.TokenTransactionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,7 +35,7 @@ object DatabaseModule {
             T1Database::class.java,
             "t1_database"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
         .fallbackToDestructiveMigration()
         .build()
     }
@@ -70,6 +73,16 @@ object DatabaseModule {
     @Provides
     fun provideLeaderboardDailyDao(database: T1Database): LeaderboardDailyDao {
         return database.leaderboardDailyDao()
+    }
+
+    @Provides
+    fun provideTokenWalletDao(database: T1Database): TokenWalletDao {
+        return database.tokenWalletDao()
+    }
+
+    @Provides
+    fun provideTokenTransactionDao(database: T1Database): TokenTransactionDao {
+        return database.tokenTransactionDao()
     }
 }
 

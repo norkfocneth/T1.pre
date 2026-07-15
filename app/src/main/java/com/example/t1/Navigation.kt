@@ -211,7 +211,8 @@ fun DashboardShell(
                                 onOpenSettings = { mainViewModel.openPermissionSettings() },
                                 focusScore = dashboardState.currentFocusScore,
                                 streak = profile.streak,
-                                totalFocusSessions = totalFocusSessions
+                                totalFocusSessions = totalFocusSessions,
+                                viewModel = mainViewModel
                             )
                         }
                         T1Tab.RANK -> {

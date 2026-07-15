@@ -26,9 +26,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+import com.example.t1.domain.repository.TokenRepository
+import com.example.t1.data.repository.TokenRepositoryImpl
+
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindTokenRepository(
+        impl: TokenRepositoryImpl
+    ): TokenRepository
 
     @Binds
     @Singleton

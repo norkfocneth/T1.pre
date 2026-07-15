@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
 
     // Schedule the daily analysis worker
     DailyAnalysisScheduler.schedule(applicationContext)
+    com.example.t1.data.worker.TokenSyncWorker.enqueue(applicationContext)
 
     // Initialize haptics and sound settings
     com.example.t1.util.Haptics.init(applicationContext)

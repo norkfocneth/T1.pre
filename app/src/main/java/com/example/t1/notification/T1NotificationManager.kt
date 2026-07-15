@@ -133,7 +133,7 @@ class T1NotificationManager @Inject constructor(
         )
 
         // Find standard app launcher icon or default to default android system drawable
-        val iconRes = android.R.drawable.ic_dialog_info
+        val iconRes = com.example.t1.R.mipmap.ic_launcher
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(iconRes)

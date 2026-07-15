@@ -266,8 +266,8 @@ fun LeaderboardScreen(
                         Text(
                             text = when (tab) {
                                 LeaderboardTab.WEEK -> "GLOBAL"
-                                LeaderboardTab.DAY -> "COLLEGE"
-                                LeaderboardTab.ALL -> "FRIENDS"
+                                LeaderboardTab.DAY -> "FOUNDERS"
+                                LeaderboardTab.ALL -> "AUKAAT"
                             },
                             style = LabelMedium.copy(
                                 color = if (isSelected) Background else Foreground,

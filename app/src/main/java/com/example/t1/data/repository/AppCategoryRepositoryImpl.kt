@@ -49,9 +49,7 @@ class AppCategoryRepositoryImpl @Inject constructor(
             
             AppCategory.EDUCATION -> EngineCategory.EDUCATION
             
-            AppCategory.ENTERTAINMENT,
-            AppCategory.MEDIA,
-            AppCategory.PHOTOGRAPHY -> EngineCategory.ENTERTAINMENT
+            AppCategory.ENTERTAINMENT -> EngineCategory.ENTERTAINMENT
             
             AppCategory.SOCIAL,
             AppCategory.COMMUNICATION -> EngineCategory.SOCIAL
@@ -62,6 +60,8 @@ class AppCategoryRepositoryImpl @Inject constructor(
             AppCategory.SHOPPING,
             AppCategory.NAVIGATION,
             AppCategory.SYSTEM,
+            AppCategory.MEDIA,
+            AppCategory.PHOTOGRAPHY,
             AppCategory.OTHER -> EngineCategory.UTILITY
         }
     }

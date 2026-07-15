@@ -14,6 +14,7 @@ data class DashboardUiState(
     val permissionState: UsagePermissionState = UsagePermissionState.Unknown,
     val collectionStatus: CollectionStatus = CollectionStatus.Idle,
     val todayBehaviour: DailyBehaviourSummary? = null,
+    val yesterdayBehaviour: DailyBehaviourSummary? = null,
     val lastUpdated: Long? = null,
     val isLoading: Boolean = false,
     val error: String? = null,

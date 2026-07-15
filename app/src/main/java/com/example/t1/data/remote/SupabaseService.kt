@@ -11,6 +11,9 @@ import io.github.jan.supabase.postgrest.query.Columns
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.example.t1.data.remote.model.TokenWalletDto
+import com.example.t1.data.remote.model.TokenTransactionDto
+
 @Singleton
 class SupabaseService @Inject constructor(
     val client: SupabaseClient
@@ -150,6 +153,67 @@ class SupabaseService @Inject constructor(
         } catch (e: Exception) {
             android.util.Log.e("SupabaseService", "Error fetching all daily focus scores: ${e.message}", e)
             emptyList()
+        }
+    }
+
+    suspend fun getTokenWallet(userId: String): TokenWalletDto? {
+        return try {
+            val response = postgrest.from("token_wallets")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+            response.decodeList<TokenWalletDto>().firstOrNull()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching token wallet: ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun upsertTokenWallet(wallet: TokenWalletDto): Boolean {
+        return try {
+            postgrest.from("token_wallets").upsert(wallet)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error upserting token wallet: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun getTokenTransactions(userId: String): List<TokenTransactionDto> {
+        return try {
+            val response = postgrest.from("token_transactions")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+            response.decodeList<TokenTransactionDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching token transactions: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    suspend fun insertTokenTransaction(tx: TokenTransactionDto): Boolean {
+        return try {
+            postgrest.from("token_transactions").insert(tx)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error inserting token transaction: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun insertTokenTransactionsBatch(txs: List<TokenTransactionDto>): Boolean {
+        if (txs.isEmpty()) return true
+        return try {
+            postgrest.from("token_transactions").insert(txs)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error inserting batch token transactions: ${e.message}", e)
+            false
         }
     }
 }

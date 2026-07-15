@@ -46,6 +46,10 @@ import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.offset
+import com.example.t1.domain.model.behaviour.AppCategory
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.fadeOut
@@ -79,6 +83,9 @@ import com.example.t1.theme.*
 import com.example.t1.ui.components.FocusRing
 import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.ui.viewmodel.DashboardUiState
+import com.example.t1.ui.viewmodel.MainViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
@@ -98,12 +105,52 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     focusScore: Int = 85,
     streak: Int = 12,
-    totalFocusSessions: Int = 0
+    totalFocusSessions: Int = 0,
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
     val context = LocalContext.current
 
+    val tokenWallet by viewModel.tokenWallet.collectAsStateWithLifecycle()
+    val tokenTransactions by viewModel.tokenTransactions.collectAsStateWithLifecycle()
+
     var showMerchCustomizer by remember { mutableStateOf(false) }
+    var showWalletScreen by remember { mutableStateOf(false) }
+
+    // Gamified Coin Fly Animation States
+    var showFlyingCoin by remember { mutableStateOf(false) }
+    val coinAnimY = remember { Animatable(0f) }
+    val coinAlpha = remember { Animatable(0f) }
+    var capsuleScaleState by remember { mutableStateOf(1f) }
+    val capsuleScaleAnimated by animateFloatAsState(
+        targetValue = capsuleScaleState,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+    )
+
+    // Listen to token earned events to trigger coin fly animation
+    LaunchedEffect(Unit) {
+        viewModel.tokenEarnedEvent.collect { amount ->
+            showFlyingCoin = true
+            coinAlpha.snapTo(1f)
+            coinAnimY.snapTo(0f)
+            
+            // Fly up (Vertical shift of -350dp)
+            coinAnimY.animateTo(
+                targetValue = -350f,
+                animationSpec = tween(1200, easing = FastOutSlowInEasing)
+            )
+            
+            // Dynamic Island scale punch
+            capsuleScaleState = 1.25f
+            Haptics.playMedium(view)
+            
+            // Hide coin and restore scale
+            coinAlpha.animateTo(0f, animationSpec = tween(200))
+            delay(200)
+            capsuleScaleState = 1f
+            showFlyingCoin = false
+        }
+    }
 
     val score = dashboardState.currentFocusScore
     val percentile = dashboardState.percentile
@@ -180,7 +227,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .scale(tokenScale)
+                        .scale(tokenScale * capsuleScaleAnimated)
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
@@ -193,7 +240,7 @@ fun HomeScreen(
                             indication = null,
                             onClick = {
                                 Haptics.playMedium(view)
-                                showMerchCustomizer = true
+                                showWalletScreen = true
                             }
                         )
                         .padding(horizontal = 14.dp, vertical = 6.dp),
@@ -211,7 +258,26 @@ fun HomeScreen(
                     Column(
                         verticalArrangement = Arrangement.Center
                     ) {
-                        val tokenCountStr = java.text.NumberFormat.getIntegerInstance().format(totalFocusSessions * 25)
+                        val targetBalance = tokenWallet?.balance ?: 0
+                        var displayedBalance by remember { mutableStateOf(0) }
+
+                        LaunchedEffect(targetBalance) {
+                            if (displayedBalance == 0) {
+                                displayedBalance = targetBalance
+                            } else if (displayedBalance != targetBalance) {
+                                val diff = targetBalance - displayedBalance
+                                val steps = 20
+                                val delayTime = 30L
+                                val stepSize = (diff / steps.toDouble())
+                                for (i in 1..steps) {
+                                    displayedBalance = (targetBalance - diff + (stepSize * i)).toInt()
+                                    delay(delayTime)
+                                }
+                                displayedBalance = targetBalance
+                            }
+                        }
+
+                        val tokenCountStr = java.text.NumberFormat.getIntegerInstance().format(displayedBalance)
                         Text(
                             text = tokenCountStr,
                             style = LabelMedium.copy(
@@ -309,7 +375,33 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dynamic Welcome Greeting
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                val dayOfWeek = java.time.LocalDate.now().dayOfWeek
+                val dynamicGreeting = when (dayOfWeek) {
+                    java.time.DayOfWeek.MONDAY -> "Let's start strong."
+                    java.time.DayOfWeek.TUESDAY -> "Yesterday was good. Can you beat it?"
+                    java.time.DayOfWeek.FRIDAY -> "Weekend is coming. Don't lose your streak."
+                    java.time.DayOfWeek.SUNDAY -> "Weekly report unlocks tonight."
+                    else -> "Stay locked in."
+                }
+                Text(
+                    text = "Hello, $username",
+                    style = HeadlineSmall.copy(color = Foreground, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                )
+                Text(
+                    text = dynamicGreeting,
+                    style = BodyMedium.copy(color = MutedForeground, fontWeight = FontWeight.Normal)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 2. Focus Ring Section (Hero UI)
             Column(
@@ -497,6 +589,74 @@ fun HomeScreen(
                 }
             }
 
+            // Streak Multiplier Card (XP multiplier dopamine hook)
+            val (multiplierText, multiplierVal) = when {
+                streak >= 10 -> "🔥🔥🔥 10 Day Focus Multiplier" to "x3"
+                streak >= 5 -> "🔥🔥 5 Day Focus Multiplier" to "x2"
+                streak >= 3 -> "🔥 3 Day Focus Multiplier" to "x1.5"
+                else -> "" to ""
+            }
+            if (multiplierText.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFFE0F2FE).copy(alpha = 0.05f),
+                                    Color(0xFF0284C7).copy(alpha = 0.1f)
+                                )
+                            )
+                        )
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Border, GlowPrimary.copy(alpha = 0.4f))
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocalFireDepartment,
+                            contentDescription = "Multiplier",
+                            tint = StreakIntense,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Column {
+                            Text(
+                                text = multiplierText,
+                                style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = "Maintain your streak to keep the token boost!",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(GlowPrimary.copy(alpha = 0.2f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = multiplierVal,
+                            style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Black)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // 4. Real Collected Usage Breakdown Cards
@@ -553,6 +713,19 @@ fun HomeScreen(
                         Triple("Utility", dashboardState.categoryTimes["Utility"] ?: 0L, MutedForeground)
                     )
 
+                    fun mapToCategoryLabel(legacyCategory: AppCategory, packageName: String): String {
+                        if (packageName == "com.slack" || packageName == "com.microsoft.teams" || packageName == "com.zoom.videomeetings" || packageName == "com.google.android.gm" || packageName == "com.google.android.apps.meetings" || packageName == "com.google.android.apps.tachyon") return "Productivity"
+                        if (packageName == "com.whatsapp" || packageName == "com.whatsapp.w4b" || packageName == "org.telegram.messenger" || packageName == "com.discord") return "Social Time"
+
+                        return when (legacyCategory) {
+                            AppCategory.PRODUCTIVITY, AppCategory.DEVELOPMENT -> "Productivity"
+                            AppCategory.EDUCATION -> "Education"
+                            AppCategory.ENTERTAINMENT -> "Entertainment"
+                            AppCategory.SOCIAL, AppCategory.COMMUNICATION -> "Social Time"
+                            else -> "Utility"
+                        }
+                    }
+
                     categories.forEach { (label, durationMs, color) ->
                         val durationMin = durationMs / 60000
                         val hr = durationMin / 60
@@ -563,7 +736,7 @@ fun HomeScreen(
                             durationMs.toFloat() / behaviour.totalScreenTimeMs
                         } else 0f
 
-                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -594,6 +767,66 @@ fun HomeScreen(
                                         .clip(RoundedCornerShape(3.dp))
                                         .background(color)
                                 )
+                            }
+
+                            // Sub-list of top apps in this category with comparative metrics (Yesterday diff)
+                            val matchingApps = behaviour.topUsedApps.filter { app ->
+                                mapToCategoryLabel(app.category, app.packageName) == label
+                            }.take(3)
+
+                            if (matchingApps.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 12.dp, top = 8.dp, bottom = 4.dp)
+                                        .fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    matchingApps.forEach { app ->
+                                        val appMin = app.usageDurationMs / 60000
+                                        if (appMin > 0) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(4.dp)
+                                                            .clip(CircleShape)
+                                                            .background(color.copy(alpha = 0.7f))
+                                                    )
+                                                    Text(
+                                                        text = app.displayName,
+                                                        style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Normal)
+                                                    )
+
+                                                    // Comparative Metric relative to Yesterday
+                                                    val yesterdayDuration = dashboardState.yesterdayBehaviour?.topUsedApps
+                                                        ?.firstOrNull { it.packageName == app.packageName }?.usageDurationMs ?: 0L
+                                                    val diffMin = (app.usageDurationMs - yesterdayDuration) / 60000
+                                                    if (yesterdayDuration > 0 && diffMin != 0L) {
+                                                        val isImproved = diffMin < 0
+                                                        val arrow = if (isImproved) "↓" else "↑"
+                                                        val diffText = "$arrow ${kotlin.math.abs(diffMin)} min yesterday"
+                                                        val diffColor = if (isImproved) Success else Warning
+                                                        Text(
+                                                            text = diffText,
+                                                            style = LabelSmall.copy(color = diffColor, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                                        )
+                                                    }
+                                                }
+                                                Text(
+                                                    text = "${appMin} min",
+                                                    style = LabelSmall.copy(color = MutedForeground)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1052,7 +1285,373 @@ fun HomeScreen(
                     )
                 }
             }
+            }
+
+            // 7. Gamified Dopamine Loop: Top Cards (Daily Insight, AI Coach, Tonight's Prediction)
+            if (dashboardState.permissionState is UsagePermissionState.Granted && dashboardState.todayBehaviour != null) {
+                val dailyInsight = remember(dashboardState.todayBehaviour, dashboardState.yesterdayBehaviour) {
+                    val todayInsta = dashboardState.todayBehaviour.topUsedApps.firstOrNull { it.packageName == "com.instagram.android" }?.usageDurationMs ?: 0L
+                    val yesterdayInsta = dashboardState.yesterdayBehaviour?.topUsedApps?.firstOrNull { it.packageName == "com.instagram.android" }?.usageDurationMs ?: 0L
+                    val diffInstaMin = (yesterdayInsta - todayInsta) / 60000
+                    
+                    when {
+                        diffInstaMin > 5 -> "🔥 Today you used Instagram $diffInstaMin minutes less. Great improvement!"
+                        score > 80 -> "⚡ Your productivity was higher than 85% of yesterday."
+                        else -> "📈 Only ${100 - percentile} Focus Points away from Top 20%."
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Daily Insight Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.04f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (dailyInsight.startsWith("🔥")) "🔥" else if (dailyInsight.startsWith("⚡")) "⚡" else "📈",
+                                fontSize = 16.sp
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "DAILY INSIGHT",
+                                style = TrackingNarrow.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = dailyInsight.substring(2),
+                                style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // AI Coach Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(GlowPrimary.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Coach",
+                                tint = GlowPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Column {
+                            val currentHour = java.time.LocalTime.now().hour
+                            val greetingTime = if (currentHour < 12) "Good Morning" else if (currentHour < 17) "Good Afternoon" else "Good Evening"
+                            
+                            Text(
+                                text = "AI COACH",
+                                style = TrackingNarrow.copy(color = GlowPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "$greetingTime. Today if you reduce Instagram by 15 min, you'll reach ${score + 3} Focus Score.",
+                                style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Tonight's Prediction Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.04f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Prediction",
+                                    tint = Success,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "TONIGHT'S PREDICTION",
+                                    style = TrackingNarrow.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Estimated Score: ${score + 2}",
+                                    style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "+2 points if you avoid Instagram",
+                                    style = BodySmall.copy(color = Success, fontSize = 10.sp)
+                                )
+                            }
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Success.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${score + 2}",
+                                style = LabelSmall.copy(color = Success, fontWeight = FontWeight.Black)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 8. Gamified Dopamine Loop: Bottom Cards (Weekly Boss, Journey level rank progress)
+            if (dashboardState.permissionState is UsagePermissionState.Granted && dashboardState.todayBehaviour != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 1. Weekly Boss Challenge Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.04f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = "Boss",
+                                        tint = Warning,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "WEEKLY BOSS CHALLENGE",
+                                        style = TrackingNarrow.copy(color = Warning, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "Beat your last week",
+                                        style = BodyMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                            }
+                            
+                            Text(
+                                text = "Target: 80",
+                                style = LabelSmall.copy(color = Warning, fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Current: $score",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp),
+                                modifier = Modifier.width(65.dp)
+                            )
+                            
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(6.dp)
+                                    .clip(CircleShape)
+                                    .background(Border)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth((score.toFloat() / 80f).coerceIn(0f, 1f))
+                                        .height(6.dp)
+                                        .clip(CircleShape)
+                                        .background(Warning)
+                                )
+                            }
+                            
+                            Text(
+                                text = "80",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 2. Journey level rank progress Card
+                val currentLevel = when {
+                    score >= 95 -> "Master"
+                    score >= 88 -> "Elite"
+                    score >= 80 -> "Deep Worker"
+                    score >= 70 -> "Locked In"
+                    score >= 60 -> "Focused"
+                    else -> "Explorer"
+                }
+                val nextLevel = when (currentLevel) {
+                    "Explorer" -> "Focused" to 60
+                    "Focused" -> "Locked In" to 70
+                    "Locked In" -> "Deep Worker" to 80
+                    "Deep Worker" -> "Elite" to 88
+                    "Elite" -> "Master" to 95
+                    else -> "Ultimate" to 100
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card.copy(alpha = 0.8f))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "JOURNEY RANK",
+                                    style = TrackingNarrow.copy(color = MutedForeground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = currentLevel,
+                                    style = HeadlineSmall.copy(color = Foreground, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                                )
+                            }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.04f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Next: ${nextLevel.first}",
+                                    style = LabelSmall.copy(color = MutedForeground, fontSize = 10.sp)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        val levelProgress = (score.toFloat() / nextLevel.second.toFloat()).coerceIn(0f, 1f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(CircleShape)
+                                .background(Border)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(levelProgress)
+                                    .height(4.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(GlowPrimary, Success)
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
         }
+
+    // Token Wallet Screen Overlay
+    AnimatedVisibility(
+        visible = showWalletScreen,
+        enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(300)),
+        exit = fadeOut(animationSpec = tween(250)) + scaleOut(targetScale = 0.95f, animationSpec = tween(250))
+    ) {
+        TokenWalletScreen(
+            currentBalance = tokenWallet?.balance ?: 0,
+            lifetimeEarned = tokenWallet?.lifetimeEarned ?: 0,
+            lifetimeSpent = tokenWallet?.lifetimeSpent ?: 0,
+            transactions = tokenTransactions,
+            onClose = { showWalletScreen = false },
+            onOpenMerch = {
+                showWalletScreen = false
+                showMerchCustomizer = true
+            },
+            viewModel = viewModel
+        )
     }
 
     // Merchandise Customizer Overlay Screen
@@ -1062,11 +1661,71 @@ fun HomeScreen(
         exit = fadeOut(animationSpec = tween(250)) + scaleOut(targetScale = 0.95f, animationSpec = tween(250))
     ) {
         MerchCustomizerScreen(
-            currentTokens = totalFocusSessions * 25,
+            currentTokens = tokenWallet?.balance ?: 0,
             onClose = { showMerchCustomizer = false }
         )
     }
 }
+
+    // Flying Coin Overlay (Satisfaction dopamine micro-animation)
+    if (showFlyingCoin) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent),
+            contentAlignment = Alignment.Center
+        ) {
+            // Floating Popup +25 Tokens Earned
+            androidx.compose.animation.AnimatedVisibility(
+                visible = coinAlpha.value > 0.3f,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 120.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Card.copy(alpha = 0.95f))
+                        .border(1.dp, GlowPrimary.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                            contentDescription = "Token",
+                            modifier = Modifier.size(20.dp).clip(CircleShape)
+                        )
+                        Text(
+                            text = "+25 T1 Tokens Earned!",
+                            style = LabelMedium.copy(color = GlowPrimary, fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+            }
+
+            // The actual flying coin
+            Box(
+                modifier = Modifier
+                    .offset(y = coinAnimY.value.dp)
+                    .graphicsLayer(alpha = coinAlpha.value)
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                    contentDescription = "Flying Coin",
+                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -1835,6 +2494,462 @@ fun MerchCustomizerScreen(
                 }
 
                 Spacer(modifier = Modifier.height(100.dp)) // Extra scroll spacing
+            }
+        }
+    }
+}
+
+@Composable
+fun TokenWalletScreen(
+    currentBalance: Int,
+    lifetimeEarned: Int,
+    lifetimeSpent: Int,
+    transactions: List<com.example.t1.data.database.entity.TokenTransactionEntity>,
+    onClose: () -> Unit,
+    onOpenMerch: () -> Unit,
+    viewModel: MainViewModel
+) {
+    val view = LocalView.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Infinite rotation for animated coin
+    val infiniteTransition = rememberInfiniteTransition(label = "coin_rotation")
+    val coinRotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "coin_rotation_anim"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF09090B)) // Sleek dark zinc background
+            .clickable(enabled = false) {} // block click propagation
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 1. Header (Back Arrow + Title)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Card)
+                        .border(1.dp, Border, CircleShape)
+                        .clickable {
+                            Haptics.playLight(view)
+                            onClose()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Foreground,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Token Wallet",
+                        style = HeadlineSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Foreground,
+                            fontSize = 20.sp
+                        )
+                    )
+                    Text(
+                        text = "Your auditable reward balance.",
+                        style = BodySmall.copy(color = MutedForeground, fontSize = 11.sp)
+                    )
+                }
+            }
+
+            // Scrollable sections
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 2. Balance Card (Header statistics)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Card, SurfaceRaised)
+                            )
+                        )
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Current Balance",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 11.sp)
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                                    contentDescription = "Tokens",
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .graphicsLayer(rotationY = coinRotation)
+                                )
+                                Text(
+                                    text = java.text.NumberFormat.getIntegerInstance().format(currentBalance),
+                                    style = HeadlineMedium.copy(color = Foreground, fontWeight = FontWeight.Bold, fontSize = 32.sp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Lifetime Earned",
+                                        style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp)
+                                    )
+                                    Text(
+                                        text = "+${java.text.NumberFormat.getIntegerInstance().format(lifetimeEarned)}",
+                                        style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Lifetime Spent",
+                                        style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp)
+                                    )
+                                    Text(
+                                        text = "-${java.text.NumberFormat.getIntegerInstance().format(lifetimeSpent)}",
+                                        style = LabelSmall.copy(color = Color.Red.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Big pulsing animated coin
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(GlowPrimary.copy(alpha = 0.05f))
+                                .border(1.dp, GlowPrimary.copy(alpha = 0.2f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                                contentDescription = "Pulsing Coin",
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .graphicsLayer(rotationY = coinRotation)
+                            )
+                        }
+                    }
+                }
+
+                // 3. Developer / User Simulation Panel
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Simulate Token Earning (Test Limits & Cooldowns)",
+                        style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Card)
+                            .border(1.dp, Border, RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text(
+                                text = "Tap any reward to simulate positive behavior earning. Limits (e.g. Daily login limit, Focus session limit of 10/day) are fully enforced and will trigger safe rollback if violated.",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp),
+                                lineHeight = 14.sp
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Daily Login (+5)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Daily Mission (+15)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Weekly (+100)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Focus Session (+5)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("7d Streak (+70)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF1E3A8A).copy(alpha = 0.5f))
+                                        .border(0.5.dp, GlowPrimary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Simulated clicks are disabled. Earn tokens automatically through positive behaviors!",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Global T100 (+1K)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 4. Coming Soon Merchandise Card
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Exclusives & Merchandise Store",
+                        style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Card)
+                            .border(1.dp, Border, RoundedCornerShape(16.dp))
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "T1. Signature Oversized Tee",
+                                    style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "Unlock with 6,900 Tokens. Minimal identity.",
+                                    style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(GlowPrimary.copy(alpha = 0.15f))
+                                    .border(1.dp, GlowPrimary.copy(alpha = 0.3f), CircleShape)
+                                    .clickable {
+                                        Haptics.playLight(view)
+                                        onOpenMerch()
+                                    }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "3D Preview",
+                                    style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 5. Recent Transactions Section
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Recent Transactions",
+                        style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                    )
+                    if (transactions.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Card)
+                                .border(1.dp, Border, RoundedCornerShape(12.dp))
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No transactions found yet.",
+                                style = BodySmall.copy(color = MutedForeground)
+                            )
+                        }
+                    } else {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            transactions.take(15).forEach { tx ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Card)
+                                        .border(1.dp, Border, RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text(
+                                                text = tx.reason.replace("_", " "),
+                                                style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Text(
+                                                    text = java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault()).format(tx.timestamp),
+                                                    style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp)
+                                                )
+                                                // Sync tag
+                                                val syncColor = if (tx.status == "SYNCED") GlowPrimary.copy(alpha = 0.7f) else Color.Yellow.copy(alpha = 0.7f)
+                                                Text(
+                                                    text = tx.status,
+                                                    style = LabelSmall.copy(color = syncColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                                )
+                                            }
+                                        }
+
+                                        val prefix = if (tx.amount > 0) "+" else ""
+                                        val color = if (tx.amount > 0) GlowPrimary else Color.Red.copy(alpha = 0.8f)
+                                        Text(
+                                            text = "$prefix${tx.amount}",
+                                            style = LabelMedium.copy(color = color, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }

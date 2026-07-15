@@ -30,7 +30,9 @@ open class SessionManager @Inject constructor(
     private val dailyUsageDao: DailyUsageDao,
     private val dailyBehaviourDao: DailyBehaviourDao,
     private val dailyBehaviourScoreDao: com.example.t1.data.database.dao.DailyBehaviourScoreDao,
-    private val dailyFocusScoreDao: com.example.t1.data.database.dao.DailyFocusScoreDao
+    private val dailyFocusScoreDao: com.example.t1.data.database.dao.DailyFocusScoreDao,
+    private val tokenWalletDao: com.example.t1.data.database.dao.TokenWalletDao,
+    private val tokenTransactionDao: com.example.t1.data.database.dao.TokenTransactionDao
 ) {
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -47,6 +49,8 @@ open class SessionManager @Inject constructor(
                         dailyBehaviourDao.clearAll()
                         dailyBehaviourScoreDao.clearAll()
                         dailyFocusScoreDao.clearAll()
+                        tokenWalletDao.clearAll()
+                        tokenTransactionDao.clearAll()
                     }
                 }
             }

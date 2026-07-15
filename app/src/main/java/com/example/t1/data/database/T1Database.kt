@@ -12,8 +12,12 @@ import com.example.t1.data.database.entity.DailyUsageEntity
 import com.example.t1.data.database.entity.DailyBehaviourEntity
 import com.example.t1.data.database.entity.DailyBehaviourScoreEntity
 import com.example.t1.data.database.entity.DailyFocusScoreEntity
+import com.example.t1.data.database.entity.TokenWalletEntity
+import com.example.t1.data.database.entity.TokenTransactionEntity
 import com.example.t1.data.database.dao.DailyBehaviourScoreDao
 import com.example.t1.data.database.dao.DailyFocusScoreDao
+import com.example.t1.data.database.dao.TokenWalletDao
+import com.example.t1.data.database.dao.TokenTransactionDao
 
 import com.example.t1.data.database.entity.LeaderboardDailyEntity
 import com.example.t1.data.database.dao.LeaderboardDailyDao
@@ -26,9 +30,11 @@ import com.example.t1.data.database.dao.LeaderboardDailyDao
         DailyBehaviourEntity::class,
         DailyBehaviourScoreEntity::class,
         DailyFocusScoreEntity::class,
-        LeaderboardDailyEntity::class
+        LeaderboardDailyEntity::class,
+        TokenWalletEntity::class,
+        TokenTransactionEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class T1Database : RoomDatabase() {
@@ -39,5 +45,7 @@ abstract class T1Database : RoomDatabase() {
     abstract fun dailyBehaviourScoreDao(): DailyBehaviourScoreDao
     abstract fun dailyFocusScoreDao(): DailyFocusScoreDao
     abstract fun leaderboardDailyDao(): LeaderboardDailyDao
+    abstract fun tokenWalletDao(): TokenWalletDao
+    abstract fun tokenTransactionDao(): TokenTransactionDao
 }
 

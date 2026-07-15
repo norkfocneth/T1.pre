@@ -27,6 +27,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,7 +49,8 @@ class MainViewModel @Inject constructor(
     private val leaderboardRepository: LeaderboardRepository,
     private val focusSessionDao: FocusSessionDao,
     private val userPreferences: com.example.t1.data.preferences.UserPreferences,
-    private val t1NotificationManager: com.example.t1.notification.T1NotificationManager
+    private val t1NotificationManager: com.example.t1.notification.T1NotificationManager,
+    private val tokenRepository: com.example.t1.domain.repository.TokenRepository
 ) : ViewModel() {
 
     val notificationsEnabled: StateFlow<Boolean> = userPreferences.notificationsEnabledFlow
@@ -77,6 +81,15 @@ class MainViewModel @Inject constructor(
     private val _totalFocusDuration = MutableStateFlow(0L)
     val totalFocusDuration: StateFlow<Long> = _totalFocusDuration.asStateFlow()
 
+    private val _tokenWallet = MutableStateFlow<com.example.t1.data.database.entity.TokenWalletEntity?>(null)
+    val tokenWallet: StateFlow<com.example.t1.data.database.entity.TokenWalletEntity?> = _tokenWallet.asStateFlow()
+
+    private val _tokenTransactions = MutableStateFlow<List<com.example.t1.data.database.entity.TokenTransactionEntity>>(emptyList())
+    val tokenTransactions: StateFlow<List<com.example.t1.data.database.entity.TokenTransactionEntity>> = _tokenTransactions.asStateFlow()
+
+    private val _tokenEarnedEvent = MutableSharedFlow<Int>()
+    val tokenEarnedEvent: SharedFlow<Int> = _tokenEarnedEvent.asSharedFlow()
+
     private val _weeklyTrend = MutableStateFlow<List<Int>>(List(7) { 0 })
     val weeklyTrend: StateFlow<List<Int>> = _weeklyTrend.asStateFlow()
 
@@ -84,6 +97,39 @@ class MainViewModel @Inject constructor(
     val dashboardState: StateFlow<DashboardUiState> = _dashboardState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            // Setup dynamic wallet sync on profile changes
+            userProfile.collectLatest { profile ->
+                if (profile != null) {
+                    // Sync wallet with Supabase
+                    launch {
+                        tokenRepository.syncWallet(profile.id)
+                    }
+
+                    // Observe wallet cache
+                    launch {
+                        tokenRepository.getWalletFlow(profile.id).collect { wallet ->
+                            _tokenWallet.value = wallet
+                        }
+                    }
+
+                    // Observe transactions cache
+                    launch {
+                        tokenRepository.getTransactionsFlow(profile.id).collect { txs ->
+                            _tokenTransactions.value = txs
+                        }
+                    }
+
+                    // Trigger daily login reward check
+                    launch {
+                        triggerDailyLoginReward(profile.id)
+                    }
+                } else {
+                    _tokenWallet.value = null
+                    _tokenTransactions.value = emptyList()
+                }
+            }
+        }
         viewModelScope.launch {
             // Observe permission state reactively
             usagePermissionManager.observePermissionState(context).collectLatest { permState ->
@@ -183,6 +229,8 @@ class MainViewModel @Inject constructor(
             }
             _dashboardState.update { it.copy(isLoading = true, collectionStatus = CollectionStatus.Collecting) }
             val result = behaviourRepository.getTodayBehaviour()
+            val yesterdayResult = behaviourRepository.getYesterdayBehaviour()
+            val yesterdayBehaviour = yesterdayResult.getOrNull()
             if (result.isSuccess) {
                 val behaviour = result.getOrNull()
 
@@ -218,6 +266,7 @@ class MainViewModel @Inject constructor(
                         isLoading = false,
                         collectionStatus = CollectionStatus.Success,
                         todayBehaviour = behaviour,
+                        yesterdayBehaviour = yesterdayBehaviour,
                         lastUpdated = System.currentTimeMillis(),
                         error = null,
                         currentFocusScore = score,
@@ -362,13 +411,24 @@ class MainViewModel @Inject constructor(
                 T1Logger.i("Focus session logged successfully. Total sessions: $totalSessions")
 
                 // 4. Trigger token earned and milestone notifications
-                t1NotificationManager.postNotification(
-                    id = 3003,
-                    title = "Tokens Earned",
-                    text = "+25 T1 Tokens earned. Reward added to your wallet.",
-                    channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
-                    type = "token_reward"
+                val earnResult = tokenRepository.addTransaction(
+                    userId = profile.id,
+                    amount = 5,
+                    type = "EARN",
+                    reason = "FOCUS_SESSION"
                 )
+                if (earnResult.isSuccess) {
+                    _tokenEarnedEvent.emit(5)
+                    t1NotificationManager.postNotification(
+                        id = 3003,
+                        title = "Tokens Earned",
+                        text = "+5 T1 Tokens earned. Reward added to your wallet.",
+                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                        type = "token_reward"
+                    )
+                } else {
+                    T1Logger.w("Focus session token reward skipped: ${earnResult.exceptionOrNull()?.message}")
+                }
 
                 if (totalSessions == 10 || totalSessions == 25 || totalSessions == 50 || totalSessions == 100) {
                     t1NotificationManager.postNotification(
@@ -417,6 +477,104 @@ class MainViewModel @Inject constructor(
                 val errorMsg = deleteResult.exceptionOrNull()?.message ?: "Failed to delete user profile from server."
                 T1Logger.e(errorMsg)
                 onFailure(errorMsg)
+            }
+        }
+    }
+
+    private suspend fun triggerDailyLoginReward(userId: String) {
+        val result = tokenRepository.addTransaction(
+            userId = userId,
+            amount = 5,
+            type = "EARN",
+            reason = "DAILY_LOGIN"
+        )
+        if (result.isSuccess) {
+            _tokenEarnedEvent.emit(5)
+            t1NotificationManager.postNotification(
+                id = 3005,
+                title = "Daily Login Reward",
+                text = "You earned +5 T1 Tokens for logging in today!",
+                channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                type = "token_reward"
+            )
+        }
+    }
+
+    // Reward Simulation Functions for Developer/User testing
+    fun earnDailyMission() {
+        triggerSimulatedReward("DAILY_MISSION", 15)
+    }
+
+    fun earnWeeklyMission() {
+        triggerSimulatedReward("WEEKLY_MISSION", 100)
+    }
+
+    fun earnMonthlyChallenge() {
+        triggerSimulatedReward("MONTHLY_CHALLENGE", 500)
+    }
+
+    fun earnPersonalBest() {
+        triggerSimulatedReward("PERSONAL_BEST", 30)
+    }
+
+    fun earnBeatYesterday() {
+        triggerSimulatedReward("BEAT_YESTERDAY", 10)
+    }
+
+    fun earnWeeklyAverage() {
+        triggerSimulatedReward("WEEKLY_AVERAGE", 40)
+    }
+
+    fun earnStreak7() {
+        triggerSimulatedReward("STREAK_7", 70)
+    }
+
+    fun earnStreak30() {
+        triggerSimulatedReward("STREAK_30", 300)
+    }
+
+    fun earnHiddenAchievement() {
+        triggerSimulatedReward("HIDDEN_ACHIEVEMENT", 100)
+    }
+
+    fun earnBadgeUnlock() {
+        triggerSimulatedReward("BADGE_UNLOCK", 50)
+    }
+
+    fun earnLeaderboardPromotion() {
+        triggerSimulatedReward("LEADERBOARD_PROMOTION", 25)
+    }
+
+    fun earnCollegeTop10() {
+        triggerSimulatedReward("COLLEGE_TOP_10", 200)
+    }
+
+    fun earnGlobalTop100() {
+        triggerSimulatedReward("GLOBAL_TOP_100", 1000)
+    }
+
+    fun triggerSimulatedReward(reason: String, amount: Int) {
+        viewModelScope.launch {
+            val profile = userProfile.value
+            if (profile != null) {
+                val result = tokenRepository.addTransaction(
+                    userId = profile.id,
+                    amount = amount,
+                    type = "EARN",
+                    reason = reason
+                )
+                if (result.isSuccess) {
+                    _tokenEarnedEvent.emit(amount)
+                    t1NotificationManager.postNotification(
+                        id = 3006,
+                        title = "Tokens Earned",
+                        text = "+$amount T1 Tokens earned for $reason!",
+                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                        type = "token_reward"
+                    )
+                } else {
+                    T1Logger.w("Simulated reward skipped: ${result.exceptionOrNull()?.message}")
+                }
             }
         }
     }

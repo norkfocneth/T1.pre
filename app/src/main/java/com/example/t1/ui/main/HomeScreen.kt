@@ -32,6 +32,28 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ElectricalServices
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.fadeOut
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.foundation.Canvas
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,10 +97,13 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     focusScore: Int = 85,
-    streak: Int = 12
+    streak: Int = 12,
+    totalFocusSessions: Int = 0
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+
+    var showMerchCustomizer by remember { mutableStateOf(false) }
 
     val score = dashboardState.currentFocusScore
     val percentile = dashboardState.percentile
@@ -127,14 +152,14 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(top = 16.dp, bottom = 180.dp) // Extra bottom padding for BottomNav and FAB
         ) {
-            // 1. Header (Logo + Profile Button)
-            Row(
+            // 1. Header (Logo + Dynamic Token Island + Profile Button)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.Center
             ) {
+                // T1. Logo (Start)
                 Text(
                     text = "T1.",
                     style = HeadlineMedium.copy(
@@ -143,16 +168,86 @@ fun HomeScreen(
                             colors = listOf(GradientTextStart, GradientTextEnd)
                         )
                     ),
-                    letterSpacing = (-1).sp
+                    letterSpacing = (-1).sp,
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
 
-                // Profile Avatar Button
+                // Dynamic Token Island (Center)
+                val tokenIslandInteraction = remember { MutableInteractionSource() }
+                val isTokenPressed by tokenIslandInteraction.collectIsPressedAsState()
+                val tokenScale = if (isTokenPressed) 0.92f else 1f
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .scale(tokenScale)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Card, SurfaceRaised)
+                            )
+                        )
+                        .border(1.dp, Border.copy(alpha = 0.8f), CircleShape)
+                        .clickable(
+                            interactionSource = tokenIslandInteraction,
+                            indication = null,
+                            onClick = {
+                                Haptics.playMedium(view)
+                                showMerchCustomizer = true
+                            }
+                        )
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                        contentDescription = "T1 Token",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .border(0.5.dp, Border, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        val tokenCountStr = java.text.NumberFormat.getIntegerInstance().format(totalFocusSessions * 25)
+                        Text(
+                            text = tokenCountStr,
+                            style = LabelMedium.copy(
+                                color = Foreground,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            ),
+                            lineHeight = 14.sp
+                        )
+                        Text(
+                            text = "T1 Tokens",
+                            style = BodySmall.copy(
+                                color = MutedForeground,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            lineHeight = 10.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Open",
+                        tint = MutedForeground,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                // Profile Avatar Button (End)
                 val profileInteraction = remember { MutableInteractionSource() }
                 val isProfilePressed by profileInteraction.collectIsPressedAsState()
                 val profileScale = if (isProfilePressed) 0.9f else 1f
 
                 Box(
                     modifier = Modifier
+                        .align(Alignment.CenterEnd)
                         .size(40.dp)
                         .scale(profileScale)
                         .clip(CircleShape)
@@ -959,5 +1054,788 @@ fun HomeScreen(
             }
         }
     }
+
+    // Merchandise Customizer Overlay Screen
+    AnimatedVisibility(
+        visible = showMerchCustomizer,
+        enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(300)),
+        exit = fadeOut(animationSpec = tween(250)) + scaleOut(targetScale = 0.95f, animationSpec = tween(250))
+    ) {
+        MerchCustomizerScreen(
+            currentTokens = totalFocusSessions * 25,
+            onClose = { showMerchCustomizer = false }
+        )
+    }
 }
+}
+
+@Composable
+fun TShirtShowcase(
+    color: Color,
+    showBack: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // 1. Draw Pedestal (Stone base at the bottom)
+        val pedCenterY = h * 0.82f
+        val pedWidth = w * 0.8f
+        val pedHeight = h * 0.12f
+
+        // Pedestal base shadow
+        drawOval(
+            color = Color.Black.copy(alpha = 0.6f),
+            topLeft = androidx.compose.ui.geometry.Offset(w * 0.1f, pedCenterY),
+            size = androidx.compose.ui.geometry.Size(pedWidth, pedHeight)
+        )
+        // Pedestal top surface
+        drawOval(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0xFF2D2D30), Color(0xFF18181A)),
+                center = androidx.compose.ui.geometry.Offset(w * 0.5f, pedCenterY + pedHeight * 0.2f),
+                radius = pedWidth * 0.5f
+            ),
+            topLeft = androidx.compose.ui.geometry.Offset(w * 0.12f, pedCenterY - 4f),
+            size = androidx.compose.ui.geometry.Size(pedWidth * 0.95f, pedHeight * 0.9f)
+        )
+
+        // 2. Draw floating stone particles/debris
+        drawCircle(
+            color = Color(0xFF3F3F46).copy(alpha = 0.5f),
+            radius = 6f,
+            center = androidx.compose.ui.geometry.Offset(w * 0.15f, h * 0.65f)
+        )
+        drawCircle(
+            color = Color(0xFF27272A).copy(alpha = 0.7f),
+            radius = 10f,
+            center = androidx.compose.ui.geometry.Offset(w * 0.82f, h * 0.55f)
+        )
+        drawCircle(
+            color = Color(0xFF52525B).copy(alpha = 0.4f),
+            radius = 4f,
+            center = androidx.compose.ui.geometry.Offset(w * 0.25f, h * 0.45f)
+        )
+
+        // 3. Draw T-Shirt Main Body
+        val tPath = Path().apply {
+            moveTo(w * 0.42f, h * 0.15f) // Collar left
+            lineTo(w * 0.26f, h * 0.18f) // Left shoulder
+            lineTo(w * 0.15f, h * 0.42f) // Left sleeve outer
+            lineTo(w * 0.28f, h * 0.48f) // Left sleeve opening
+            lineTo(w * 0.32f, h * 0.38f) // Left underarm
+            lineTo(w * 0.32f, h * 0.76f) // Left body side down
+            lineTo(w * 0.68f, h * 0.76f) // Bottom hem
+            lineTo(w * 0.68f, h * 0.38f) // Right body side up
+            lineTo(w * 0.72f, h * 0.48f) // Right underarm
+            lineTo(w * 0.85f, h * 0.42f) // Right sleeve opening
+            lineTo(w * 0.74f, h * 0.18f) // Right sleeve outer
+            lineTo(w * 0.58f, h * 0.15f) // Right shoulder
+            quadraticTo(w * 0.5f, h * 0.23f, w * 0.42f, h * 0.15f) // Neck collar
+            close()
+        }
+
+        // Base shading gradients for a premium 3D look
+        val shirtGradient = Brush.linearGradient(
+            colors = listOf(color, color.copy(alpha = 0.75f)),
+            start = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.15f),
+            end = androidx.compose.ui.geometry.Offset(w * 0.7f, h * 0.76f)
+        )
+
+        drawPath(path = tPath, brush = shirtGradient)
+
+        // 4. Draw Shadows & Highlight folds to look realistic
+        val foldPath1 = Path().apply {
+            moveTo(w * 0.32f, h * 0.38f)
+            quadraticTo(w * 0.45f, h * 0.52f, w * 0.42f, h * 0.76f)
+        }
+        drawPath(
+            path = foldPath1,
+            color = Color.Black.copy(alpha = 0.25f),
+            style = Stroke(width = 8f)
+        )
+
+        val foldPath2 = Path().apply {
+            moveTo(w * 0.68f, h * 0.38f)
+            quadraticTo(w * 0.55f, h * 0.52f, w * 0.58f, h * 0.76f)
+        }
+        drawPath(
+            path = foldPath2,
+            color = Color.Black.copy(alpha = 0.25f),
+            style = Stroke(width = 8f)
+        )
+
+        // Collar Ribbing
+        val collarPath = Path().apply {
+            moveTo(w * 0.42f, h * 0.15f)
+            quadraticTo(w * 0.5f, h * 0.23f, w * 0.58f, h * 0.15f)
+        }
+        drawPath(
+            path = collarPath,
+            color = if (color == Color(0xFFF5F5F7)) Color.DarkGray.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.25f),
+            style = Stroke(width = 4f)
+        )
+    }
+}
+
+@Composable
+fun MerchCustomizerScreen(
+    currentTokens: Int,
+    onClose: () -> Unit
+) {
+    val view = LocalView.current
+
+    // Customization states
+    val colors = listOf(
+        Color(0xFF0F0F10) to "Midnight Black",
+        Color(0xFFF5F5F7) to "Platinum White",
+        Color(0xFF8A2BE2) to "Cyberpunk Violet",
+        Color(0xFF39FF14) to "Neon Green"
+    )
+    var selectedColorIdx by remember { mutableStateOf(0) }
+
+    val prints = listOf(
+        "T1. DEEP WORK",
+        "STREAK CHAMP",
+        "FOCUS ENGAGED"
+    )
+    var selectedPrintIdx by remember { mutableStateOf(0) }
+
+    val sizes = listOf("S", "M", "L", "XL", "XXL")
+    var selectedSizeIdx by remember { mutableStateOf(1) } // Default to "M"
+
+    var selectedTabIdx by remember { mutableStateOf(0) } // Front, Back, Style, Color, Size
+    var selectedPreviewIdx by remember { mutableStateOf(0) } // Updates showing angle
+
+    val showBack = selectedPreviewIdx == 1 || selectedTabIdx == 1
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF09090B)) // Sleek dark zinc background
+            .clickable(enabled = false) {} // block click propagation
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 1. Header (Back Arrow + Merchandise Title + Outline Pill Button)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Card)
+                            .border(1.dp, Border, CircleShape)
+                            .clickable {
+                                Haptics.playLight(view)
+                                onClose()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Foreground,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Merchandise",
+                            style = HeadlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Foreground,
+                                fontSize = 20.sp
+                            )
+                        )
+                        Text(
+                            text = "Premium. Exclusive. Coming soon.",
+                            style = BodySmall.copy(color = MutedForeground, fontSize = 11.sp)
+                        )
+                    }
+                }
+
+                // "How it works" outline pill button
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color.Transparent)
+                        .border(1.dp, Border, CircleShape)
+                        .clickable {
+                            Haptics.playLight(view)
+                        }
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "How it works",
+                        style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Medium)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Info",
+                        tint = MutedForeground,
+                        modifier = Modifier.size(13.dp)
+                    )
+                }
+            }
+
+            // Scrollable Container holding Product Display, Tabs, Thumbnails, Locked Card, Footer
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+
+                // 2. Product Showcase Card (Oversized Tee)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Card, SurfaceRaised)
+                            )
+                        )
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Left Column: Custom labels & pricing
+                        Column(
+                            modifier = Modifier
+                                .weight(1.1f)
+                                .padding(end = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.08f))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "PREMIUM MERCH",
+                                    style = LabelSmall.copy(
+                                        color = MutedForeground,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 9.sp,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                )
+                            }
+
+                            Text(
+                                text = "T1. Signature\nOversized Tee",
+                                style = HeadlineSmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = Foreground,
+                                    fontSize = 21.sp,
+                                    lineHeight = 25.sp
+                                )
+                            )
+
+                            Text(
+                                text = "Minimal design.\nMaximum identity.\nBuilt for the focused.",
+                                style = BodySmall.copy(color = MutedForeground, lineHeight = 16.sp)
+                            )
+
+                            // Price Section
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    text = "Price",
+                                    style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color.Black.copy(alpha = 0.2f))
+                                        .border(0.5.dp, Border, RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                                        contentDescription = "T1 Token",
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                    )
+                                    Column {
+                                        Text(
+                                            text = "6,900",
+                                            style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                        )
+                                        Text(
+                                            text = "T1 Tokens",
+                                            style = BodySmall.copy(color = MutedForeground, fontSize = 8.sp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Status Label
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(top = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Status",
+                                    tint = MutedForeground,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Text(
+                                    text = "Coming Soon",
+                                    style = BodySmall.copy(color = MutedForeground, fontWeight = FontWeight.Medium)
+                                )
+                            }
+                        }
+
+                        // Right Column: Interactive 3D Mockup Showcase Canvas
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(260.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TShirtShowcase(
+                                color = colors[selectedColorIdx].first,
+                                showBack = showBack,
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            // Chest or Back graphic print overlay
+                            if (!showBack) {
+                                val textColor = if (colors[selectedColorIdx].first == Color(0xFFF5F5F7)) Color.Black else Color.White
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(top = 70.dp, start = 30.dp)
+                                ) {
+                                    Text(
+                                        text = "T1.",
+                                        style = HeadlineSmall.copy(
+                                            color = textColor,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            letterSpacing = (-0.5).sp
+                                        )
+                                    )
+                                }
+                            } else {
+                                val textColor = if (colors[selectedColorIdx].first == Color(0xFFF5F5F7)) Color.Black else Color.White
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(top = 95.dp)
+                                ) {
+                                    Text(
+                                        text = prints[selectedPrintIdx],
+                                        style = BodySmall.copy(
+                                            color = textColor,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 9.sp,
+                                            letterSpacing = 1.5.sp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 3. Preview & Customize Header Title
+                Text(
+                    text = "Preview & Customize",
+                    style = LabelLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                )
+
+                // 4. Customize Category Tab Bar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val tabs = listOf(
+                        Triple(Icons.Default.Layers, "Front", 0),
+                        Triple(Icons.Default.Layers, "Back", 1),
+                        Triple(Icons.Default.Apps, "Style", 2),
+                        Triple(Icons.Default.ColorLens, "Color", 3),
+                        Triple(Icons.Default.Straighten, "Size", 4)
+                    )
+
+                    tabs.forEach { (icon, name, index) ->
+                        val isSelected = selectedTabIdx == index
+                        val contentColor = if (isSelected) GlowPrimary else MutedForeground
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    Haptics.playLight(view)
+                                    selectedTabIdx = index
+                                    if (index == 0) selectedPreviewIdx = 0
+                                    if (index == 1) selectedPreviewIdx = 1
+                                }
+                                .padding(8.dp)
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = name,
+                                tint = contentColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = name,
+                                style = LabelSmall.copy(color = contentColor, fontWeight = FontWeight.Medium)
+                            )
+                            if (isSelected) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 16.dp, height = 2.dp)
+                                        .clip(CircleShape)
+                                        .background(GlowPrimary)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Tab Specific Options
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Card)
+                        .border(1.dp, Border, RoundedCornerShape(12.dp))
+                        .padding(12.dp)
+                ) {
+                    when (selectedTabIdx) {
+                        0 -> { // Front Graphic Selection
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Graphic placement: Left chest",
+                                    style = BodySmall.copy(color = MutedForeground)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(GlowPrimary.copy(alpha = 0.15f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "T1. Logo",
+                                        style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                            }
+                        }
+                        1 -> { // Back Graphic Print Options
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                prints.forEachIndexed { idx, printText ->
+                                    val isSel = selectedPrintIdx == idx
+                                    val bgCol = if (isSel) Foreground else SurfaceRaised
+                                    val textCol = if (isSel) Background else Foreground
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(bgCol)
+                                            .clickable {
+                                                Haptics.playLight(view)
+                                                selectedPrintIdx = idx
+                                            }
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = printText.replace("T1. ", ""),
+                                            style = LabelSmall.copy(color = textCol, fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        2 -> { // Style Selection
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf("Oversized", "Fitted").forEachIndexed { idx, style ->
+                                    val isSel = idx == 0
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSel) Foreground else SurfaceRaised)
+                                            .clickable { Haptics.playLight(view) }
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = style,
+                                            style = LabelSmall.copy(color = if (isSel) Background else Foreground, fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        3 -> { // Color Selector
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                colors.forEachIndexed { idx, (col, name) ->
+                                    val isSel = selectedColorIdx == idx
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(col)
+                                            .border(
+                                                width = if (isSel) 2.dp else 1.dp,
+                                                color = if (isSel) GlowPrimary else Border,
+                                                shape = CircleShape
+                                            )
+                                            .clickable {
+                                                Haptics.playLight(view)
+                                                selectedColorIdx = idx
+                                            }
+                                    )
+                                }
+                            }
+                        }
+                        4 -> { // Size Selector
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                sizes.forEachIndexed { idx, size ->
+                                    val isSel = selectedSizeIdx == idx
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSel) Foreground else SurfaceRaised)
+                                            .clickable {
+                                                Haptics.playLight(view)
+                                                selectedSizeIdx = idx
+                                            }
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = size,
+                                            style = LabelSmall.copy(color = if (isSel) Background else Foreground, fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 5. Preview cards row (showing thumbnails of front, back, etc.)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val previewOptions = listOf(
+                        "Front" to false,
+                        "Back" to true,
+                        "Chest" to false,
+                        "Tag" to false
+                    )
+
+                    previewOptions.forEachIndexed { index, (label, isBack) ->
+                        val isSelected = selectedPreviewIdx == index
+                        val borderCol = if (isSelected) GlowPrimary else Border
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(80.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Card)
+                                .border(1.dp, borderCol, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    Haptics.playLight(view)
+                                    selectedPreviewIdx = index
+                                    if (index == 0) selectedTabIdx = 0
+                                    if (index == 1) selectedTabIdx = 1
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Mini shirt graphics
+                            Box(modifier = Modifier.size(50.dp)) {
+                                TShirtShowcase(
+                                    color = colors[selectedColorIdx].first,
+                                    showBack = isBack,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            // Small overlay text label
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.5f))
+                                    .padding(vertical = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = LabelSmall.copy(color = Foreground, fontSize = 8.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 6. Locked Banner Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF121214))
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.05f))
+                                    .border(1.dp, Border, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Locked",
+                                    tint = MutedForeground,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "This item is locked",
+                                    style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "Merchandise booking will open soon. Stay tuned!",
+                                    style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp),
+                                    lineHeight = 14.sp
+                                )
+                            }
+                        }
+
+                        // COMING SOON pill button
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color(0xFF1E3A8A).copy(alpha = 0.8f))
+                                .border(1.dp, GlowPrimary.copy(alpha = 0.3f), CircleShape)
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "COMING SOON",
+                                style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Bold, fontSize = 9.sp)
+                            )
+                        }
+                    }
+                }
+
+                // 7. Feature Grid Footer
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Card)
+                        .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    val features = listOf(
+                        Triple(Icons.Default.Star, "Premium Quality", "High quality fabric and long lasting."),
+                        Triple(Icons.Default.CardGiftcard, "Exclusive Drop", "Limited quantity for early supporters."),
+                        Triple(Icons.Default.Shield, "Secure Checkout", "Safe and easy redemption.")
+                    )
+
+                    features.forEach { (icon, title, desc) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.04f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = title,
+                                    tint = MutedForeground,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = title,
+                                    style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = desc,
+                                    style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(100.dp)) // Extra scroll spacing
+            }
+        }
+    }
 }

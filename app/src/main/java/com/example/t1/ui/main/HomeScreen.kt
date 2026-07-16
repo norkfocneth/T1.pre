@@ -54,6 +54,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.fadeOut
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -1839,6 +1840,34 @@ fun TShirtShowcase(
     }
 }
 
+val TShirtIcon: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "TShirt",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = null,
+        stroke = androidx.compose.ui.graphics.SolidColor(Color.White),
+        strokeLineWidth = 1.5f
+    ) {
+        moveTo(18f, 4f)
+        lineTo(15f, 2.5f)
+        quadTo(12f, 4.5f, 9f, 2.5f)
+        lineTo(6f, 4f)
+        lineTo(2f, 6f)
+        lineTo(4f, 10f)
+        lineTo(6.5f, 9f)
+        lineTo(6.5f, 21f)
+        lineTo(17.5f, 21f)
+        lineTo(17.5f, 9f)
+        lineTo(20f, 10f)
+        lineTo(22f, 6f)
+        close()
+    }.build()
+}
+
 @Composable
 fun MerchCustomizerScreen(
     currentTokens: Int,
@@ -2071,55 +2100,28 @@ fun MerchCustomizerScreen(
                             }
                         }
 
-                        // Right Column: Interactive 3D Mockup Showcase Canvas
+                        // Right Column: Interactive 3D Mockup Showcase Card
                         Box(
                             modifier = Modifier
-                                .weight(1f)
+                                .weight(1.3f) // Give more weight for a premium visual prominence
                                 .height(260.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            TShirtShowcase(
-                                color = colors[selectedColorIdx].first,
-                                showBack = showBack,
-                                modifier = Modifier.fillMaxSize()
-                            )
-
-                            // Chest or Back graphic print overlay
-                            if (!showBack) {
-                                val textColor = if (colors[selectedColorIdx].first == Color(0xFFF5F5F7)) Color.Black else Color.White
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopCenter)
-                                        .padding(top = 70.dp, start = 30.dp)
-                                ) {
-                                    Text(
-                                        text = "T1.",
-                                        style = HeadlineSmall.copy(
-                                            color = textColor,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 15.sp,
-                                            letterSpacing = (-0.5).sp
-                                        )
-                                    )
-                                }
-                            } else {
-                                val textColor = if (colors[selectedColorIdx].first == Color(0xFFF5F5F7)) Color.Black else Color.White
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopCenter)
-                                        .padding(top = 95.dp)
-                                ) {
-                                    Text(
-                                        text = prints[selectedPrintIdx],
-                                        style = BodySmall.copy(
-                                            color = textColor,
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 9.sp,
-                                            letterSpacing = 1.5.sp
-                                        )
-                                    )
-                                }
+                            val showcaseResId = when (selectedPreviewIdx) {
+                                0 -> com.example.t1.R.drawable.merch_tshirt_main
+                                1 -> com.example.t1.R.drawable.merch_tshirt_back
+                                2 -> com.example.t1.R.drawable.merch_tshirt_collar
+                                3 -> com.example.t1.R.drawable.merch_tshirt_tag
+                                else -> com.example.t1.R.drawable.merch_tshirt_main
                             }
+                            Image(
+                                painter = painterResource(id = showcaseResId),
+                                contentDescription = "T-Shirt Showcase",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                            )
                         }
                     }
                 }
@@ -2136,9 +2138,9 @@ fun MerchCustomizerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     val tabs = listOf(
-                        Triple(Icons.Default.Layers, "Front", 0),
-                        Triple(Icons.Default.Layers, "Back", 1),
-                        Triple(Icons.Default.Apps, "Style", 2),
+                        Triple(TShirtIcon, "Front", 0),
+                        Triple(TShirtIcon, "Back", 1),
+                        Triple(TShirtIcon, "Style", 2),
                         Triple(Icons.Default.ColorLens, "Color", 3),
                         Triple(Icons.Default.Straighten, "Size", 4)
                     )
@@ -2330,20 +2332,20 @@ fun MerchCustomizerScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     val previewOptions = listOf(
-                        "Front" to false,
-                        "Back" to true,
-                        "Chest" to false,
-                        "Tag" to false
+                        "Front" to com.example.t1.R.drawable.merch_tshirt_front,
+                        "Back" to com.example.t1.R.drawable.merch_tshirt_back,
+                        "Collar" to com.example.t1.R.drawable.merch_tshirt_collar,
+                        "Tag" to com.example.t1.R.drawable.merch_tshirt_tag
                     )
 
-                    previewOptions.forEachIndexed { index, (label, isBack) ->
+                    previewOptions.forEachIndexed { index, (label, resId) ->
                         val isSelected = selectedPreviewIdx == index
                         val borderCol = if (isSelected) GlowPrimary else Border
 
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(80.dp)
+                                .height(110.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Card)
                                 .border(1.dp, borderCol, RoundedCornerShape(12.dp))
@@ -2355,28 +2357,12 @@ fun MerchCustomizerScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            // Mini shirt graphics
-                            Box(modifier = Modifier.size(50.dp)) {
-                                TShirtShowcase(
-                                    color = colors[selectedColorIdx].first,
-                                    showBack = isBack,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            // Small overlay text label
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.5f))
-                                    .padding(vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = LabelSmall.copy(color = Foreground, fontSize = 8.sp)
-                                )
-                            }
+                            Image(
+                                painter = painterResource(id = resId),
+                                contentDescription = label,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            )
                         }
                     }
                 }

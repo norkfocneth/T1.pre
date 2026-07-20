@@ -64,28 +64,35 @@ fun OnboardingBackground(
         modifier = modifier
             .fillMaxSize()
             .drawBehind {
-                // Background radial gradient top center (white overlay)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.05f), Color.Transparent),
-                        center = Offset(size.width / 2f, 0f),
-                        radius = size.width * 0.5f
+                val baseSize = if (size.height > size.width) size.height else size.width
+
+                // 1. Linear gradient top to bottom (Base dark background) - drawn first/bottom-most
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(BgTop, BgBottom)
                     )
                 )
-                // Background radial gradient middle-top (emerald glow)
+                
+                // 2. Background radial gradient middle-top (emerald glow centered at 50% width, 18% height, 30% radius)
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(GlowGreen.copy(alpha = 0.08f), Color.Transparent),
                         center = Offset(size.width / 2f, size.height * 0.18f),
-                        radius = size.width * 0.6f
-                    )
-                )
-                // Linear gradient top to bottom (Base dark background)
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(BgTop, BgBottom)
+                        radius = baseSize * 0.30f
                     ),
-                    alpha = 1f
+                    center = Offset(size.width / 2f, size.height * 0.18f),
+                    radius = baseSize * 0.30f
+                )
+
+                // 3. Background radial gradient top center (white overlay centered at top center, 24% radius)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.05f), Color.Transparent),
+                        center = Offset(size.width / 2f, 0f),
+                        radius = baseSize * 0.24f
+                    ),
+                    center = Offset(size.width / 2f, 0f),
+                    radius = baseSize * 0.24f
                 )
             }
     ) {

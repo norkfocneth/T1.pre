@@ -92,7 +92,15 @@ class UserRepositoryImpl @Inject constructor(
                 occupation = profile.occupation,
                 primaryGoal = profile.primaryGoal,
                 focusScoreVersion = profile.focusScoreVersion,
-                onboardingCompletedV2 = profile.onboardingCompletedV2
+                onboardingCompletedV2 = profile.onboardingCompletedV2,
+                email = profile.email,
+                avatarUrl = profile.avatarUrl,
+                onboardingVersion = profile.onboardingVersion,
+                performanceTier = profile.performanceTier,
+                behaviourProfile = profile.behaviourProfile,
+                initialPercentile = profile.initialPercentile,
+                bestStreak = profile.bestStreak,
+                timeSaved = profile.timeSaved
             )
             val success = supabaseService.upsertProfile(profileDto)
             if (!success) {
@@ -171,7 +179,15 @@ class UserRepositoryImpl @Inject constructor(
             occupation = occupation,
             primaryGoal = primaryGoal,
             focusScoreVersion = focusScoreVersion,
-            onboardingCompletedV2 = onboardingCompletedV2
+            onboardingCompletedV2 = onboardingCompletedV2,
+            email = email,
+            avatarUrl = avatarUrl,
+            onboardingVersion = onboardingVersion,
+            performanceTier = performanceTier,
+            behaviourProfile = behaviourProfile,
+            initialPercentile = initialPercentile,
+            bestStreak = bestStreak,
+            timeSaved = timeSaved
         )
     }
 
@@ -195,7 +211,15 @@ class UserRepositoryImpl @Inject constructor(
             occupation = occupation,
             primaryGoal = primaryGoal,
             focusScoreVersion = focusScoreVersion,
-            onboardingCompletedV2 = onboardingCompletedV2
+            onboardingCompletedV2 = onboardingCompletedV2,
+            email = email,
+            avatarUrl = avatarUrl,
+            onboardingVersion = onboardingVersion,
+            performanceTier = performanceTier,
+            behaviourProfile = behaviourProfile,
+            initialPercentile = initialPercentile,
+            bestStreak = bestStreak,
+            timeSaved = timeSaved
         )
     }
 
@@ -220,7 +244,15 @@ class UserRepositoryImpl @Inject constructor(
             occupation = occupation,
             primaryGoal = primaryGoal,
             focusScoreVersion = focusScoreVersion,
-            onboardingCompletedV2 = onboardingCompletedV2
+            onboardingCompletedV2 = onboardingCompletedV2,
+            email = email,
+            avatarUrl = avatarUrl,
+            onboardingVersion = onboardingVersion,
+            performanceTier = performanceTier,
+            behaviourProfile = behaviourProfile,
+            initialPercentile = initialPercentile,
+            bestStreak = bestStreak,
+            timeSaved = timeSaved
         )
     }
 }

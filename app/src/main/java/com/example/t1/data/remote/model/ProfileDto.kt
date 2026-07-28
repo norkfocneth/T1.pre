@@ -42,5 +42,21 @@ data class ProfileDto(
     @SerialName("focus_score_version")
     val focusScoreVersion: Int = 1,
     @SerialName("onboarding_completed_v2")
-    val onboardingCompletedV2: Boolean = false
+    val onboardingCompletedV2: Boolean = false,
+    @SerialName("email")
+    val email: String? = null,
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
+    @SerialName("onboarding_version")
+    val onboardingVersion: Int = 1,
+    @SerialName("performance_tier")
+    val performanceTier: String = "Bronze",
+    @SerialName("behaviour_profile")
+    val behaviourProfile: String = "Balanced",
+    @SerialName("initial_percentile")
+    val initialPercentile: Float = 50.0f,
+    @SerialName("best_streak")
+    val bestStreak: Int = 0,
+    @SerialName("time_saved")
+    val timeSaved: Long = 0L
 )

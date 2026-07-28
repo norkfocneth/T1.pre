@@ -25,5 +25,13 @@ data class UserProfileEntity(
     val occupation: String? = null,
     val primaryGoal: String? = null,
     val focusScoreVersion: Int = 1,
-    val onboardingCompletedV2: Boolean = false
+    val onboardingCompletedV2: Boolean = false,
+    val email: String? = null,
+    val avatarUrl: String? = null,
+    val onboardingVersion: Int = 1,
+    val performanceTier: String = "Bronze",
+    val behaviourProfile: String = "Balanced",
+    val initialPercentile: Float = 50.0f,
+    val bestStreak: Int = 0,
+    val timeSaved: Long = 0L
 )

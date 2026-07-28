@@ -17,7 +17,17 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     current_streak INTEGER DEFAULT 0,
     best_streak INTEGER DEFAULT 0,
     time_saved BIGINT DEFAULT 0,
-    total_focus_sessions INTEGER DEFAULT 0
+    total_focus_sessions INTEGER DEFAULT 0,
+    last_active_date TEXT,
+    behaviour_score INTEGER DEFAULT 0,
+    social_ratio REAL DEFAULT 0.0,
+    productivity_ratio REAL DEFAULT 0.0,
+    age INTEGER,
+    gender TEXT,
+    occupation TEXT,
+    primary_goal TEXT,
+    focus_score_version INTEGER DEFAULT 1,
+    onboarding_completed_v2 BOOLEAN DEFAULT FALSE
 );
 
 -- Enable Row Level Security

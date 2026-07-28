@@ -561,7 +561,7 @@ private fun PodiumSection(top3: List<LeaderboardUser>, glowAlpha: Float, crownFl
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SINGLE PODIUM ENTRY
+// SINGLE PODIUM ENTRY (Premium)
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
 private fun PodiumEntry(
@@ -576,8 +576,25 @@ private fun PodiumEntry(
     crownFloat    : Float,
     modifier      : Modifier = Modifier
 ) {
-    val charIdx  = entry.name.firstOrNull()?.code ?: 0
-    val avatarBg = AvatarColors[charIdx % AvatarColors.size]
+    // Premium gradient avatars for top 3
+    val avatarGradient = when (rankLabel) {
+        "1" -> Brush.linearGradient(
+            colors = listOf(Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF06B6D4))
+        )
+        "2" -> Brush.linearGradient(
+            colors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFFF43F5E))
+        )
+        else -> Brush.linearGradient(
+            colors = listOf(Color(0xFF14B8A6), Color(0xFF22D3EE), Color(0xFF3B82F6))
+        )
+    }
+
+    // Rank badge label: T1 branding
+    val badgeLabel = when (rankLabel) {
+        "1" -> "T1"
+        "2" -> "T1"
+        else -> "T1"
+    }
 
     Column(
         modifier             = modifier.padding(horizontal = 2.dp),
@@ -587,62 +604,83 @@ private fun PodiumEntry(
         if (isFirst) {
             Text(
                 text     = "👑",
-                fontSize = 20.sp,
+                fontSize = 22.sp,
                 modifier = Modifier
                     .offset(y = crownFloat.dp)
-                    .padding(bottom = 1.dp)
+                    .padding(bottom = 2.dp)
             )
         } else {
-            Spacer(Modifier.height(28.dp))  // keep alignment consistent
+            Spacer(Modifier.height(30.dp))
         }
 
         // Avatar + ring + rank badge
         Box(
-            modifier         = Modifier.size(avatarSize + 10.dp),
+            modifier         = Modifier.size(avatarSize + 14.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Outer glow layer for #1
-            if (isFirst) {
-                Box(
-                    modifier = Modifier
-                        .size(avatarSize + 22.dp)
-                        .background(
-                            brush  = Brush.radialGradient(
-                                colors = listOf(ringColor.copy(alpha = glowAlpha * 0.35f), Color.Transparent)
-                            ),
-                            shape  = CircleShape
-                        )
-                )
-            }
+            // Outer glow layer (all top 3 get a subtle glow, #1 stronger)
+            Box(
+                modifier = Modifier
+                    .size(avatarSize + 26.dp)
+                    .background(
+                        brush  = Brush.radialGradient(
+                            colors = listOf(
+                                ringColor.copy(alpha = if (isFirst) glowAlpha * 0.4f else 0.12f),
+                                Color.Transparent
+                            )
+                        ),
+                        shape  = CircleShape
+                    )
+            )
 
-            // Gradient ring
+            // Gradient ring (thicker for premium feel)
             Box(
                 modifier         = Modifier
-                    .size(avatarSize + 6.dp)
+                    .size(avatarSize + 8.dp)
                     .background(
-                        brush  = Brush.linearGradient(
-                            colors = listOf(ringColor, ringColorDark)
+                        brush  = Brush.sweepGradient(
+                            colors = listOf(ringColor, ringColorDark, ringColor.copy(alpha = 0.6f), ringColor)
                         ),
                         shape  = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                // Avatar circle
+                // Dark inner ring separator
                 Box(
                     modifier         = Modifier
-                        .size(avatarSize)
-                        .clip(CircleShape)
-                        .background(avatarBg),
+                        .size(avatarSize + 2.dp)
+                        .background(color = BgDeep, shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text  = entry.name.take(1).uppercase(),
-                        style = HeadlineSmall.copy(
-                            color      = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize   = if (isFirst) 22.sp else 18.sp
-                        )
-                    )
+                    // Premium gradient avatar
+                    Box(
+                        modifier         = Modifier
+                            .size(avatarSize)
+                            .clip(CircleShape)
+                            .background(brush = avatarGradient),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Inner decorative ring
+                        Box(
+                            modifier = Modifier
+                                .size(avatarSize - 6.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.15f),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text  = entry.name.take(1).uppercase(),
+                                style = HeadlineSmall.copy(
+                                    color      = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize   = if (isFirst) 24.sp else 18.sp
+                                )
+                            )
+                        }
+                    }
                 }
             }
 
@@ -650,28 +688,28 @@ private fun PodiumEntry(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .offset(y = 5.dp)
-                    .size(19.dp)
+                    .offset(y = 6.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(
-                        brush = Brush.linearGradient(listOf(ringColor, ringColorDark)),
-                        shape = CircleShape
+                        brush = Brush.linearGradient(listOf(ringColor, ringColorDark))
                     )
-                    .border(1.5.dp, BgDeep, CircleShape),
+                    .border(1.5.dp, BgDeep, RoundedCornerShape(10.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text  = rankLabel,
+                    text  = badgeLabel,
                     style = LabelSmall.copy(
                         color         = Color(0xFF08080C),
                         fontWeight    = FontWeight.ExtraBold,
-                        fontSize      = 9.sp,
-                        letterSpacing = 0.sp
+                        fontSize      = 8.sp,
+                        letterSpacing = 0.5.sp
                     )
                 )
             }
         }
 
-        Spacer(Modifier.height(9.dp))
+        Spacer(Modifier.height(8.dp))
 
         // Name
         Text(
@@ -706,29 +744,47 @@ private fun PodiumEntry(
             )
         )
 
-        Spacer(Modifier.height(7.dp))
+        Spacer(Modifier.height(6.dp))
 
-        // Podium platform block
+        // Premium podium platform block
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.82f)
+                .fillMaxWidth(0.85f)
                 .height(podiumHeight)
-                .clip(RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp))
+                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(PodiumBlockTop, PodiumBlockBot)
+                        colors = listOf(
+                            PodiumBlockTop,
+                            PodiumBlockBot.copy(alpha = 0.95f),
+                            PodiumBlockBot
+                        )
                     )
                 )
                 .border(
-                    width = 0.5.dp,
+                    width = 1.dp,
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            ringColor.copy(alpha = if (isFirst) 0.28f else 0.12f),
+                            ringColor.copy(alpha = if (isFirst) 0.35f else 0.18f),
+                            ringColor.copy(alpha = 0.05f),
                             Color.Transparent
                         )
                     ),
-                    shape = RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp)
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
                 )
+                .drawBehind {
+                    // Inner top-edge shine
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                ringColor.copy(alpha = if (isFirst) 0.12f else 0.06f),
+                                Color.Transparent
+                            ),
+                            startY = 0f,
+                            endY   = size.height * 0.25f
+                        )
+                    )
+                }
         )
     }
 }

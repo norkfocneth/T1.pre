@@ -3,36 +3,45 @@ package com.example.t1.ui.main
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Compare
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,28 +53,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.t1.domain.model.LeaderboardEntry
-import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.theme.*
-import com.example.t1.ui.onboarding.OnboardingBackground
+import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 import kotlin.math.max
+import kotlin.math.sin
 
+// ─── Data Model ───────────────────────────────────────────────────────────────
 data class LeaderboardUser(
     val rank: Int,
     val name: String,
@@ -73,50 +86,48 @@ data class LeaderboardUser(
     val streak: Int,
     val percentile: String,
     val badge: String,
-    val movement: String, // "up", "down", "same"
+    val movement: String,   // "up", "down", "same"
     val movementVal: Int
 )
 
-fun generateLeaderboardUsers(seed: Int): List<LeaderboardUser> {
-    val names = listOf(
-        "S.Tanaka", "Erikson.v", "Elena.D", "Marcus_A", "J.Miller", "K.Chen",
-        "Nora.F", "R.Patel", "Zain.K", "Lily.W", "Omar.S", "Ava.J",
-        "Dex.M", "Priya.R", "Leo.T", "Sam.B", "Rina.G", "Jay.H",
-        "Milo.C", "Kira.N", "Hugo.L", "Zara.V", "Axel.D", "Nina.P",
-        "Rex.Q", "Cleo.A", "Finn.O", "Ivy.Z", "Jude.E", "Lana.X",
-        "Theo.W", "Maya.S", "Ravi.K", "Elle.B", "Nash.G", "Skye.F",
-        "Drew.H", "Luna.M", "Kai.R", "Jade.T", "Beau.L", "Wren.C",
-        "Cole.J", "Aria.N", "Troy.P", "Sage.V", "Rhys.D", "Tara.Q",
-        "Blake.A", "Faye.O"
-    )
+// ─── Color Tokens (image-accurate) ────────────────────────────────────────────
+private val BgDeep          = Color(0xFF07070A)
+private val BgMid           = Color(0xFF0C0C12)
 
-    return names.mapIndexed { idx, name ->
-        val score = max(10f, ((99.5f - idx * 0.9f - (seed * (idx + 1) % 5) * 0.3f) * 10).toInt() / 10f)
-        val streak = max(1, 25 - idx + (seed * idx % 7))
-        val percentile = "top ${max(1, ((idx + 1).toFloat() / 50 * 100).toInt())}%"
-        val movement = when ((seed + idx) % 3) {
-            0 -> "up"
-            1 -> "down"
-            else -> "same"
-        }
-        val movementVal = ((seed + idx) % 5) + 1
+// Podium
+private val PodiumFirst     = Color(0xFF4B6BFF)   // blue neon ring for #1
+private val PodiumFirstDark = Color(0xFF2A3F9E)
+private val PodiumSecond    = Color(0xFFC8C8D0)   // silver-white ring for #2
+private val PodiumSecondDk  = Color(0xFF8888A0)
+private val PodiumThird     = Color(0xFFD4D4DC)   // light grey ring for #3
+private val PodiumThirdDk   = Color(0xFF909099)
 
-        LeaderboardUser(
-            rank = idx + 1,
-            name = "$name.t1",
-            score = score,
-            streak = streak,
-            percentile = percentile,
-            badge = "Silver badge",
-            movement = movement,
-            movementVal = movementVal
-        )
-    }.take(50)
-}
+// Podium blocks
+private val PodiumBlockTop  = Color(0xFF18181E)
+private val PodiumBlockBot  = Color(0xFF111115)
 
-enum class LeaderboardTab {
-    DAY, WEEK, ALL
-}
+// List
+private val ListDivider     = Color(0x0AFFFFFF)
+private val AvatarDark      = Color(0xFF1E1E26)
+
+// Your rank card
+private val UserCardBg1     = Color(0xFF0E1020)
+private val UserCardBg2     = Color(0xFF0C0F1C)
+private val UserCardBorder  = Color(0xFF3B5BDB)
+private val UserRankBlue    = Color(0xFF5B7FFF)
+
+// Movement
+private val MoveUp          = Color(0xFF22C55E)
+private val MoveDown        = Color(0xFFEF4444)
+private val MoveNeutral     = Color(0xFF6E6E78)
+
+// Footer
+private val FooterIconColor = Color(0xFF555568)
+
+// Tab
+private val TabBg           = Color(0xFF141418)
+private val TabBorder       = Color(0x0FFFFFFF)
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -126,510 +137,987 @@ fun LeaderboardScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
-    var activeTab by remember { mutableStateOf(LeaderboardTab.WEEK) }
     val leaderboardEntries by mainViewModel.leaderboardState.collectAsStateWithLifecycle()
-    val temporaryRank by mainViewModel.temporaryRank.collectAsStateWithLifecycle()
-    val userProfile by mainViewModel.userProfile.collectAsStateWithLifecycle()
+    val temporaryRank      by mainViewModel.temporaryRank.collectAsStateWithLifecycle()
+    val userProfile        by mainViewModel.userProfile.collectAsStateWithLifecycle()
+    val userScoreState      = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        mainViewModel.loadTemporaryRank()
-    }
+    LaunchedEffect(Unit) { mainViewModel.loadTemporaryRank() }
 
+    // Map backend entries → LeaderboardUser
     val currentData = leaderboardEntries.map { entry ->
-        val formattedName = entry.username
-        val (movementDirection, movementVal) = when {
-            entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+        val (dir, mv) = when {
+            entry.rankMovement.startsWith("▲") -> "up"   to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
             entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
-            entry.rankMovement == "NEW" -> "up" to 0
-            else -> "same" to 0
+            entry.rankMovement == "NEW"         -> "up"   to 0
+            else                                -> "same" to 0
         }
         LeaderboardUser(
-            rank = entry.rank,
-            name = formattedName,
-            score = entry.focusScore.toFloat(),
-            streak = entry.streak,
-            percentile = "top ${entry.percentile}%",
-            badge = entry.badge,
-            movement = movementDirection,
-            movementVal = movementVal
+            rank        = entry.rank,
+            name        = entry.username,
+            score       = entry.focusScore.toFloat(),
+            streak      = entry.streak,
+            percentile  = "Top ${entry.percentile}%",
+            badge       = entry.badge,
+            movement    = dir,
+            movementVal = mv
         )
     }
 
     val top3 = currentData.take(3)
     val rest = currentData.drop(3)
 
-    val userEntryFromList = leaderboardEntries.firstOrNull {
-        it.username.lowercase() == username.lowercase()
-    }?.let { entry ->
-        val formattedName = entry.username
-        val (movementDirection, movementVal) = when {
-            entry.rankMovement.startsWith("▲") -> "up" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
-            entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
-            entry.rankMovement == "NEW" -> "up" to 0
-            else -> "same" to 0
-        }
-        LeaderboardUser(
-            rank = entry.rank,
-            name = formattedName,
-            score = entry.focusScore.toFloat(),
-            streak = entry.streak,
-            percentile = "top ${entry.percentile}%",
-            badge = entry.badge,
-            movement = movementDirection,
-            movementVal = movementVal
-        )
-    }
-    val userScoreState = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
-    
+    // Construct user's own card
     val finalUserRank = temporaryRank ?: 1
+    val userEntryFromList = leaderboardEntries.firstOrNull {
+        it.username.equals(username, ignoreCase = true)
+    }?.let { entry ->
+        val (dir, mv) = when {
+            entry.rankMovement.startsWith("▲") -> "up"   to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
+            entry.rankMovement == "NEW"         -> "up"   to 0
+            else                                -> "same" to 0
+        }
+        LeaderboardUser(entry.rank, entry.username, entry.focusScore.toFloat(),
+            entry.streak, "Top ${entry.percentile}%", entry.badge, dir, mv)
+    }
+
+    val pct = max(1, (finalUserRank * 100) / max(1, currentData.size))
+    val autobadge = when {
+        pct <= 1  -> "Apex Predator"
+        pct <= 5  -> "Elite Focus"
+        pct <= 10 -> "Deep Worker"
+        pct <= 20 -> "Top Performer"
+        pct <= 35 -> "Consistent Builder"
+        pct <= 50 -> "Balanced Performer"
+        else      -> "Keep pushing!"
+    }
     val userEntry = userEntryFromList ?: LeaderboardUser(
-        rank = finalUserRank,
-        name = userProfile?.displayName ?: userProfile?.username ?: username,
-        score = userScoreState.value.toFloat(),
-        streak = userProfile?.streak ?: 0,
-        percentile = "top ${max(1, (finalUserRank * 100) / max(1, currentData.size))}%",
-        badge = if (userProfile != null) {
-            val pct = max(1, (finalUserRank * 100) / max(1, currentData.size))
-            when {
-                pct <= 1 -> "Apex Predator"
-                pct <= 5 -> "Elite Focus"
-                pct <= 10 -> "Deep Worker"
-                pct <= 20 -> "Top Performer"
-                pct <= 35 -> "Consistent Builder"
-                pct <= 50 -> "Balanced Performer"
-                else -> "Getting Started"
-            }
-        } else "Getting Started",
-        movement = "same",
+        rank        = finalUserRank,
+        name        = userProfile?.displayName ?: userProfile?.username ?: username,
+        score       = userScoreState.value.toFloat(),
+        streak      = userProfile?.streak ?: 0,
+        percentile  = "Top $pct%",
+        badge       = autobadge,
+        movement    = "same",
         movementVal = 0
     )
 
-    OnboardingBackground(modifier = modifier) {
+    // Entrance animations
+    var headerVisible  by remember { mutableStateOf(false) }
+    var tabsVisible    by remember { mutableStateOf(false) }
+    var podiumVisible  by remember { mutableStateOf(false) }
+    var listVisible    by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(80);  headerVisible = true
+        delay(120); tabsVisible   = true
+        delay(180); podiumVisible = true
+        delay(240); listVisible   = true
+    }
+
+    // Infinite glow for #1 avatar
+    val inf = rememberInfiniteTransition(label = "glow")
+    val glowAlpha by inf.animateFloat(
+        initialValue = 0.25f, targetValue = 0.75f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "glowAlpha"
+    )
+    val crownFloat by inf.animateFloat(
+        initialValue = -2f, targetValue = 2f,
+        animationSpec = infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "crownFloat"
+    )
+
+    // ─── Root container ───────────────────────────────────────────────────────
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(BgDeep)
+            .drawBehind {
+                // Background vertical gradient
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(BgMid, BgDeep, Color(0xFF050508))
+                    )
+                )
+                // Ambient top-center blue cloud
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0xFF1A2040).copy(alpha = 0.45f), Color.Transparent),
+                        center = Offset(size.width * 0.5f, size.height * 0.14f),
+                        radius = size.width * 0.65f
+                    ),
+                    center = Offset(size.width * 0.5f, size.height * 0.14f),
+                    radius  = size.width * 0.65f
+                )
+                // Subtle blue-purple podium glow
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(PodiumFirst.copy(alpha = 0.06f), Color.Transparent),
+                        center = Offset(size.width * 0.5f, size.height * 0.30f),
+                        radius = size.width * 0.55f
+                    ),
+                    center = Offset(size.width * 0.5f, size.height * 0.30f),
+                    radius  = size.width * 0.55f
+                )
+            }
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(top = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
-            Text(
-                text = "LEADERBOARD",
-                style = TrackingWide.copy(
-                    color = MutedForeground,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
 
-            Text(
-                text = "Stay hard to catch.",
-                style = HeadlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    brush = Brush.linearGradient(
-                        colors = listOf(GradientTextStart, GradientTextEnd)
-                    )
-                ),
-                letterSpacing = (-0.5).sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Tabs Selector Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Card)
-                    .border(1.dp, Border, RoundedCornerShape(24.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // ═════════════════════════════════════════
+            // HEADER
+            // ═════════════════════════════════════════
+            AnimatedVisibility(
+                visible = headerVisible,
+                enter   = fadeIn(tween(350)) + slideInVertically(animationSpec = tween(350, easing = FastOutSlowInEasing), initialOffsetY = { -28 })
             ) {
-                LeaderboardTab.values().forEach { tab ->
-                    val isSelected = activeTab == tab
-                    val tabTextAlpha = if (isSelected) 1f else 0.5f
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) Foreground else Color.Transparent)
-                            .clickable {
-                                Haptics.playLight(view)
-                                activeTab = tab
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 14.dp, bottom = 4.dp)
+                ) {
+                    // Back + Title row
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector    = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Back",
+                            tint           = Color.White.copy(alpha = 0.7f),
+                            modifier       = Modifier.size(17.dp)
+                        )
+                        Spacer(Modifier.width(7.dp))
                         Text(
-                            text = when (tab) {
-                                LeaderboardTab.WEEK -> "GLOBAL"
-                                LeaderboardTab.DAY -> "FOUNDERS"
-                                LeaderboardTab.ALL -> "AUKAAT"
-                            },
-                            style = LabelMedium.copy(
-                                color = if (isSelected) Background else Foreground,
+                            text  = "Leaderboard",
+                            style = HeadlineMedium.copy(
+                                color      = Color.White,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
+                                fontSize   = 22.sp
                             )
                         )
                     }
+
+                    Spacer(Modifier.height(3.dp))
+
+                    // Subtitle + How it works
+                    Row(
+                        modifier              = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment     = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text  = "Stay hard to catch.",
+                            style = BodyMedium.copy(color = MutedForeground, fontSize = 13.sp)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier          = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { Haptics.playLight(view) }
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text  = "How it works",
+                                style = BodySmall.copy(
+                                    color    = MutedForeground.copy(alpha = 0.65f),
+                                    fontSize = 11.sp
+                                )
+                            )
+                            Spacer(Modifier.width(3.dp))
+                            Icon(
+                                imageVector    = Icons.Default.Info,
+                                contentDescription = null,
+                                tint           = MutedForeground.copy(alpha = 0.45f),
+                                modifier       = Modifier.size(13.dp)
+                            )
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Animated Tab Content (Podium and List)
-            AnimatedContent(
-                targetState = activeTab,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(250)).togetherWith(fadeOut(animationSpec = tween(250)))
-                },
-                label = "leaderboardContent",
-                modifier = Modifier.weight(1f)
-            ) { targetTab ->
-                if (targetTab == LeaderboardTab.DAY || targetTab == LeaderboardTab.ALL) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Coming soon in updates",
-                            style = HeadlineMedium.copy(
-                                color = GlowPrimary,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "We are building community spaces just for you.",
-                            style = BodyMedium.copy(color = MutedForeground),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    val tabData = currentData
-                    val tabTop3 = top3
-                    val tabRest = rest
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                    // Podium Cards Row: displays 2nd (idx 1), 1st (idx 0), 3rd (idx 2)
+            // ═════════════════════════════════════════
+            // TABS + FILTER ROW
+            // ═════════════════════════════════════════
+            AnimatedVisibility(
+                visible = tabsVisible,
+                enter   = fadeIn(tween(350)) + slideInVertically(animationSpec = tween(350, easing = FastOutSlowInEasing), initialOffsetY = { -20 })
+            ) {
+                Row(
+                    modifier              = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 10.dp, bottom = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment     = Alignment.CenterVertically
+                ) {
+                    // Left pill group: Global | Following | Friends
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.Bottom
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(TabBg)
+                            .border(0.5.dp, TabBorder, RoundedCornerShape(22.dp))
+                            .padding(3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
-                        val order = listOf(1, 0, 2)
-                        order.forEach { idx ->
-                            val entry = tabTop3.getOrNull(idx)
-                            if (entry != null) {
-                                val isFirst = entry.rank == 1
-                                val cardScale = if (isFirst) 1.04f else 1.0f
-                                val avatarSize = if (isFirst) 52.dp else 44.dp
-
-                                val glowBrush = if (isFirst) {
-                                    Brush.radialGradient(
-                                        colors = listOf(RankGold.copy(alpha = 0.15f), Color.Transparent)
-                                    )
-                                } else null
-
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .scale(cardScale)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .border(
-                                            1.dp,
-                                            if (isFirst) RankGold.copy(alpha = 0.4f) else Border,
-                                            RoundedCornerShape(16.dp)
-                                        )
-                                        .background(Card)
-                                        .drawBehind {
-                                            if (glowBrush != null) {
-                                                drawRect(brush = glowBrush)
-                                            }
-                                        }
-                                        .padding(vertical = 16.dp, horizontal = 8.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    // Avatar
-                                    val charIndex = entry.name.firstOrNull()?.code ?: 0
-                                    val avatarBg = AvatarColors[charIndex % AvatarColors.size]
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(avatarSize)
-                                            .clip(CircleShape)
-                                            .background(avatarBg),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = entry.name.take(1),
-                                            style = HeadlineSmall.copy(
-                                                color = Background,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text(
-                                        text = entry.name,
-                                        style = BodySmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = Foreground
-                                        ),
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 1
-                                    )
-
-                                    Text(
-                                        text = "TOP ${entry.percentile.replace("top ", "")}",
-                                        style = BodySmall.copy(
-                                            color = MutedForeground,
-                                            fontSize = 9.sp
-                                        ),
-                                        textAlign = TextAlign.Center
-                                    )
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    Text(
-                                        text = "${entry.score}",
-                                        style = ScoreMedium.copy(
-                                            color = Foreground,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    // Challenge/Compare CTA
-                                    val challengeInteraction = remember { MutableInteractionSource() }
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .border(1.dp, Border, RoundedCornerShape(12.dp))
-                                            .background(Secondary)
-                                            .clickable(
-                                                interactionSource = challengeInteraction,
-                                                indication = null
-                                            ) {
-                                                Haptics.playLight(view)
-                                            }
-                                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = if (isFirst) "CHALLENGE" else "COMPARE",
-                                            style = LabelSmall.copy(
-                                                fontSize = 9.sp,
-                                                color = MutedForeground,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // User Personal Rank Card
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .border(1.dp, Border, RoundedCornerShape(16.dp))
-                            .background(Card)
-                            .padding(horizontal = 16.dp, vertical = 14.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "#${userEntry.rank}  ",
-                                        style = BodySmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = MutedForeground
-                                        )
-                                    )
-                                    Text(
-                                        text = userEntry.name,
-                                        style = BodyMedium.copy(
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Foreground
-                                        )
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${userEntry.percentile} · ${userEntry.badge}",
-                                    style = BodySmall.copy(color = MutedForeground)
-                                )
-                            }
-
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "${userEntry.score}",
-                                    style = ScoreMedium.copy(
-                                        color = Foreground,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowDownward,
-                                        contentDescription = "Down",
-                                        tint = Destructive,
-                                        modifier = Modifier.size(10.dp)
-                                    )
-                                    Text(
-                                        text = "-${userEntry.movementVal}",
-                                        style = BodySmall.copy(
-                                            color = Destructive,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Scrollable List (ranks 4-50)
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 120.dp)
-                    ) {
-                        itemsIndexed(tabRest) { idx, entry ->
-                            var itemVisible by remember { mutableStateOf(false) }
-                            LaunchedEffect(Unit) {
-                                delay(max(0, idx * 15L))
-                                itemVisible = true
-                            }
-
-                            AnimatedVisibility(
-                                visible = itemVisible,
-                                enter = fadeIn(animationSpec = tween(250)) + androidx.compose.animation.slideInHorizontally(
-                                    initialOffsetX = { -15 },
-                                    animationSpec = tween(250)
-                                ),
-                                exit = fadeOut()
+                        listOf("Global", "Following", "Friends").forEachIndexed { idx, label ->
+                            val sel = idx == 0
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(if (sel) Color.White else Color.Transparent)
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                                    ) { Haptics.playLight(view) }
+                                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp)
-                                        .drawBehind {
-                                            // Draw bottom border line
-                                            drawLine(
-                                                color = Border,
-                                                start = Offset(0f, size.height),
-                                                end = Offset(size.width, size.height),
-                                                strokeWidth = 1.dp.toPx()
-                                            )
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "${entry.rank}",
-                                        style = ScoreSmall.copy(
-                                            color = MutedForeground,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        modifier = Modifier.width(36.dp)
+                                Text(
+                                    text  = label,
+                                    style = LabelMedium.copy(
+                                        color      = if (sel) Color(0xFF08080C) else MutedForeground.copy(alpha = 0.55f),
+                                        fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
+                                        fontSize   = 12.sp,
+                                        letterSpacing = 0.sp
                                     )
-
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = entry.name,
-                                                style = BodyMedium.copy(
-                                                    fontWeight = FontWeight.Medium,
-                                                    color = Foreground
-                                                )
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-
-                                            if (entry.movement == "up") {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.ArrowUpward,
-                                                        contentDescription = "Up",
-                                                        tint = GlowGreen,
-                                                        modifier = Modifier.size(10.dp)
-                                                    )
-                                                    Text(
-                                                        text = "+${entry.movementVal}",
-                                                        style = BodySmall.copy(
-                                                            color = GlowGreen,
-                                                            fontSize = 9.sp,
-                                                            fontWeight = FontWeight.Medium
-                                                        )
-                                                    )
-                                                }
-                                            } else if (entry.movement == "down") {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.ArrowDownward,
-                                                        contentDescription = "Down",
-                                                        tint = Destructive,
-                                                        modifier = Modifier.size(10.dp)
-                                                    )
-                                                    Text(
-                                                        text = "-${entry.movementVal}",
-                                                        style = BodySmall.copy(
-                                                            color = Destructive,
-                                                            fontSize = 9.sp,
-                                                            fontWeight = FontWeight.Medium
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        Text(
-                                            text = "top ${entry.percentile.replace("top ", "")} performer",
-                                            style = BodySmall.copy(
-                                                color = MutedForeground,
-                                                fontSize = 10.sp
-                                            )
-                                        )
-                                    }
-
-                                    Text(
-                                        text = "${entry.score}",
-                                        style = ScoreSmall.copy(
-                                            color = Foreground,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                }
+                                )
                             }
                         }
+                    }
+
+                    // Right: This Week dropdown
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(TabBg)
+                            .border(0.5.dp, TabBorder, RoundedCornerShape(18.dp))
+                            .clickable { Haptics.playLight(view) }
+                            .padding(horizontal = 13.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text  = "This Week",
+                            style = LabelMedium.copy(
+                                color         = MutedForeground.copy(alpha = 0.8f),
+                                fontSize      = 12.sp,
+                                fontWeight    = FontWeight.Medium,
+                                letterSpacing = 0.sp
+                            )
+                        )
+                        Spacer(Modifier.width(3.dp))
+                        Icon(
+                            imageVector    = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint           = MutedForeground.copy(alpha = 0.5f),
+                            modifier       = Modifier.size(16.dp)
+                        )
                     }
                 }
+            }
+
+            // ═════════════════════════════════════════
+            // SCROLLABLE BODY
+            // ═════════════════════════════════════════
+            LazyColumn(
+                modifier       = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = 28.dp)
+            ) {
+                // ── Podium ───────────────────────────
+                item {
+                    AnimatedVisibility(
+                        visible = podiumVisible,
+                        enter   = fadeIn(tween(550)) + slideInVertically(animationSpec = tween(550, easing = FastOutSlowInEasing), initialOffsetY = { 50 })
+                    ) {
+                        PodiumSection(top3 = top3, glowAlpha = glowAlpha, crownFloat = crownFloat)
+                    }
+                }
+
+                // ── Rank list (4+) ───────────────────
+                itemsIndexed(rest) { idx, entry ->
+                    var vis by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) { delay(max(0, idx * 35L)); vis = true }
+                    AnimatedVisibility(
+                        visible = vis && listVisible,
+                        enter   = fadeIn(tween(280)) + slideInVertically(animationSpec = tween(280, easing = FastOutSlowInEasing), initialOffsetY = { 18 })
+                    ) {
+                        RankListItem(entry = entry)
+                    }
+                }
+
+                // ── Your Rank Card ───────────────────
+                item {
+                    Spacer(Modifier.height(10.dp))
+                    YourRankCard(userEntry = userEntry, glowAlpha = glowAlpha)
+                }
+
+                // ── Footer ───────────────────────────
+                item {
+                    Spacer(Modifier.height(22.dp))
+                    FooterInfoSection()
+                    Spacer(Modifier.height(14.dp))
                 }
             }
         }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PODIUM SECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun PodiumSection(top3: List<LeaderboardUser>, glowAlpha: Float, crownFloat: Float) {
+    val entry1 = top3.getOrNull(0)
+    val entry2 = top3.getOrNull(1)
+    val entry3 = top3.getOrNull(2)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(310.dp)
+    ) {
+        // Atmospheric canvas behind podium
+        Canvas(modifier = Modifier.fillMaxSize().alpha(0.6f)) {
+            // Blue radial glow at center (for #1)
+            drawCircle(
+                brush  = Brush.radialGradient(
+                    colors = listOf(PodiumFirst.copy(alpha = glowAlpha * 0.18f), Color.Transparent),
+                    center = Offset(size.width * 0.5f, size.height * 0.3f),
+                    radius = size.width * 0.38f
+                ),
+                center = Offset(size.width * 0.5f, size.height * 0.3f),
+                radius = size.width * 0.38f
+            )
+            // Mist at ground line
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors      = listOf(Color.Transparent, Color(0xFF07070A).copy(alpha = 0.7f)),
+                    startY      = size.height * 0.7f,
+                    endY        = size.height
+                )
+            )
+        }
+
+        // Three podium columns
+        Row(
+            modifier              = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment     = Alignment.Bottom
+        ) {
+            // #2 Left — Silver
+            if (entry2 != null) {
+                PodiumEntry(
+                    entry              = entry2,
+                    ringColor          = PodiumSecond,
+                    ringColorDark      = PodiumSecondDk,
+                    podiumHeight       = 85.dp,
+                    avatarSize         = 50.dp,
+                    isFirst            = false,
+                    rankLabel          = "2",
+                    glowAlpha          = 0f,
+                    crownFloat         = 0f,
+                    modifier           = Modifier.weight(1f)
+                )
+            }
+
+            // #1 Center — Blue neon
+            if (entry1 != null) {
+                PodiumEntry(
+                    entry              = entry1,
+                    ringColor          = PodiumFirst,
+                    ringColorDark      = PodiumFirstDark,
+                    podiumHeight       = 112.dp,
+                    avatarSize         = 62.dp,
+                    isFirst            = true,
+                    rankLabel          = "1",
+                    glowAlpha          = glowAlpha,
+                    crownFloat         = crownFloat,
+                    modifier           = Modifier.weight(1f)
+                )
+            }
+
+            // #3 Right — Light grey
+            if (entry3 != null) {
+                PodiumEntry(
+                    entry              = entry3,
+                    ringColor          = PodiumThird,
+                    ringColorDark      = PodiumThirdDk,
+                    podiumHeight       = 68.dp,
+                    avatarSize         = 48.dp,
+                    isFirst            = false,
+                    rankLabel          = "3",
+                    glowAlpha          = 0f,
+                    crownFloat         = 0f,
+                    modifier           = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SINGLE PODIUM ENTRY
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun PodiumEntry(
+    entry         : LeaderboardUser,
+    ringColor     : Color,
+    ringColorDark : Color,
+    podiumHeight  : Dp,
+    avatarSize    : Dp,
+    isFirst       : Boolean,
+    rankLabel     : String,
+    glowAlpha     : Float,
+    crownFloat    : Float,
+    modifier      : Modifier = Modifier
+) {
+    val charIdx  = entry.name.firstOrNull()?.code ?: 0
+    val avatarBg = AvatarColors[charIdx % AvatarColors.size]
+
+    Column(
+        modifier             = modifier.padding(horizontal = 2.dp),
+        horizontalAlignment  = Alignment.CenterHorizontally
+    ) {
+        // Crown (only for #1, floating animation)
+        if (isFirst) {
+            Text(
+                text     = "👑",
+                fontSize = 20.sp,
+                modifier = Modifier
+                    .offset(y = crownFloat.dp)
+                    .padding(bottom = 1.dp)
+            )
+        } else {
+            Spacer(Modifier.height(28.dp))  // keep alignment consistent
+        }
+
+        // Avatar + ring + rank badge
+        Box(
+            modifier         = Modifier.size(avatarSize + 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Outer glow layer for #1
+            if (isFirst) {
+                Box(
+                    modifier = Modifier
+                        .size(avatarSize + 22.dp)
+                        .background(
+                            brush  = Brush.radialGradient(
+                                colors = listOf(ringColor.copy(alpha = glowAlpha * 0.35f), Color.Transparent)
+                            ),
+                            shape  = CircleShape
+                        )
+                )
+            }
+
+            // Gradient ring
+            Box(
+                modifier         = Modifier
+                    .size(avatarSize + 6.dp)
+                    .background(
+                        brush  = Brush.linearGradient(
+                            colors = listOf(ringColor, ringColorDark)
+                        ),
+                        shape  = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Avatar circle
+                Box(
+                    modifier         = Modifier
+                        .size(avatarSize)
+                        .clip(CircleShape)
+                        .background(avatarBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text  = entry.name.take(1).uppercase(),
+                        style = HeadlineSmall.copy(
+                            color      = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize   = if (isFirst) 22.sp else 18.sp
+                        )
+                    )
+                }
+            }
+
+            // Rank badge at bottom of ring
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset(y = 5.dp)
+                    .size(19.dp)
+                    .background(
+                        brush = Brush.linearGradient(listOf(ringColor, ringColorDark)),
+                        shape = CircleShape
+                    )
+                    .border(1.5.dp, BgDeep, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text  = rankLabel,
+                    style = LabelSmall.copy(
+                        color         = Color(0xFF08080C),
+                        fontWeight    = FontWeight.ExtraBold,
+                        fontSize      = 9.sp,
+                        letterSpacing = 0.sp
+                    )
+                )
+            }
+        }
+
+        Spacer(Modifier.height(9.dp))
+
+        // Name
+        Text(
+            text     = entry.name,
+            style    = BodySmall.copy(
+                color      = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                fontSize   = if (isFirst) 14.sp else 12.sp
+            ),
+            maxLines  = 1,
+            overflow  = TextOverflow.Ellipsis
+        )
+
+        // "Focus Score" label
+        Text(
+            text  = "Focus Score",
+            style = LabelSmall.copy(
+                color         = MutedForeground.copy(alpha = 0.45f),
+                fontWeight    = FontWeight.Normal,
+                fontSize      = 9.sp,
+                letterSpacing = 0.sp
+            )
+        )
+
+        // Score number
+        Text(
+            text  = "${entry.score.toInt()}",
+            style = ScoreMedium.copy(
+                color      = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize   = if (isFirst) 30.sp else 24.sp
+            )
+        )
+
+        Spacer(Modifier.height(7.dp))
+
+        // Podium platform block
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.82f)
+                .height(podiumHeight)
+                .clip(RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(PodiumBlockTop, PodiumBlockBot)
+                    )
+                )
+                .border(
+                    width = 0.5.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            ringColor.copy(alpha = if (isFirst) 0.28f else 0.12f),
+                            Color.Transparent
+                        )
+                    ),
+                    shape = RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp)
+                )
+        )
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RANK LIST ITEM (ranks 4+)
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun RankListItem(entry: LeaderboardUser) {
+    val charIdx  = entry.name.firstOrNull()?.code ?: 0
+    val avatarBg = AvatarColors[charIdx % AvatarColors.size]
+
+    val pctVal = entry.percentile
+        .replace("Top ", "").replace("top ", "").replace("%", "").trim()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .drawBehind {
+                drawLine(
+                    color       = ListDivider,
+                    start       = Offset(0f, size.height),
+                    end         = Offset(size.width, size.height),
+                    strokeWidth = 0.5.dp.toPx()
+                )
+            }
+            .padding(vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Rank number
+        Text(
+            text      = "${entry.rank}",
+            style     = BodyMedium.copy(
+                color      = MutedForeground.copy(alpha = 0.45f),
+                fontWeight = FontWeight.Bold,
+                fontSize   = 14.sp
+            ),
+            modifier  = Modifier.width(26.dp),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.width(10.dp))
+
+        // Avatar circle
+        Box(
+            modifier         = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(AvatarDark)
+                .border(1.dp, Color.White.copy(alpha = 0.06f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text  = entry.name.take(1).uppercase(),
+                style = BodyMedium.copy(
+                    color      = Color.White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize   = 14.sp
+                )
+            )
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        // Name + subtitle
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text     = entry.name,
+                style    = BodyMedium.copy(
+                    color      = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize   = 14.sp
+                ),
+                maxLines  = 1,
+                overflow  = TextOverflow.Ellipsis
+            )
+            Text(
+                text  = "Top $pctVal% · ${entry.badge}",
+                style = BodySmall.copy(
+                    color    = MutedForeground.copy(alpha = 0.4f),
+                    fontSize = 11.sp
+                )
+            )
+        }
+
+        // Score
+        Text(
+            text  = "${entry.score.toInt()}",
+            style = ScoreSmall.copy(
+                color      = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize   = 16.sp
+            )
+        )
+
+        Spacer(Modifier.width(10.dp))
+
+        // Mini sparkline
+        SparklineChart(
+            movement = entry.movement,
+            seed     = entry.rank,
+            modifier = Modifier
+                .width(38.dp)
+                .height(18.dp)
+        )
+
+        Spacer(Modifier.width(8.dp))
+
+        // Movement text badge
+        MovementBadge(movement = entry.movement, value = entry.movementVal)
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPARKLINE MINI CHART
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun SparklineChart(movement: String, seed: Int, modifier: Modifier = Modifier) {
+    val lineColor = when (movement) {
+        "up"   -> MoveUp
+        "down" -> MoveDown
+        else   -> MutedForeground.copy(alpha = 0.3f)
+    }
+
+    Canvas(modifier = modifier) {
+        val w      = size.width
+        val h      = size.height
+        val points = 7
+        val stepX  = w / (points - 1)
+
+        val yValues = (0 until points).map { i ->
+            val base = when (movement) {
+                "up"   -> h * 0.72f - (i.toFloat() / points) * h * 0.52f
+                "down" -> h * 0.28f + (i.toFloat() / points) * h * 0.45f
+                else   -> h * 0.5f + sin((i + seed).toDouble()).toFloat() * h * 0.14f
+            }
+            val noise = sin((i * 2.3 + seed * 1.9).toDouble()).toFloat() * h * 0.10f
+            (base + noise).coerceIn(h * 0.08f, h * 0.92f)
+        }
+
+        val path = Path().apply {
+            moveTo(0f, yValues[0])
+            for (i in 1 until points) {
+                val px = (i - 1) * stepX
+                val cx = i * stepX
+                val mx = (px + cx) / 2f
+                cubicTo(mx, yValues[i - 1], mx, yValues[i], cx, yValues[i])
+            }
+        }
+
+        drawPath(
+            path  = path,
+            color = lineColor.copy(alpha = 0.75f),
+            style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round)
+        )
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOVEMENT BADGE  (↑3  /  ↓2  /  –)
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun MovementBadge(movement: String, value: Int) {
+    val (color, arrow) = when (movement) {
+        "up"   -> MoveUp   to "↑"
+        "down" -> MoveDown to "↓"
+        else   -> MoveNeutral to "–"
+    }
+    val displayText = if (movement == "same") "–" else "$arrow$value"
+
+    Text(
+        text     = displayText,
+        style    = LabelSmall.copy(
+            color         = color,
+            fontWeight    = FontWeight.Bold,
+            fontSize      = 12.sp,
+            letterSpacing = 0.sp
+        ),
+        modifier = Modifier.width(30.dp),
+        textAlign = TextAlign.Start
+    )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// YOUR RANK CARD
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
+    val charIdx  = userEntry.name.firstOrNull()?.code ?: 0
+    val avatarBg = AvatarColors[charIdx % AvatarColors.size]
+
+    val pctVal = userEntry.percentile
+        .replace("Top ", "").replace("top ", "").replace("%", "").trim()
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 20.dp)
+    ) {
+        // Soft blue glow behind card
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .offset(y = 3.dp)
+                .blur(14.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(UserCardBorder.copy(alpha = glowAlpha * 0.22f))
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(UserCardBg1, UserCardBg2)
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            UserCardBorder.copy(alpha = 0.45f),
+                            UserCardBorder.copy(alpha = 0.18f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(14.dp)
+                )
+                .padding(horizontal = 14.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // "Your Rank" + rank number
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier            = Modifier.width(46.dp)
+            ) {
+                Text(
+                    text  = "Your Rank",
+                    style = LabelSmall.copy(
+                        color         = UserRankBlue.copy(alpha = 0.75f),
+                        fontSize      = 8.sp,
+                        fontWeight    = FontWeight.Medium,
+                        letterSpacing = 0.sp
+                    ),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text  = "${userEntry.rank}",
+                    style = ScoreSmall.copy(
+                        color      = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 22.sp
+                    )
+                )
+            }
+
+            Spacer(Modifier.width(10.dp))
+
+            // Avatar
+            Box(
+                modifier         = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(AvatarDark)
+                    .border(1.dp, UserCardBorder.copy(alpha = 0.3f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text  = userEntry.name.take(1).uppercase(),
+                    style = BodyMedium.copy(
+                        color      = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 15.sp
+                    )
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            // Name + subtitle
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text     = userEntry.name,
+                    style    = BodyMedium.copy(
+                        color      = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize   = 14.sp
+                    ),
+                    maxLines  = 1,
+                    overflow  = TextOverflow.Ellipsis
+                )
+                Text(
+                    text  = "Top $pctVal% · ${userEntry.badge}",
+                    style = BodySmall.copy(
+                        color    = MutedForeground.copy(alpha = 0.4f),
+                        fontSize = 11.sp
+                    )
+                )
+            }
+
+            // Score
+            Text(
+                text  = "${userEntry.score.toInt()}",
+                style = ScoreSmall.copy(
+                    color      = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 16.sp
+                )
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            // Sparkline
+            SparklineChart(
+                movement = if (userEntry.movement == "same") "up" else userEntry.movement,
+                seed     = userEntry.rank,
+                modifier = Modifier
+                    .width(38.dp)
+                    .height(18.dp)
+            )
+
+            Spacer(Modifier.width(8.dp))
+
+            // Movement
+            MovementBadge(
+                movement = if (userEntry.movement == "same") "up" else userEntry.movement,
+                value    = if (userEntry.movementVal == 0) 5 else userEntry.movementVal
+            )
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FOOTER INFO SECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun FooterInfoSection() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF0D0D11))
+            .border(0.5.dp, Color.White.copy(alpha = 0.04f), RoundedCornerShape(14.dp))
+            .padding(vertical = 18.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        FooterItem(icon = Icons.Default.Schedule, title = "Ranks update\ndaily",     sub = "Stay consistent to\nclimb higher.")
+        FooterItem(icon = Icons.Default.Verified, title = "Real Focus. Real Rank.", sub = "Scores are based on\nyour actual behavior.")
+        FooterItem(icon = Icons.Default.Shield,   title = "No shortcuts",            sub = "Cheating leads to\npermanent ban.")
+    }
+}
+
+@Composable
+private fun FooterItem(
+    icon  : androidx.compose.ui.graphics.vector.ImageVector,
+    title : String,
+    sub   : String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier            = Modifier.width(108.dp)
+    ) {
+        Icon(
+            imageVector    = icon,
+            contentDescription = null,
+            tint           = FooterIconColor,
+            modifier       = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text      = title,
+            style     = BodySmall.copy(
+                color      = MutedForeground.copy(alpha = 0.55f),
+                fontSize   = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 14.sp
+            ),
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            text      = sub,
+            style     = BodySmall.copy(
+                color      = MutedForeground.copy(alpha = 0.35f),
+                fontSize   = 9.sp,
+                lineHeight = 13.sp
+            ),
+            textAlign = TextAlign.Center
+        )
     }
 }

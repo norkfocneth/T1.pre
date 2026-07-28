@@ -708,21 +708,29 @@ fun HomeScreen(
 
                     val categories = listOf(
                         Triple("Productivity", dashboardState.categoryTimes["Productivity"] ?: behaviour.productiveTimeMs, Success),
-                        Triple("Social Time", dashboardState.categoryTimes["Social"] ?: behaviour.socialTimeMs, StreakSmall),
+                        Triple("Communication", dashboardState.categoryTimes["Communication"] ?: behaviour.communicationTimeMs, StreakSmall),
+                        Triple("Social Time", dashboardState.categoryTimes["Social"] ?: behaviour.socialTimeMs, BreakdownSocial),
                         Triple("Entertainment", dashboardState.categoryTimes["Entertainment"] ?: behaviour.entertainmentTimeMs, Info),
                         Triple("Education", dashboardState.categoryTimes["Education"] ?: behaviour.educationTimeMs, GlowPrimary),
                         Triple("Utility", dashboardState.categoryTimes["Utility"] ?: 0L, MutedForeground)
                     )
 
                     fun mapToCategoryLabel(legacyCategory: AppCategory, packageName: String): String {
-                        if (packageName == "com.slack" || packageName == "com.microsoft.teams" || packageName == "com.zoom.videomeetings" || packageName == "com.google.android.gm" || packageName == "com.google.android.apps.meetings" || packageName == "com.google.android.apps.tachyon") return "Productivity"
-                        if (packageName == "com.whatsapp" || packageName == "com.whatsapp.w4b" || packageName == "org.telegram.messenger" || packageName == "com.discord") return "Social Time"
+                        val communicationPackages = setOf(
+                            "com.slack", "com.microsoft.teams", "us.zoom.videomeetings", "com.zoom.videomeetings",
+                            "com.google.android.gm", "com.microsoft.office.outlook", "com.google.android.apps.meetings",
+                            "com.google.android.apps.tachyon", "com.google.android.apps.dynamite", "com.skype.raider",
+                            "com.viber.voip", "com.imo.android.imoim", "com.whatsapp", "com.whatsapp.w4b",
+                            "org.telegram.messenger", "org.thunderdog.challegram", "com.discord"
+                        )
+                        if (packageName in communicationPackages) return "Communication"
 
                         return when (legacyCategory) {
                             AppCategory.PRODUCTIVITY, AppCategory.DEVELOPMENT -> "Productivity"
                             AppCategory.EDUCATION -> "Education"
                             AppCategory.ENTERTAINMENT -> "Entertainment"
-                            AppCategory.SOCIAL, AppCategory.COMMUNICATION -> "Social Time"
+                            AppCategory.SOCIAL -> "Social Time"
+                            AppCategory.COMMUNICATION -> "Communication"
                             else -> "Utility"
                         }
                     }

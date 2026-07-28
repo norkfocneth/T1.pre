@@ -14,20 +14,29 @@ class AppCategoryRepositoryImpl @Inject constructor(
 
     // Dynamic package overrides for precision
     private val overrides = mapOf(
-        // Productivity Messaging & Work
-        "com.slack" to EngineCategory.PRODUCTIVITY,
-        "com.microsoft.teams" to EngineCategory.PRODUCTIVITY,
-        "com.zoom.videomeetings" to EngineCategory.PRODUCTIVITY,
-        "com.google.android.gm" to EngineCategory.PRODUCTIVITY, // Gmail
-        "com.google.android.apps.meetings" to EngineCategory.PRODUCTIVITY, // Google Meet
-        "com.google.android.apps.tachyon" to EngineCategory.PRODUCTIVITY, // Google Meet
-        
-        // Social Messaging
-        "com.whatsapp" to EngineCategory.SOCIAL,
-        "com.whatsapp.w4b" to EngineCategory.SOCIAL,
-        "org.telegram.messenger" to EngineCategory.SOCIAL,
-        "com.discord" to EngineCategory.SOCIAL,
-        
+        // Communication (half-positive weight: +0.10)
+        // These apps were previously PRODUCTIVITY but are now COMMUNICATION
+        // to prevent score inflation from keeping email/chat open all day.
+        "com.slack" to EngineCategory.COMMUNICATION,
+        "com.microsoft.teams" to EngineCategory.COMMUNICATION,
+        "us.zoom.videomeetings" to EngineCategory.COMMUNICATION,
+        "com.zoom.videomeetings" to EngineCategory.COMMUNICATION,
+        "com.google.android.gm" to EngineCategory.COMMUNICATION,             // Gmail
+        "com.microsoft.office.outlook" to EngineCategory.COMMUNICATION,      // Outlook
+        "com.google.android.apps.meetings" to EngineCategory.COMMUNICATION,  // Google Meet
+        "com.google.android.apps.tachyon" to EngineCategory.COMMUNICATION,   // Google Duo/Meet
+        "com.google.android.apps.dynamite" to EngineCategory.COMMUNICATION,  // Google Chat
+        "com.skype.raider" to EngineCategory.COMMUNICATION,
+        "com.viber.voip" to EngineCategory.COMMUNICATION,
+        "com.imo.android.imoim" to EngineCategory.COMMUNICATION,
+
+        // Communication (messaging apps)
+        "com.whatsapp" to EngineCategory.COMMUNICATION,
+        "com.whatsapp.w4b" to EngineCategory.COMMUNICATION,
+        "org.telegram.messenger" to EngineCategory.COMMUNICATION,
+        "org.thunderdog.challegram" to EngineCategory.COMMUNICATION,
+        "com.discord" to EngineCategory.COMMUNICATION,
+
         // Utilities (Neutral)
         "com.android.settings" to EngineCategory.UTILITY,
         "com.android.camera" to EngineCategory.UTILITY,
@@ -48,11 +57,12 @@ class AppCategoryRepositoryImpl @Inject constructor(
             AppCategory.DEVELOPMENT -> EngineCategory.PRODUCTIVITY
             
             AppCategory.EDUCATION -> EngineCategory.EDUCATION
+
+            AppCategory.COMMUNICATION -> EngineCategory.COMMUNICATION
             
             AppCategory.ENTERTAINMENT -> EngineCategory.ENTERTAINMENT
             
-            AppCategory.SOCIAL,
-            AppCategory.COMMUNICATION -> EngineCategory.SOCIAL
+            AppCategory.SOCIAL -> EngineCategory.SOCIAL
             
             AppCategory.FINANCE,
             AppCategory.HEALTH,

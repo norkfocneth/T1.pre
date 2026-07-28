@@ -86,7 +86,13 @@ class UserRepositoryImpl @Inject constructor(
                 behaviourScore = profile.behaviourScore,
                 socialRatio = profile.socialRatio,
                 productivityRatio = profile.productivityRatio,
-                totalFocusSessions = profile.totalFocusSessions
+                totalFocusSessions = profile.totalFocusSessions,
+                age = profile.age,
+                gender = profile.gender,
+                occupation = profile.occupation,
+                primaryGoal = profile.primaryGoal,
+                focusScoreVersion = profile.focusScoreVersion,
+                onboardingCompletedV2 = profile.onboardingCompletedV2
             )
             val success = supabaseService.upsertProfile(profileDto)
             if (!success) {
@@ -159,7 +165,13 @@ class UserRepositoryImpl @Inject constructor(
             behaviourScore = behaviourScore,
             socialRatio = socialRatio,
             productivityRatio = productivityRatio,
-            totalFocusSessions = totalFocusSessions
+            totalFocusSessions = totalFocusSessions,
+            age = age,
+            gender = gender,
+            occupation = occupation,
+            primaryGoal = primaryGoal,
+            focusScoreVersion = focusScoreVersion,
+            onboardingCompletedV2 = onboardingCompletedV2
         )
     }
 
@@ -177,7 +189,13 @@ class UserRepositoryImpl @Inject constructor(
             behaviourScore = behaviourScore,
             socialRatio = socialRatio,
             productivityRatio = productivityRatio,
-            totalFocusSessions = totalFocusSessions
+            totalFocusSessions = totalFocusSessions,
+            age = age,
+            gender = gender,
+            occupation = occupation,
+            primaryGoal = primaryGoal,
+            focusScoreVersion = focusScoreVersion,
+            onboardingCompletedV2 = onboardingCompletedV2
         )
     }
 
@@ -196,7 +214,13 @@ class UserRepositoryImpl @Inject constructor(
             behaviourScore = behaviourScore,
             socialRatio = socialRatio,
             productivityRatio = productivityRatio,
-            totalFocusSessions = totalFocusSessions
+            totalFocusSessions = totalFocusSessions,
+            age = age,
+            gender = gender,
+            occupation = occupation,
+            primaryGoal = primaryGoal,
+            focusScoreVersion = focusScoreVersion,
+            onboardingCompletedV2 = onboardingCompletedV2
         )
     }
 }

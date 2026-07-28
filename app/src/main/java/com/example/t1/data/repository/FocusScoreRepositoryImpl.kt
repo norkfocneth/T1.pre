@@ -119,7 +119,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
                 trend = focusResult.trend,
                 timeSaved = timeSaved,
                 generatedAt = System.currentTimeMillis(),
-                version = FocusScoreEngine.ENGINE_VERSION,
+                version = FocusScoreEngine.ENGINE_VERSION.toString(),
                 verified = true,
                 synced = false
             )
@@ -129,7 +129,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
             // Update User Profile with latest daily stats
             val totalNonUtility = if (todayBehaviour != null) {
                 todayBehaviour.productiveTimeMs + todayBehaviour.educationTimeMs +
-                todayBehaviour.entertainmentTimeMs + todayBehaviour.socialTimeMs
+                todayBehaviour.communicationTimeMs + todayBehaviour.entertainmentTimeMs + todayBehaviour.socialTimeMs
             } else 0L
 
             val currentSocialRatio = if (totalNonUtility > 0 && todayBehaviour != null) {

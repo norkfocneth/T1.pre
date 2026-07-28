@@ -30,5 +30,17 @@ data class ProfileDto(
     @SerialName("productivity_ratio")
     val productivityRatio: Double = 0.0,
     @SerialName("total_focus_sessions")
-    val totalFocusSessions: Int = 0
+    val totalFocusSessions: Int = 0,
+    @SerialName("age")
+    val age: Int? = null,
+    @SerialName("gender")
+    val gender: String? = null,
+    @SerialName("occupation")
+    val occupation: String? = null,
+    @SerialName("primary_goal")
+    val primaryGoal: String? = null,
+    @SerialName("focus_score_version")
+    val focusScoreVersion: Int = 1,
+    @SerialName("onboarding_completed_v2")
+    val onboardingCompletedV2: Boolean = false
 )

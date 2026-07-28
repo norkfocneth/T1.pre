@@ -77,7 +77,7 @@ class BehaviourScoreRepositoryImpl @Inject constructor(
                         behaviourScore = scoreResult.score,
                         confidence = scoreResult.confidence,
                         generatedAt = System.currentTimeMillis(),
-                        sourceVersion = BehaviourScoreEngine.ENGINE_VERSION,
+                        sourceVersion = BehaviourScoreEngine.ENGINE_VERSION.toString(),
                         verified = true
                     )
                     dailyBehaviourScoreDao.insertOrReplace(scoreEntity)

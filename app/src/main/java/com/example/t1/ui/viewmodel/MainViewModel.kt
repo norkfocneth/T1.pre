@@ -75,6 +75,8 @@ class MainViewModel @Inject constructor(
         profile?.focusScore ?: 50
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 50)
 
+
+
     private val _totalFocusSessions = MutableStateFlow(0)
     val totalFocusSessions: StateFlow<Int> = _totalFocusSessions.asStateFlow()
 
@@ -123,6 +125,18 @@ class MainViewModel @Inject constructor(
                     // Trigger daily login reward check
                     launch {
                         triggerDailyLoginReward(profile.id)
+                    }
+
+                    // Silent migration to Focus Score V2 in the background
+                    if (profile.focusScoreVersion < com.example.t1.domain.focus.FocusScoreEngine.ENGINE_VERSION || !profile.onboardingCompletedV2) {
+                        launch {
+                            val updatedProfile = profile.copy(
+                                focusScoreVersion = com.example.t1.domain.focus.FocusScoreEngine.ENGINE_VERSION,
+                                onboardingCompletedV2 = true
+                            )
+                            userRepository.saveProfile(updatedProfile)
+                            refreshBehaviourData()
+                        }
                     }
                 } else {
                     _tokenWallet.value = null
@@ -220,6 +234,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
+
+
     fun refreshBehaviourData() {
         viewModelScope.launch {
             val perm = _dashboardState.value.permissionState
@@ -238,6 +254,7 @@ class MainViewModel @Inject constructor(
                 val categoryTimes = mutableMapOf(
                     "Productivity" to 0L,
                     "Education" to 0L,
+                    "Communication" to 0L,
                     "Social" to 0L,
                     "Entertainment" to 0L,
                     "Utility" to 0L
@@ -247,6 +264,7 @@ class MainViewModel @Inject constructor(
                     val catName = when (cat) {
                         EngineCategory.PRODUCTIVITY -> "Productivity"
                         EngineCategory.EDUCATION -> "Education"
+                        EngineCategory.COMMUNICATION -> "Communication"
                         EngineCategory.SOCIAL -> "Social"
                         EngineCategory.ENTERTAINMENT -> "Entertainment"
                         EngineCategory.UTILITY -> "Utility"

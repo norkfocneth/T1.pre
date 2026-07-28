@@ -12,7 +12,7 @@ sealed interface BehaviourEngineResult {
 
 object BehaviourScoreEngine {
 
-    const val ENGINE_VERSION = "ENGINE_V2"
+    const val ENGINE_VERSION: Int = 3
 
     fun calculateConfidence(verifiedDaysCount: Int): Int {
         return when {
@@ -46,9 +46,10 @@ object BehaviourScoreEngine {
             return BehaviourEngineResult.Error("Impossible unlock count or app opens detected.")
         }
 
-        // 2. Classify usage into 5 categories using AppCategoryRepository
+        // 2. Classify usage into 6 categories using AppCategoryRepository
         var productivityTime = 0L
         var educationTime = 0L
+        var communicationTime = 0L
         var entertainmentTime = 0L
         var socialTime = 0L
         var utilityTime = 0L
@@ -60,14 +61,15 @@ object BehaviourScoreEngine {
             when (engineCat) {
                 EngineCategory.PRODUCTIVITY -> productivityTime += duration
                 EngineCategory.EDUCATION -> educationTime += duration
+                EngineCategory.COMMUNICATION -> communicationTime += duration
                 EngineCategory.ENTERTAINMENT -> entertainmentTime += duration
                 EngineCategory.SOCIAL -> socialTime += duration
                 EngineCategory.UTILITY -> utilityTime += duration
             }
         }
 
-        // 3. Compute Non-Utility Screen Time
-        val nonUtilityTime = productivityTime + educationTime + entertainmentTime + socialTime
+        // 3. Compute Non-Utility Screen Time (now includes Communication)
+        val nonUtilityTime = productivityTime + educationTime + communicationTime + entertainmentTime + socialTime
 
         // 4. Calculate Ratios & Weighted Index
         var weightedIndex = 0f
@@ -76,10 +78,12 @@ object BehaviourScoreEngine {
         if (nonUtilityTime > 0) {
             productivityRatio = productivityTime.toFloat() / nonUtilityTime.toFloat()
             educationRatio = educationTime.toFloat() / nonUtilityTime.toFloat()
+            val communicationRatio = communicationTime.toFloat() / nonUtilityTime.toFloat()
             val entertainmentRatio = entertainmentTime.toFloat() / nonUtilityTime.toFloat()
             val socialRatio = socialTime.toFloat() / nonUtilityTime.toFloat()
 
-            weightedIndex = (productivityRatio * 0.40f) + (educationRatio * 0.20f) - (entertainmentRatio * 0.15f) - (socialRatio * 0.25f)
+            // Communication is half-positive (+0.10), preventing score inflation from email/chat
+            weightedIndex = (productivityRatio * 0.35f) + (educationRatio * 0.18f) + (communicationRatio * 0.10f) - (entertainmentRatio * 0.15f) - (socialRatio * 0.22f)
         }
 
         // 5. Initial Base Score (Base = 50)

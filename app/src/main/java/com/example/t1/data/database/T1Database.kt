@@ -34,7 +34,7 @@ import com.example.t1.data.database.dao.LeaderboardDailyDao
         TokenWalletEntity::class,
         TokenTransactionEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class T1Database : RoomDatabase() {

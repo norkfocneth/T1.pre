@@ -114,6 +114,7 @@ fun HomeScreen(
 
     val tokenWallet by viewModel.tokenWallet.collectAsStateWithLifecycle()
     val tokenTransactions by viewModel.tokenTransactions.collectAsStateWithLifecycle()
+    val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
 
     var showMerchCustomizer by remember { mutableStateOf(false) }
     var showWalletScreen by remember { mutableStateOf(false) }
@@ -483,7 +484,27 @@ fun HomeScreen(
 
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Goal Comparison Card
+            val primaryGoal = userProfile?.primaryGoal ?: "PRODUCTIVITY"
+            val todayGoalUsageMs = when (primaryGoal.uppercase()) {
+                "PRODUCTIVITY" -> dashboardState.categoryTimes["Productivity"] ?: 0L
+                "EDUCATION" -> dashboardState.categoryTimes["Education"] ?: 0L
+                "SOCIAL" -> dashboardState.categoryTimes["Social"] ?: 0L
+                "ENTERTAINMENT" -> dashboardState.categoryTimes["Entertainment"] ?: 0L
+                "COMMUNICATION" -> dashboardState.categoryTimes["Communication"] ?: 0L
+                else -> dashboardState.categoryTimes["Productivity"] ?: 0L
+            }
+
+            GoalComparisonCard(
+                primaryGoal = primaryGoal,
+                trend = dashboardState.trend,
+                todayUsageMs = todayGoalUsageMs,
+                baselineMs = dashboardState.baselineGoalTimeMs
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 3. Stats Card Row
             AnimatedVisibility(
@@ -2949,3 +2970,100 @@ fun TokenWalletScreen(
         }
     }
 }
+
+@Composable
+fun GoalComparisonCard(
+    primaryGoal: String,
+    trend: String,
+    todayUsageMs: Long,
+    baselineMs: Long,
+    modifier: Modifier = Modifier
+) {
+    val isGrowth = primaryGoal.uppercase() == "PRODUCTIVITY" || primaryGoal.uppercase() == "EDUCATION"
+    val diffMinutes = ((todayUsageMs - baselineMs) / 60000L).toInt()
+
+    val goalTitle = when (primaryGoal.uppercase()) {
+        "PRODUCTIVITY" -> "PRODUCTIVITY"
+        "EDUCATION" -> "EDUCATION"
+        "SOCIAL" -> "SOCIAL CONTROL"
+        "ENTERTAINMENT" -> "ENTERTAINMENT CONTROL"
+        "COMMUNICATION" -> "CHAT CONTROL"
+        else -> "PRODUCTIVITY"
+    }
+
+    val deltaText = if (isGrowth) {
+        if (diffMinutes >= 0) "+$diffMinutes min vs your average" else "$diffMinutes min vs your average"
+    } else {
+        if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
+    }
+
+    val goalLower = when (primaryGoal.uppercase()) {
+        "PRODUCTIVITY" -> "productivity"
+        "EDUCATION" -> "education"
+        "SOCIAL" -> "social"
+        "ENTERTAINMENT" -> "entertainment"
+        "COMMUNICATION" -> "chat control"
+        else -> "productivity"
+    }
+
+    val motivationalText = when {
+        trend.equals("Improving", ignoreCase = true) -> "You're improving your $goalLower."
+        trend.equals("Declining", ignoreCase = true) -> "Let's get back on track."
+        else -> "Maintaining steady balance."
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Card.copy(alpha = 0.8f))
+            .border(1.dp, Border, RoundedCornerShape(16.dp))
+            .padding(vertical = 18.dp, horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Centered Pill Badge
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF262D4A).copy(alpha = 0.6f))
+                .padding(horizontal = 14.dp, vertical = 5.dp)
+        ) {
+            Text(
+                text = goalTitle,
+                style = LabelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF8E99B4),
+                    letterSpacing = 1.sp,
+                    fontSize = 9.sp
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Main delta text
+        Text(
+            text = deltaText,
+            style = HeadlineSmall.copy(
+                fontWeight = FontWeight.Normal,
+                fontSize = 22.sp,
+                color = Foreground
+            ),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Motivational/status subtext
+        Text(
+            text = motivationalText,
+            style = BodySmall.copy(
+                color = MutedForeground,
+                fontSize = 12.sp
+            ),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+

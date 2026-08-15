@@ -21,6 +21,8 @@ import com.example.t1.data.database.dao.TokenTransactionDao
 
 import com.example.t1.data.database.entity.LeaderboardDailyEntity
 import com.example.t1.data.database.dao.LeaderboardDailyDao
+import com.example.t1.data.database.entity.AppCategoryOverrideEntity
+import com.example.t1.data.database.dao.AppCategoryOverrideDao
 
 @Database(
     entities = [
@@ -32,9 +34,10 @@ import com.example.t1.data.database.dao.LeaderboardDailyDao
         DailyFocusScoreEntity::class,
         LeaderboardDailyEntity::class,
         TokenWalletEntity::class,
-        TokenTransactionEntity::class
+        TokenTransactionEntity::class,
+        AppCategoryOverrideEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class T1Database : RoomDatabase() {
@@ -47,5 +50,6 @@ abstract class T1Database : RoomDatabase() {
     abstract fun leaderboardDailyDao(): LeaderboardDailyDao
     abstract fun tokenWalletDao(): TokenWalletDao
     abstract fun tokenTransactionDao(): TokenTransactionDao
+    abstract fun appCategoryOverrideDao(): AppCategoryOverrideDao
 }
 

@@ -7,30 +7,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.example.t1.theme.*
-import kotlin.math.min
 
 enum class OnboardingStep {
-    AUTH, QUESTIONS, PERMISSIONS, ANALYSIS, RESULT, USERNAME
+    AUTH, QUESTIONS, GOAL_SELECTION, APP_CLASSIFICATION, PERMISSIONS, ANALYSIS, RESULT, USERNAME
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OnboardingFlow(
-    onComplete: (String, String?, Int) -> Unit,
+    onComplete: (username: String, displayName: String?, focusScore: Int, primaryGoal: String, overrides: Map<String, String>) -> Unit,
     modifier: Modifier = Modifier,
     initialStep: OnboardingStep = OnboardingStep.AUTH
 ) {
     var step by remember { mutableStateOf(initialStep) }
     var focusScore by remember { mutableIntStateOf(68) }
+    var selectedGoal by remember { mutableStateOf("PRODUCTIVITY") }
+    var customOverrides by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     LaunchedEffect(initialStep) {
         step = initialStep
@@ -81,13 +75,12 @@ fun OnboardingFlow(
         val calculated = minScore + ((points - minPoints).toFloat() / (maxPoints - minPoints).toFloat() * (maxScore - minScore).toFloat()).toInt()
         
         focusScore = calculated.coerceIn(40, 74)
-        step = OnboardingStep.ANALYSIS
+        step = OnboardingStep.GOAL_SELECTION
     }
 
     AnimatedContent(
         targetState = step,
         transitionSpec = {
-            // Replicate framer-motion transition: initial {opacity: 0, x: 30, scale: 0.98} -> exit {opacity: 0, x: -30}
             (fadeIn(animationSpec = tween(400)) + androidx.compose.animation.slideInHorizontally(
                 initialOffsetX = { 30 },
                 animationSpec = tween(400)
@@ -110,6 +103,22 @@ fun OnboardingFlow(
                     onComplete = handleQuestionsComplete
                 )
             }
+            OnboardingStep.GOAL_SELECTION -> {
+                GoalSelectionScreen(
+                    onGoalSelected = { goal ->
+                        selectedGoal = goal
+                        step = OnboardingStep.APP_CLASSIFICATION
+                    }
+                )
+            }
+            OnboardingStep.APP_CLASSIFICATION -> {
+                AppClassificationScreen(
+                    onClassificationComplete = { overrides ->
+                        customOverrides = overrides
+                        step = OnboardingStep.PERMISSIONS
+                    }
+                )
+            }
             OnboardingStep.PERMISSIONS -> {
                 PermissionScreen(
                     onContinue = { step = OnboardingStep.ANALYSIS }
@@ -128,7 +137,9 @@ fun OnboardingFlow(
             }
             OnboardingStep.USERNAME -> {
                 UsernameScreen(
-                    onComplete = { username, displayName -> onComplete(username, displayName, focusScore) }
+                    onComplete = { username, displayName ->
+                        onComplete(username, displayName, focusScore, selectedGoal, customOverrides)
+                    }
                 )
             }
         }

@@ -16,6 +16,7 @@ import com.example.t1.data.database.dao.DailyFocusScoreDao
 import com.example.t1.data.database.dao.LeaderboardDailyDao
 import com.example.t1.data.database.dao.TokenWalletDao
 import com.example.t1.data.database.dao.TokenTransactionDao
+import com.example.t1.data.database.dao.AppCategoryOverrideDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -83,6 +84,11 @@ object DatabaseModule {
     @Provides
     fun provideTokenTransactionDao(database: T1Database): TokenTransactionDao {
         return database.tokenTransactionDao()
+    }
+
+    @Provides
+    fun provideAppCategoryOverrideDao(database: T1Database): AppCategoryOverrideDao {
+        return database.appCategoryOverrideDao()
     }
 }
 

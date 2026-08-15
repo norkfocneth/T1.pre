@@ -1,63 +1,62 @@
 package com.example.t1.domain.focus
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FocusScoreEngineTest {
 
     @Test
     fun testFocusScoreCalculationWithoutHistory() {
-        // No yesterday score, no history.
-        // Blended = 80 * 0.5 + 90 * 0.5 = 40 + 45 = 85. (confidence = 50 -> bw = 0.5, qw = 0.5)
-        // Expect final score = 85, trend = Stable
+        // Growth goal: Productivity.
+        // Today = 2 hours, Baseline = 2 hours.
+        // Delta = 0 min.
+        // Base score = 50 -> Final score = 50, trend = Stable
         val result = FocusScoreEngine.calculateFocusScore(
-            questionnaireScore = 80,
-            behaviourScore = 90,
-            confidence = 50,
+            goalCategory = "PRODUCTIVITY",
+            todayCategoryTimeMs = 2 * 3600000L,
+            baselineCategoryTimeMs = 2 * 3600000L,
+            completedFocusSessionsCount = 0,
             yesterdayFocusScore = null,
             pastFocusScores = emptyList()
         )
-        assertEquals(85, result.finalScore)
+        assertEquals(50, result.finalScore)
         assertEquals("Stable", result.trend)
     }
 
     @Test
     fun testFocusScoreCalculationWithImprovementAndStability() {
+        // Growth goal: Productivity.
         // Yesterday = 70.
-        // Blended = 80 * 0.5 + 90 * 0.5 = 85.
-        // Delta = 85 - 70 = 15.
-        // Capped movement is +5 -> today's capped score = 75.
-        // Past scores = [70, 72].
-        // Rolling average = 75 * 0.7 + (70 + 72)/2.0 * 0.3 = 52.5 + 71 * 0.3 = 52.5 + 21.3 = 73.8 -> rounded = 74.
-        // Expected = 74, trend = Improving
+        // Today = 3 hours (180 min), Baseline = 1 hour (60 min). Delta = +120 min.
+        // Higher usage than baseline improves score.
         val result = FocusScoreEngine.calculateFocusScore(
-            questionnaireScore = 80,
-            behaviourScore = 90,
-            confidence = 50,
+            goalCategory = "PRODUCTIVITY",
+            todayCategoryTimeMs = 3 * 3600000L,
+            baselineCategoryTimeMs = 1 * 3600000L,
+            completedFocusSessionsCount = 1,
             yesterdayFocusScore = 70,
-            pastFocusScores = listOf(70, 72)
+            pastFocusScores = listOf(68, 69, 70)
         )
-        assertEquals(74, result.finalScore)
+        assertTrue(result.finalScore > 70)
         assertEquals("Improving", result.trend)
     }
 
     @Test
-    fun testFocusScoreCalculationWithDeclineAndStability() {
-        // Yesterday = 90.
-        // Blended = 80 * 0.5 + 50 * 0.5 = 65.
-        // Delta = 65 - 90 = -25.
-        // Capped movement is -5 -> today's capped score = 85.
-        // Past scores = [88, 90].
-        // Rolling average = 85 * 0.7 + (88 + 90)/2.0 * 0.3 = 59.5 + 89 * 0.3 = 59.5 + 26.7 = 86.2 -> rounded = 86.
-        // Expected = 86, trend = Declining
+    fun testFocusScoreCalculationWithDecline() {
+        // Reduction goal: Social.
+        // Yesterday = 80.
+        // Today = 4 hours (240 min), Baseline = 1 hour (60 min). Delta = +180 min (much more social than baseline).
+        // For reduction goal, higher usage reduces score.
         val result = FocusScoreEngine.calculateFocusScore(
-            questionnaireScore = 80,
-            behaviourScore = 50,
-            confidence = 50,
-            yesterdayFocusScore = 90,
-            pastFocusScores = listOf(88, 90)
+            goalCategory = "SOCIAL",
+            todayCategoryTimeMs = 4 * 3600000L,
+            baselineCategoryTimeMs = 1 * 3600000L,
+            completedFocusSessionsCount = 0,
+            yesterdayFocusScore = 80,
+            pastFocusScores = listOf(82, 81, 80)
         )
-        assertEquals(86, result.finalScore)
+        assertTrue(result.finalScore < 80)
         assertEquals("Declining", result.trend)
     }
 }

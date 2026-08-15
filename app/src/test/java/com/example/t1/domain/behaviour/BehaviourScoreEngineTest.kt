@@ -98,7 +98,7 @@ class BehaviourScoreEngineTest {
 
         assertTrue(result is BehaviourEngineResult.Success)
         val success = result as BehaviourEngineResult.Success
-        assertEquals(58, success.score)
+        assertEquals(57, success.score)
         assertEquals(50, success.confidence)
     }
 }

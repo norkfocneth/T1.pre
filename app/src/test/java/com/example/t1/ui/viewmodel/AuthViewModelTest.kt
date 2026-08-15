@@ -1,15 +1,17 @@
 package com.example.t1.ui.viewmodel
 
 import android.content.Context
+import com.example.t1.data.database.dao.DailyBehaviourDao
+import com.example.t1.data.database.dao.DailyBehaviourScoreDao
+import com.example.t1.data.database.dao.DailyFocusScoreDao
+import com.example.t1.data.database.dao.DailyUsageDao
+import com.example.t1.data.database.dao.TokenWalletDao
+import com.example.t1.data.database.dao.TokenTransactionDao
 import com.example.t1.domain.SessionManager
 import com.example.t1.domain.model.AuthError
 import com.example.t1.domain.model.UserProfile
 import com.example.t1.domain.repository.AuthRepository
 import com.example.t1.domain.repository.UserRepository
-import com.example.t1.data.database.dao.DailyUsageDao
-import com.example.t1.data.database.dao.DailyBehaviourDao
-import com.example.t1.data.database.dao.DailyBehaviourScoreDao
-import com.example.t1.data.database.dao.DailyFocusScoreDao
 import io.github.jan.supabase.SupabaseClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,6 +43,8 @@ class AuthViewModelTest {
     private lateinit var mockDailyBehaviourDao: DailyBehaviourDao
     private lateinit var mockDailyBehaviourScoreDao: DailyBehaviourScoreDao
     private lateinit var mockDailyFocusScoreDao: DailyFocusScoreDao
+    private lateinit var mockTokenWalletDao: TokenWalletDao
+    private lateinit var mockTokenTransactionDao: TokenTransactionDao
     private lateinit var viewModel: AuthViewModel
 
     @Before
@@ -54,6 +58,8 @@ class AuthViewModelTest {
         mockDailyBehaviourDao = mock(DailyBehaviourDao::class.java)
         mockDailyBehaviourScoreDao = mock(DailyBehaviourScoreDao::class.java)
         mockDailyFocusScoreDao = mock(DailyFocusScoreDao::class.java)
+        mockTokenWalletDao = mock(TokenWalletDao::class.java)
+        mockTokenTransactionDao = mock(TokenTransactionDao::class.java)
     }
 
     @After
@@ -76,7 +82,7 @@ class AuthViewModelTest {
         )
 
         // Initialize SessionManager with our fakes and null SupabaseClient
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao, mockTokenWalletDao, mockTokenTransactionDao) {
             override suspend fun restoreSessionAndProfile(): Result<UserProfile?> {
                 val uid = fakeAuthRepository.restoreSession().getOrNull() ?: return Result.failure(Exception("No session"))
                 return Result.success(fakeUserRepository.remoteProfiles[uid])
@@ -99,7 +105,7 @@ class AuthViewModelTest {
         // Setup session but NO profile
         fakeAuthRepository.restoreUserId = "user-456"
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao, mockTokenWalletDao, mockTokenTransactionDao) {
             override suspend fun restoreSessionAndProfile(): Result<UserProfile?> {
                 return Result.success(null) // no profile
             }
@@ -117,7 +123,7 @@ class AuthViewModelTest {
         fakeAuthRepository.loginUserId = "new-user-789"
         // Remote returns null profile
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao, mockTokenWalletDao, mockTokenTransactionDao) {
             override suspend fun syncProfileAndCache(userId: String): Result<UserProfile?> {
                 return Result.success(null) // new user
             }
@@ -141,7 +147,7 @@ class AuthViewModelTest {
     fun testSecurityValidationFailure() = testScope.runTest {
         fakeAuthRepository.loginUserId = "legit-user"
 
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao, mockTokenWalletDao, mockTokenTransactionDao) {
             override suspend fun syncProfileAndCache(userId: String): Result<UserProfile?> {
                 // Return mismatched ID profile to trigger security failure
                 return Result.failure(SecurityException("SECURITY FAILURE: ID mismatch"))
@@ -163,7 +169,7 @@ class AuthViewModelTest {
 
     @Test
     fun testLogoutDropsCache() = testScope.runTest {
-        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao) {
+        val customSessionManager = object : SessionManager(null, fakeAuthRepository, fakeUserRepository, mockDailyUsageDao, mockDailyBehaviourDao, mockDailyBehaviourScoreDao, mockDailyFocusScoreDao, mockTokenWalletDao, mockTokenTransactionDao) {
             override suspend fun performSignOut(): Result<Unit> {
                 fakeUserRepository.clearCache()
                 return Result.success(Unit)
@@ -243,6 +249,12 @@ class AuthViewModelTest {
 
         override suspend fun getLocalProfile(userId: String): UserProfile? {
             return if (cachedProfile?.id == userId) cachedProfile else null
+        }
+
+        override suspend fun deleteProfile(userId: String): Result<Unit> {
+            remoteProfiles.remove(userId)
+            cachedProfile = null
+            return Result.success(Unit)
         }
     }
 }

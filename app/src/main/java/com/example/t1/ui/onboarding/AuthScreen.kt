@@ -66,33 +66,33 @@ fun OnboardingBackground(
             .drawBehind {
                 val baseSize = if (size.height > size.width) size.height else size.width
 
-                // 1. Linear gradient top to bottom (Base dark background) - drawn first/bottom-most
+                // 1. Linear gradient top to bottom (Base dark background)
                 drawRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(BgTop, BgBottom)
                     )
                 )
                 
-                // 2. Background radial gradient middle-top (emerald glow centered at 50% width, 18% height, 30% radius)
+                // 2. Background radial gradient middle-top (ambient blue glow centered at 50% width, 18% height, 38% radius)
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(GlowGreen.copy(alpha = 0.08f), Color.Transparent),
+                        colors = listOf(GlowPrimary.copy(alpha = 0.14f), Color(0xFF1A2040).copy(alpha = 0.08f), Color.Transparent),
                         center = Offset(size.width / 2f, size.height * 0.18f),
-                        radius = baseSize * 0.30f
+                        radius = baseSize * 0.38f
                     ),
                     center = Offset(size.width / 2f, size.height * 0.18f),
-                    radius = baseSize * 0.30f
+                    radius = baseSize * 0.38f
                 )
 
-                // 3. Background radial gradient top center (white overlay centered at top center, 24% radius)
+                // 3. Background radial gradient top center (subtle blue-white shimmer centered at top center, 26% radius)
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.05f), Color.Transparent),
+                        colors = listOf(GlowPrimary.copy(alpha = 0.08f), Color.White.copy(alpha = 0.03f), Color.Transparent),
                         center = Offset(size.width / 2f, 0f),
-                        radius = baseSize * 0.24f
+                        radius = baseSize * 0.26f
                     ),
                     center = Offset(size.width / 2f, 0f),
-                    radius = baseSize * 0.24f
+                    radius = baseSize * 0.26f
                 )
             }
     ) {

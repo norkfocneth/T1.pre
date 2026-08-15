@@ -31,6 +31,7 @@ class FocusScoreRepositoryTest {
     private lateinit var mockDailyFocusScoreDao: DailyFocusScoreDao
     private lateinit var mockFocusSessionDao: FocusSessionDao
     private lateinit var mockSupabaseService: SupabaseService
+    private lateinit var mockBehaviourRepository: com.example.t1.domain.repository.BehaviourRepository
 
     private lateinit var repository: FocusScoreRepositoryImpl
 
@@ -50,6 +51,7 @@ class FocusScoreRepositoryTest {
         mockDailyFocusScoreDao = Mockito.mock(DailyFocusScoreDao::class.java)
         mockFocusSessionDao = Mockito.mock(FocusSessionDao::class.java)
         mockSupabaseService = Mockito.mock(SupabaseService::class.java)
+        mockBehaviourRepository = Mockito.mock(com.example.t1.domain.repository.BehaviourRepository::class.java)
 
         repository = FocusScoreRepositoryImpl(
             authRepository = mockAuthRepository,
@@ -59,7 +61,8 @@ class FocusScoreRepositoryTest {
             dailyBehaviourScoreDao = mockDailyBehaviourScoreDao,
             dailyFocusScoreDao = mockDailyFocusScoreDao,
             focusSessionDao = mockFocusSessionDao,
-            supabaseService = mockSupabaseService
+            supabaseService = mockSupabaseService,
+            behaviourRepository = mockBehaviourRepository
         )
 
         kotlinx.coroutines.runBlocking {

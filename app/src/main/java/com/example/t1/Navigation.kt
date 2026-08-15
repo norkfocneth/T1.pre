@@ -103,13 +103,15 @@ fun MainNavigation(
                 Box(modifier = Modifier.fillMaxSize()) {
                     OnboardingFlow(
                         initialStep = OnboardingStep.QUESTIONS,
-                        onComplete = { username, displayName, focusScore ->
-                            com.example.t1.util.T1Logger.i("Onboarding quiz finished. Saving profile.")
+                        onComplete = { username, displayName, focusScore, primaryGoal, overrides ->
+                            com.example.t1.util.T1Logger.i("Onboarding finished. Saving profile.")
                             onboardingViewModel.completeOnboarding(
                                 userId = userId,
                                 username = username,
                                 displayName = displayName,
-                                focusScore = focusScore
+                                focusScore = focusScore,
+                                primaryGoal = primaryGoal,
+                                customOverrides = overrides
                             )
                         }
                     )

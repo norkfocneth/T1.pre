@@ -2,6 +2,8 @@ package com.example.t1.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.t1.data.database.dao.AppCategoryOverrideDao
+import com.example.t1.data.database.entity.AppCategoryOverrideEntity
 import com.example.t1.domain.repository.UserRepository
 import com.example.t1.domain.model.UserProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +24,10 @@ sealed interface OnboardingUiState {
     data class Error(val message: String) : OnboardingUiState
 }
 
-/**
- * OnboardingViewModel stubbed for Phase 1.
- * Acts as a placeholder to allow UI compilation.
- */
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val appCategoryOverrideDao: AppCategoryOverrideDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<OnboardingUiState>(OnboardingUiState.Idle)
@@ -66,16 +65,33 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    fun completeOnboarding(userId: String, username: String, displayName: String?, focusScore: Int) {
+    fun completeOnboarding(
+        userId: String,
+        username: String,
+        displayName: String?,
+        focusScore: Int,
+        primaryGoal: String,
+        customOverrides: Map<String, String>
+    ) {
         _uiState.value = OnboardingUiState.Loading
         viewModelScope.launch {
             try {
+                // 1. Save App Category Overrides
+                val overrideEntities = customOverrides.map { (pkg, cat) ->
+                    AppCategoryOverrideEntity(packageName = pkg, category = cat)
+                }
+                if (overrideEntities.isNotEmpty()) {
+                    appCategoryOverrideDao.saveOverrides(overrideEntities)
+                }
+
+                // 2. Save UserProfile
                 val profile = UserProfile(
                     id = userId,
                     username = username,
                     usernameLower = username.lowercase(),
                     displayName = displayName,
                     focusScore = focusScore,
+                    primaryGoal = primaryGoal,
                     onboardingCompleted = true,
                     createdAt = System.currentTimeMillis()
                 )

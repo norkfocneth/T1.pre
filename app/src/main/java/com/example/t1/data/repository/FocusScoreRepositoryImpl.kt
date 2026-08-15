@@ -84,24 +84,60 @@ class FocusScoreRepositoryImpl @Inject constructor(
                 .lastOrNull { it.date < dateStr }
                 ?.finalFocusScore
 
+            val todayDate = LocalDate.parse(dateStr)
+            val yesterdayDate = todayDate.minusDays(1)
+            val todayBehaviour = behaviourRepository.getBehaviourForDate(todayDate).getOrNull()
+            val yesterdayBehaviour = behaviourRepository.getBehaviourForDate(yesterdayDate).getOrNull()
+
+            val primaryGoal = profile.primaryGoal ?: "PRODUCTIVITY"
+
+            fun getCategoryDuration(b: com.example.t1.domain.model.behaviour.DailyBehaviourSummary?, goal: String): Long {
+                if (b == null) return 0L
+                return when (goal.uppercase()) {
+                    "PRODUCTIVITY" -> b.productiveTimeMs
+                    "EDUCATION" -> b.educationTimeMs
+                    "COMMUNICATION" -> b.communicationTimeMs
+                    "SOCIAL" -> b.socialTimeMs
+                    "ENTERTAINMENT" -> b.entertainmentTimeMs
+                    else -> b.productiveTimeMs
+                }
+            }
+
+            val todayCategoryTimeMs = getCategoryDuration(todayBehaviour, primaryGoal)
+
+            // 7-day baseline calculation (last 7 days prior to today)
+            val past7Days = (1..7).map { todayDate.minusDays(it.toLong()) }
+            val past7Behaviours = past7Days.mapNotNull { d ->
+                behaviourRepository.getBehaviourForDate(d).getOrNull()
+            }
+
+            val baselineCategoryTimeMs = if (past7Behaviours.isNotEmpty()) {
+                past7Behaviours.map { getCategoryDuration(it, primaryGoal) }.average().toLong()
+            } else {
+                todayCategoryTimeMs
+            }
+
+            val startOfDay = todayDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val endOfDay = todayDate.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val sessionsCount = try {
+                focusSessionDao.getFocusSessionCountForDay(userId, startOfDay, endOfDay)
+            } catch (e: Exception) {
+                0
+            }
+
             // 4. Compute Focus Score on Dispatchers.Default
             val focusResult = withContext(Dispatchers.Default) {
                 FocusScoreEngine.calculateFocusScore(
-                    questionnaireScore = questionnaireScore,
-                    behaviourScore = behaviourScore,
-                    confidence = confidence,
+                    goalCategory = primaryGoal,
+                    todayCategoryTimeMs = todayCategoryTimeMs,
+                    baselineCategoryTimeMs = baselineCategoryTimeMs,
+                    completedFocusSessionsCount = sessionsCount,
                     yesterdayFocusScore = yesterdayFocusScore,
                     pastFocusScores = pastFocusScores
                 )
             }
 
             // 5. Calculate Time Saved (Yesterday screen time - Today screen time)
-            val todayDate = LocalDate.parse(dateStr)
-            val yesterdayDate = todayDate.minusDays(1)
-            
-            val todayBehaviour = behaviourRepository.getBehaviourForDate(todayDate).getOrNull()
-            val yesterdayBehaviour = behaviourRepository.getBehaviourForDate(yesterdayDate).getOrNull()
-
             val timeSaved = if (todayBehaviour != null && yesterdayBehaviour != null) {
                 yesterdayBehaviour.totalScreenTimeMs - todayBehaviour.totalScreenTimeMs
             } else {

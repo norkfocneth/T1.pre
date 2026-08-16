@@ -434,10 +434,10 @@ fun HomeScreen(
                 if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
             }
 
-            val statusComparisonText = when {
-                dashboardState.trend.equals("Improving", ignoreCase = true) -> "You are better than yesterday"
-                dashboardState.trend.equals("Declining", ignoreCase = true) -> "You are not better than yesterday"
-                else -> "You are average from yesterday"
+            val statusComparisonText = if (dashboardState.trend.equals("Declining", ignoreCase = true)) {
+                "You are not better from yesterday"
+            } else {
+                "You are better from yesterday"
             }
 
             // 2. Focus Ring Section (Hero UI)

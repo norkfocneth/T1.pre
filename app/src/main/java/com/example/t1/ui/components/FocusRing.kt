@@ -55,7 +55,7 @@ fun FocusRing(
     score: Int,
     onTap: () -> Unit,
     showDetails: Boolean = false,
-    statusComparisonText: String = "You are average from yesterday",
+    statusComparisonText: String = "You are better from yesterday",
     statusGoalBadge: String = "",
     statusDeltaText: String = "",
     modifier: Modifier = Modifier

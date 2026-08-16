@@ -405,6 +405,41 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Goal Comparison & Status calculation
+            val primaryGoal = userProfile?.primaryGoal ?: "PRODUCTIVITY"
+            val todayGoalUsageMs = when (primaryGoal.uppercase()) {
+                "PRODUCTIVITY" -> dashboardState.categoryTimes["Productivity"] ?: 0L
+                "EDUCATION" -> dashboardState.categoryTimes["Education"] ?: 0L
+                "SOCIAL" -> dashboardState.categoryTimes["Social"] ?: 0L
+                "ENTERTAINMENT" -> dashboardState.categoryTimes["Entertainment"] ?: 0L
+                "COMMUNICATION" -> dashboardState.categoryTimes["Communication"] ?: 0L
+                else -> dashboardState.categoryTimes["Productivity"] ?: 0L
+            }
+
+            val isGrowth = primaryGoal.uppercase() == "PRODUCTIVITY" || primaryGoal.uppercase() == "EDUCATION"
+            val diffMinutes = ((todayGoalUsageMs - dashboardState.baselineGoalTimeMs) / 60000L).toInt()
+
+            val goalTitle = when (primaryGoal.uppercase()) {
+                "PRODUCTIVITY" -> "PRODUCTIVITY"
+                "EDUCATION" -> "EDUCATION"
+                "SOCIAL" -> "SOCIAL CONTROL"
+                "ENTERTAINMENT" -> "ENTERTAINMENT CONTROL"
+                "COMMUNICATION" -> "CHAT CONTROL"
+                else -> "PRODUCTIVITY"
+            }
+
+            val deltaText = if (isGrowth) {
+                if (diffMinutes >= 0) "+$diffMinutes min vs your average" else "$diffMinutes min vs your average"
+            } else {
+                if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
+            }
+
+            val statusComparisonText = when {
+                dashboardState.trend.equals("Improving", ignoreCase = true) -> "You are better than yesterday"
+                dashboardState.trend.equals("Declining", ignoreCase = true) -> "You are not better than yesterday"
+                else -> "You are average from yesterday"
+            }
+
             // 2. Focus Ring Section (Hero UI)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -431,19 +466,13 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Dynamic segments
-                val breakdownSegments = remember(dashboardState.confidence) {
-                    listOf(
-                        com.example.t1.ui.components.BreakdownSegment("Questionnaire", 100 - dashboardState.confidence, StreakSmall),
-                        com.example.t1.ui.components.BreakdownSegment("Behaviour", dashboardState.confidence, Success)
-                    )
-                }
-
                 // Interactive FocusRing
                 FocusRing(
                     score = score,
-                    showBreakdown = showBreakdown,
-                    breakdownSegments = breakdownSegments,
+                    showDetails = showBreakdown,
+                    statusComparisonText = statusComparisonText,
+                    statusGoalBadge = goalTitle,
+                    statusDeltaText = deltaText,
                     onTap = {
                         Haptics.playLight(view)
                         showBreakdown = !showBreakdown
@@ -466,14 +495,14 @@ fun HomeScreen(
                     )
                 }
 
-                // "tap ring for breakdown" hint
+                // "tap ring for status" hint
                 AnimatedVisibility(
                     visible = showTapHint,
                     enter = fadeIn(animationSpec = tween(500)),
                     modifier = Modifier.alpha(0.4f)
                 ) {
                     Text(
-                        text = "tap ring for breakdown",
+                        text = if (showBreakdown) "tap ring for score" else "tap ring for status",
                         style = BodySmall.copy(
                             fontSize = 10.sp,
                             color = MutedForeground
@@ -487,16 +516,6 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Goal Comparison Card
-            val primaryGoal = userProfile?.primaryGoal ?: "PRODUCTIVITY"
-            val todayGoalUsageMs = when (primaryGoal.uppercase()) {
-                "PRODUCTIVITY" -> dashboardState.categoryTimes["Productivity"] ?: 0L
-                "EDUCATION" -> dashboardState.categoryTimes["Education"] ?: 0L
-                "SOCIAL" -> dashboardState.categoryTimes["Social"] ?: 0L
-                "ENTERTAINMENT" -> dashboardState.categoryTimes["Entertainment"] ?: 0L
-                "COMMUNICATION" -> dashboardState.categoryTimes["Communication"] ?: 0L
-                else -> dashboardState.categoryTimes["Productivity"] ?: 0L
-            }
-
             GoalComparisonCard(
                 primaryGoal = primaryGoal,
                 trend = dashboardState.trend,

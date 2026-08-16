@@ -55,6 +55,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun ResultScreen(
     score: Int,
+    avgDailyScreenTime: String = "4.2h",
+    topCategory: String = "Social",
     onContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -222,7 +224,7 @@ fun ResultScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "4.2h",
+                            text = avgDailyScreenTime,
                             style = HeadlineMedium.copy(
                                 color = Foreground,
                                 fontWeight = FontWeight.Bold
@@ -251,7 +253,7 @@ fun ResultScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Social",
+                            text = topCategory,
                             style = HeadlineMedium.copy(
                                 color = Foreground,
                                 fontWeight = FontWeight.Bold

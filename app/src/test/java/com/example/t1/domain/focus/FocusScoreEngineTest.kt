@@ -59,4 +59,48 @@ class FocusScoreEngineTest {
         assertTrue(result.finalScore < 80)
         assertEquals("Declining", result.trend)
     }
+
+    @Test
+    fun testFocusScoreWithCustomDefaultBaseScore() {
+        val result = FocusScoreEngine.calculateFocusScore(
+            goalCategory = "PRODUCTIVITY",
+            todayCategoryTimeMs = 2 * 3600000L,
+            baselineCategoryTimeMs = 2 * 3600000L,
+            completedFocusSessionsCount = 0,
+            yesterdayFocusScore = null,
+            pastFocusScores = emptyList(),
+            defaultBaseScore = 65
+        )
+        assertEquals(65, result.finalScore)
+        assertEquals("Stable", result.trend)
+    }
+
+    @Test
+    fun testInitialScoreFrom7Days() {
+        val emptySummaries = emptyList<com.example.t1.domain.model.behaviour.DailyBehaviourSummary>()
+        assertEquals(50, FocusScoreEngine.calculateInitialScoreFrom7Days(emptySummaries))
+
+        val productiveDays = (1..7).map {
+            com.example.t1.domain.model.behaviour.DailyBehaviourSummary(
+                date = java.time.LocalDate.now().minusDays(it.toLong()),
+                totalScreenTimeMs = 4 * 3600000L,
+                socialTimeMs = 5 * 60000L,
+                entertainmentTimeMs = 10 * 60000L,
+                productiveTimeMs = 3 * 3600000L,
+                educationTimeMs = 30 * 60000L,
+                communicationTimeMs = 15 * 60000L,
+                financeTimeMs = 0L,
+                healthTimeMs = 0L,
+                developmentTimeMs = 0L,
+                otherTimeMs = 0L,
+                unlockCount = 20,
+                appOpenCount = 40,
+                foregroundSessionCount = 30,
+                topUsedApps = emptyList(),
+                collectionTimestamp = System.currentTimeMillis()
+            )
+        }
+        val highProdScore = FocusScoreEngine.calculateInitialScoreFrom7Days(productiveDays, "PRODUCTIVITY")
+        assertTrue(highProdScore > 50)
+    }
 }

@@ -77,7 +77,7 @@ object AICoachEngine {
                 "I'm feeling highly focused! Ready to analyze your attention metrics."
             }
             q.contains("focus score") || q.contains("my score") -> {
-                "Your current Focus Score is $focusScore/100. This is a blend of your Questionnaire score and your Behaviour score (currently $behaviourScore/100)."
+                "Your current Focus Score is $focusScore/100. It is computed from your actual screen time, unlocks, app opens, and category usage."
             }
             q.contains("behaviour") || q.contains("behavior") -> {
                 "Your Behaviour Score is $behaviourScore/100. It is computed based on screen time, unlocks, app opens, and active focus sessions."

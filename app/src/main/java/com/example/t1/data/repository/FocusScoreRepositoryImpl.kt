@@ -133,7 +133,8 @@ class FocusScoreRepositoryImpl @Inject constructor(
                     baselineCategoryTimeMs = baselineCategoryTimeMs,
                     completedFocusSessionsCount = sessionsCount,
                     yesterdayFocusScore = yesterdayFocusScore,
-                    pastFocusScores = pastFocusScores
+                    pastFocusScores = pastFocusScores,
+                    defaultBaseScore = questionnaireScore
                 )
             }
 

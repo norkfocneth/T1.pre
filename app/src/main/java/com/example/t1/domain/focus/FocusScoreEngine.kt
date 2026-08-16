@@ -54,7 +54,8 @@ object FocusScoreEngine {
         baselineCategoryTimeMs: Long,
         completedFocusSessionsCount: Int = 0,
         yesterdayFocusScore: Int? = null,
-        pastFocusScores: List<Int> = emptyList()
+        pastFocusScores: List<Int> = emptyList(),
+        defaultBaseScore: Int = 50
     ): FocusScoreResult {
         val isGrowthGoal = goalCategory.uppercase() == "PRODUCTIVITY" || goalCategory.uppercase() == "EDUCATION"
         val isReductionGoal = goalCategory.uppercase() == "SOCIAL" || goalCategory.uppercase() == "ENTERTAINMENT" || goalCategory.uppercase() == "COMMUNICATION"
@@ -79,7 +80,7 @@ object FocusScoreEngine {
         // 2. Base score baseline
         val previousScore = yesterdayFocusScore
             ?: pastFocusScores.lastOrNull()
-            ?: 50
+            ?: defaultBaseScore
 
         // 3. Lookup current band config
         val band = getBand(previousScore)
@@ -130,5 +131,35 @@ object FocusScoreEngine {
             finalScore = finalScore.coerceIn(0, 99),
             trend = trend
         )
+    }
+
+    /**
+     * Calculates the initial baseline Focus Score from the user's past 7 days of actual screen time.
+     * Uses real behavioral weights with zero questionnaire bias.
+     */
+    fun calculateInitialScoreFrom7Days(
+        dailySummaries: List<com.example.t1.domain.model.behaviour.DailyBehaviourSummary>,
+        goalCategory: String = "PRODUCTIVITY"
+    ): Int {
+        if (dailySummaries.isEmpty()) return 50
+
+        val avgProductive = dailySummaries.map { it.productiveTimeMs }.average().toFloat()
+        val avgEducation = dailySummaries.map { it.educationTimeMs }.average().toFloat()
+        val avgCommunication = dailySummaries.map { it.communicationTimeMs }.average().toFloat()
+        val avgEntertainment = dailySummaries.map { it.entertainmentTimeMs }.average().toFloat()
+        val avgSocial = dailySummaries.map { it.socialTimeMs }.average().toFloat()
+
+        val totalNonUtility = avgProductive + avgEducation + avgCommunication + avgEntertainment + avgSocial
+        if (totalNonUtility <= 0f) return 50
+
+        val prodRatio = avgProductive / totalNonUtility
+        val eduRatio = avgEducation / totalNonUtility
+        val commRatio = avgCommunication / totalNonUtility
+        val entRatio = avgEntertainment / totalNonUtility
+        val socRatio = avgSocial / totalNonUtility
+
+        val weightedIndex = (prodRatio * 0.35f) + (eduRatio * 0.18f) + (commRatio * 0.10f) - (entRatio * 0.15f) - (socRatio * 0.22f)
+        val initialScore = (50f + 125f * weightedIndex).roundToInt()
+        return initialScore.coerceIn(30, 85)
     }
 }

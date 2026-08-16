@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,7 +84,8 @@ val analysisSteps = listOf(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnalysisScreen(
-    onComplete: () -> Unit,
+    onAnalyze: (suspend () -> com.example.t1.ui.viewmodel.OnboardingAnalysisData)? = null,
+    onComplete: (score: Int, avgScreenTime: String, topCategory: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -91,6 +93,13 @@ fun AnalysisScreen(
 
     var progress by remember { mutableFloatStateOf(0f) }
     var currentStep by remember { mutableIntStateOf(0) }
+    var analysisResult by remember { mutableStateOf<com.example.t1.ui.viewmodel.OnboardingAnalysisData?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (onAnalyze != null) {
+            analysisResult = onAnalyze()
+        }
+    }
 
     // Run the analysis animation for 6000ms
     LaunchedEffect(Unit) {
@@ -117,7 +126,8 @@ fun AnalysisScreen(
             if (fraction >= 1f) {
                 Haptics.playHeavy(view)
                 delay(600)
-                onComplete()
+                val result = analysisResult ?: com.example.t1.ui.viewmodel.OnboardingAnalysisData()
+                onComplete(result.initialScore, result.avgScreenTimeFormatted, result.topCategory)
                 break
             }
             delay(30)

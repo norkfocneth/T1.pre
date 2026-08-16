@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -423,7 +424,7 @@ fun LeaderboardScreen(
             // ═════════════════════════════════════════
             LazyColumn(
                 modifier       = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 28.dp)
+                contentPadding = PaddingValues(bottom = 20.dp)
             ) {
                 // ── Podium ───────────────────────────
                 item {
@@ -447,17 +448,37 @@ fun LeaderboardScreen(
                     }
                 }
 
-                // ── Your Rank Card ───────────────────
-                item {
-                    Spacer(Modifier.height(10.dp))
-                    YourRankCard(userEntry = userEntry, glowAlpha = glowAlpha)
-                }
-
                 // ── Footer ───────────────────────────
                 item {
-                    Spacer(Modifier.height(22.dp))
+                    Spacer(Modifier.height(18.dp))
                     FooterInfoSection()
                     Spacer(Modifier.height(14.dp))
+                }
+            }
+
+            // ═════════════════════════════════════════
+            // STICKY / FIXED USER RANK CARD
+            // ═════════════════════════════════════════
+            AnimatedVisibility(
+                visible = listVisible,
+                enter   = fadeIn(tween(400)) + slideInVertically(animationSpec = tween(400, easing = FastOutSlowInEasing), initialOffsetY = { 40 })
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    BgDeep.copy(alpha = 0.92f),
+                                    BgDeep
+                                )
+                            )
+                        )
+                        .navigationBarsPadding()
+                        .padding(top = 6.dp, bottom = 84.dp)
+                ) {
+                    YourRankCard(userEntry = userEntry, glowAlpha = glowAlpha)
                 }
             }
         }

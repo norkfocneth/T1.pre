@@ -434,10 +434,18 @@ fun HomeScreen(
                 if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
             }
 
-            val statusComparisonText = if (dashboardState.trend.equals("Declining", ignoreCase = true)) {
-                "You are not better from yesterday"
+            val statusComparisonText = if (isGrowth) {
+                if (dashboardState.trend.equals("Declining", ignoreCase = true) || diffMinutes < 0) {
+                    "Keep building your focus"
+                } else {
+                    "You are better from yesterday"
+                }
             } else {
-                "You are better from yesterday"
+                if (dashboardState.trend.equals("Declining", ignoreCase = true) || diffMinutes > 0) {
+                    "You are not better from yesterday"
+                } else {
+                    "You are better from yesterday"
+                }
             }
 
             // 2. Focus Ring Section (Hero UI)

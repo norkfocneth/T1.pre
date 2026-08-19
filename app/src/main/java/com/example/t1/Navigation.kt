@@ -39,6 +39,8 @@ import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.ui.viewmodel.OnboardingViewModel
 import com.example.t1.ui.viewmodel.OnboardingUiState
 import androidx.compose.runtime.LaunchedEffect
+import com.example.t1.ui.tour.GuidedProductTourOverlay
+import kotlinx.coroutines.delay
 
 /**
  * Main application navigation component.
@@ -178,6 +180,16 @@ fun DashboardShell(
     val totalFocusDuration by mainViewModel.totalFocusDuration.collectAsStateWithLifecycle()
     val weeklyTrend by mainViewModel.weeklyTrend.collectAsStateWithLifecycle()
 
+    val isTutorialCompleted by mainViewModel.tutorialCompleted.collectAsStateWithLifecycle()
+    var isTourActive by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isTutorialCompleted) {
+        if (!isTutorialCompleted) {
+            delay(500)
+            isTourActive = true
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         if (showSettings) {
             SettingsScreen(
@@ -191,6 +203,12 @@ fun DashboardShell(
                         },
                         onFailure = onFailure
                     )
+                },
+                onReplayTour = {
+                    showSettings = false
+                    activeTab = T1Tab.HOME
+                    mainViewModel.resetTutorial()
+                    isTourActive = true
                 }
             )
         } else {
@@ -238,13 +256,18 @@ fun DashboardShell(
                                 onUpdateName = { newName ->
                                     mainViewModel.updateDisplayName(newName) { success ->
                                         if (!success) {
-                                            android.widget.Toast.makeText(
+                                             android.widget.Toast.makeText(
                                                 context,
                                                 "Failed to sync name changes. Please check connection.",
                                                 android.widget.Toast.LENGTH_SHORT
                                             ).show()
                                         }
                                     }
+                                },
+                                onStartTour = {
+                                    activeTab = T1Tab.HOME
+                                    mainViewModel.resetTutorial()
+                                    isTourActive = true
                                 },
                                 onSignOut = onSignOut
                             )
@@ -271,6 +294,37 @@ fun DashboardShell(
                 onClose = { elapsedSeconds ->
                     showTimer = false
                     mainViewModel.logFocusSession(elapsedSeconds)
+                }
+            )
+        }
+
+        // Interactive Guided Product Tour Overlay
+        AnimatedVisibility(
+            visible = isTourActive,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300))
+        ) {
+            GuidedProductTourOverlay(
+                userGoal = profile.primaryGoal ?: "Social Control",
+                onStepSync = { step ->
+                    if (step.requireSettings) {
+                        showSettings = true
+                    } else {
+                        if (showSettings) showSettings = false
+                        activeTab = step.targetTab
+                    }
+                },
+                onCompleteTour = {
+                    isTourActive = false
+                    showSettings = false
+                    activeTab = T1Tab.HOME
+                    mainViewModel.completeTutorial()
+                },
+                onSkipTour = {
+                    isTourActive = false
+                    showSettings = false
+                    activeTab = T1Tab.HOME
+                    mainViewModel.completeTutorial()
                 }
             )
         }

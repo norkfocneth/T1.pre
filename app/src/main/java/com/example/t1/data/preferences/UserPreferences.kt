@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,9 @@ class UserPreferences @Inject constructor(
         private val KEY_THEME = stringPreferencesKey("app_theme")
         private val KEY_LANGUAGE = stringPreferencesKey("app_language")
         private val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
+        private val KEY_TUTORIAL_COMPLETED = booleanPreferencesKey("tutorial_completed")
+        private val KEY_TUTORIAL_VERSION = intPreferencesKey("tutorial_version")
+        const val CURRENT_TUTORIAL_VERSION = 1
     }
 
     /**
@@ -50,6 +54,20 @@ class UserPreferences @Inject constructor(
         preferences[KEY_NOTIFICATIONS_ENABLED] ?: true
     }
 
+    /**
+     * Emits whether the interactive onboarding product tour has been completed.
+     */
+    val tutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_TUTORIAL_COMPLETED] ?: false
+    }
+
+    /**
+     * Emits the version of the completed tutorial.
+     */
+    val tutorialVersionFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[KEY_TUTORIAL_VERSION] ?: 0
+    }
+
     suspend fun saveTheme(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_THEME] = theme
@@ -65,6 +83,20 @@ class UserPreferences @Inject constructor(
     suspend fun saveNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_NOTIFICATIONS_ENABLED] = enabled
+        }
+    }
+
+    suspend fun saveTutorialCompleted(completed: Boolean, version: Int = CURRENT_TUTORIAL_VERSION) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_TUTORIAL_COMPLETED] = completed
+            preferences[KEY_TUTORIAL_VERSION] = if (completed) version else 0
+        }
+    }
+
+    suspend fun resetTutorial() {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_TUTORIAL_COMPLETED] = false
+            preferences[KEY_TUTORIAL_VERSION] = 0
         }
     }
 

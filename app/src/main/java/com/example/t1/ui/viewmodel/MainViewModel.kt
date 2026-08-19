@@ -56,9 +56,27 @@ class MainViewModel @Inject constructor(
     val notificationsEnabled: StateFlow<Boolean> = userPreferences.notificationsEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val tutorialCompleted: StateFlow<Boolean> = userPreferences.tutorialCompletedFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val tutorialVersion: StateFlow<Int> = userPreferences.tutorialVersionFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.saveNotificationsEnabled(enabled)
+        }
+    }
+
+    fun completeTutorial(version: Int = com.example.t1.data.preferences.UserPreferences.CURRENT_TUTORIAL_VERSION) {
+        viewModelScope.launch {
+            userPreferences.saveTutorialCompleted(true, version)
+        }
+    }
+
+    fun resetTutorial() {
+        viewModelScope.launch {
+            userPreferences.resetTutorial()
         }
     }
 

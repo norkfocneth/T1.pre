@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.t1.theme.*
+import com.example.t1.ui.components.PrivacyOverviewDialog
 import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.util.Haptics
 
@@ -64,6 +65,7 @@ fun UsagePermissionScreen(
     val uriHandler = LocalUriHandler.current
     val scrollState = rememberScrollState()
     var isConsented by remember { mutableStateOf(false) }
+    var showPrivacyOverview by remember { mutableStateOf(false) }
 
     OnboardingBackground(modifier = modifier) {
         Column(
@@ -363,12 +365,23 @@ fun UsagePermissionScreen(
                 ),
                 modifier = Modifier
                     .clickable {
-                        try {
-                            uriHandler.openUri("https://focneth.com/t1/privacy")
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
-                        }
+                        Haptics.playLight(view)
+                        showPrivacyOverview = true
                     }
+            )
+        }
+
+        // Privacy Policy In-App Overview Modal
+        if (showPrivacyOverview) {
+            PrivacyOverviewDialog(
+                onDismiss = { showPrivacyOverview = false },
+                onOpenWebPolicy = {
+                    try {
+                        uriHandler.openUri("https://focneth.com/t1/privacy")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
         }
     }

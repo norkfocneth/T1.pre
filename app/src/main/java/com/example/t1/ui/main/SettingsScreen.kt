@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.SettingsSuggest
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.t1.theme.*
+import com.example.t1.ui.components.PrivacyOverviewDialog
 import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
@@ -68,6 +70,7 @@ import kotlinx.coroutines.delay
 fun SettingsScreen(
     onBack: () -> Unit,
     onDeleteAccount: (onSuccess: () -> Unit, onFailure: (String) -> Unit) -> Unit,
+    onReplayTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -79,10 +82,13 @@ fun SettingsScreen(
     var hapticFeedback by remember { mutableStateOf(Haptics.isEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showPrivacyOverview by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
 
     BackHandler {
-        if (showResetConfirm) {
+        if (showPrivacyOverview) {
+            showPrivacyOverview = false
+        } else if (showResetConfirm) {
             showResetConfirm = false
         } else if (showDeleteConfirm && !isDeleting) {
             showDeleteConfirm = false
@@ -92,15 +98,16 @@ fun SettingsScreen(
     }
 
 
-    OnboardingBackground(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        OnboardingBackground(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             // Header bar
             Box(
                 modifier = Modifier
@@ -231,6 +238,16 @@ fun SettingsScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
+                // Replay Product Tour
+                PreferenceRow(
+                    icon = Icons.Default.AutoAwesome,
+                    title = "Replay Product Tour",
+                    onClick = {
+                        Haptics.playLight(view)
+                        onReplayTour?.invoke()
+                    }
+                )
+
                 // About T1
                 PreferenceRow(
                     icon = Icons.Default.Info,
@@ -244,11 +261,7 @@ fun SettingsScreen(
                     title = "Privacy Policy",
                     onClick = {
                         Haptics.playLight(view)
-                        try {
-                            uriHandler.openUri("https://focneth.com/t1/privacy")
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
-                        }
+                        showPrivacyOverview = true
                     }
                 )
 
@@ -539,6 +552,24 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // Privacy Policy In-App Overview Modal
+        if (showPrivacyOverview) {
+            PrivacyOverviewDialog(
+                onDismiss = { showPrivacyOverview = false },
+                onOpenWebPolicy = {
+                    try {
+                        uriHandler.openUri("https://focneth.com/t1/privacy")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
     }
 }
+}
+
+
+
 

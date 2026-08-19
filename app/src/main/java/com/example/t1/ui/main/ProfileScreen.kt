@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -101,6 +102,7 @@ fun ProfileScreen(
     focusRemindersEnabled: Boolean,
     onFocusRemindersChange: (Boolean) -> Unit,
     onUpdateName: ((String) -> Unit)? = null,
+    onStartTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -669,6 +671,16 @@ fun ProfileScreen(
                                 privacyMode = it
                             }
                         )
+                    }
+                )
+
+                // Interactive Guided Product Tour
+                PreferenceRow(
+                    icon = Icons.Default.AutoAwesome,
+                    title = "Interactive Product Tour",
+                    onClick = {
+                        Haptics.playLight(view)
+                        onStartTour?.invoke()
                     }
                 )
 

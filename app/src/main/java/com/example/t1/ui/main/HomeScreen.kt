@@ -862,19 +862,22 @@ fun HomeScreen(
                                                     )
 
                                                     // Comparative Metric relative to Yesterday
-                                                    val yesterdayDuration = dashboardState.yesterdayBehaviour?.topUsedApps
-                                                        ?.firstOrNull { it.packageName == app.packageName }?.usageDurationMs ?: 0L
-                                                    val diffMin = (app.usageDurationMs - yesterdayDuration) / 60000
-                                                    if (yesterdayDuration > 0 && diffMin != 0L) {
-                                                        val isImproved = diffMin < 0
-                                                        val arrow = if (isImproved) "↓" else "↑"
-                                                        val label = if (isImproved) "less than yesterday" else "more than yesterday"
-                                                        val diffText = "$arrow ${kotlin.math.abs(diffMin)} min $label"
-                                                        val diffColor = if (isImproved) Success else Warning
-                                                        Text(
-                                                            text = diffText,
-                                                            style = LabelSmall.copy(color = diffColor, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                                        )
+                                                    val yesterdayBehaviour = dashboardState.yesterdayBehaviour
+                                                    if (yesterdayBehaviour != null) {
+                                                        val yesterdayDuration = yesterdayBehaviour.topUsedApps
+                                                            .firstOrNull { it.packageName == app.packageName }?.usageDurationMs ?: 0L
+                                                        val diffMin = (app.usageDurationMs - yesterdayDuration) / 60000
+                                                        if (diffMin != 0L) {
+                                                            val isImproved = diffMin < 0
+                                                            val arrow = if (isImproved) "↓" else "↑"
+                                                            val label = if (isImproved) "less than yesterday" else "more than yesterday"
+                                                            val diffText = "$arrow ${kotlin.math.abs(diffMin)} min $label"
+                                                            val diffColor = if (isImproved) Success else Warning
+                                                            Text(
+                                                                text = diffText,
+                                                                style = LabelSmall.copy(color = diffColor, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                                            )
+                                                        }
                                                     }
                                                 }
                                                 Text(

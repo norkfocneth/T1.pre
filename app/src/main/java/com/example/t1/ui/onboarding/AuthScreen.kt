@@ -52,7 +52,10 @@ import com.example.t1.theme.*
 import com.example.t1.ui.viewmodel.AuthViewModel
 import com.example.t1.ui.viewmodel.AuthState
 import com.example.t1.domain.model.AuthError
+import com.example.t1.ui.components.PrivacyOverviewDialog
 import com.example.t1.util.Haptics
+import androidx.compose.ui.platform.LocalUriHandler
+import android.widget.Toast
 import kotlinx.coroutines.delay
 
 @Composable
@@ -63,38 +66,11 @@ fun OnboardingBackground(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .drawBehind {
-                val baseSize = if (size.height > size.width) size.height else size.width
-
-                // 1. Linear gradient top to bottom (Base dark background)
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(BgTop, BgBottom)
-                    )
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(BgTop, BgBottom)
                 )
-                
-                // 2. Background radial gradient middle-top (ambient blue glow centered at 50% width, 18% height, 38% radius)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(GlowPrimary.copy(alpha = 0.14f), Color(0xFF1A2040).copy(alpha = 0.08f), Color.Transparent),
-                        center = Offset(size.width / 2f, size.height * 0.18f),
-                        radius = baseSize * 0.38f
-                    ),
-                    center = Offset(size.width / 2f, size.height * 0.18f),
-                    radius = baseSize * 0.38f
-                )
-
-                // 3. Background radial gradient top center (subtle blue-white shimmer centered at top center, 26% radius)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(GlowPrimary.copy(alpha = 0.08f), Color.White.copy(alpha = 0.03f), Color.Transparent),
-                        center = Offset(size.width / 2f, 0f),
-                        radius = baseSize * 0.26f
-                    ),
-                    center = Offset(size.width / 2f, 0f),
-                    radius = baseSize * 0.26f
-                )
-            }
+            )
     ) {
         content()
     }
@@ -111,12 +87,14 @@ fun AuthScreen(
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
 
     // Entrance Animation States
     var showLogo by remember { mutableStateOf(false) }
     var showSubtitle by remember { mutableStateOf(false) }
     var showButtons by remember { mutableStateOf(false) }
     var showLegal by remember { mutableStateOf(false) }
+    var showPrivacyOverview by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         delay(150)
@@ -267,10 +245,31 @@ fun AuthScreen(
                     text = "By continuing, you agree to our Terms & Privacy",
                     style = BodySmall.copy(
                         fontSize = 10.sp,
-                        color = MutedForeground.copy(alpha = 0.4f),
+                        color = MutedForeground.copy(alpha = 0.5f),
                         letterSpacing = 0.5.sp
                     ),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            Haptics.playLight(view)
+                            showPrivacyOverview = true
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+
+            // Privacy Policy In-App Overview Modal
+            if (showPrivacyOverview) {
+                PrivacyOverviewDialog(
+                    onDismiss = { showPrivacyOverview = false },
+                    onOpenWebPolicy = {
+                        try {
+                            uriHandler.openUri("https://focneth.com/t1/privacy")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
             }
         }

@@ -77,6 +77,9 @@ class MainViewModel @Inject constructor(
     val privacyGhostMode: StateFlow<Boolean> = userPreferences.privacyGhostModeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val goalLastChangedEpoch: StateFlow<Long> = userPreferences.goalLastChangedEpochFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.saveNotificationsEnabled(enabled)
@@ -95,6 +98,36 @@ class MainViewModel @Inject constructor(
     fun setPrivacyGhostMode(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.savePrivacyGhostMode(enabled)
+        }
+    }
+
+    fun updatePrimaryGoal(newGoal: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val sevenDaysMs = 7 * 24 * 60 * 60 * 1000L
+            val lastEpoch = goalLastChangedEpoch.value
+
+            if (lastEpoch > 0L && now - lastEpoch < sevenDaysMs) {
+                val remainingMs = (lastEpoch + sevenDaysMs) - now
+                val remainingDays = kotlin.math.max(1, (remainingMs / (24 * 60 * 60 * 1000L)).toInt())
+                onResult(false, "Primary goal is locked. You can switch again in $remainingDays day${if (remainingDays > 1) "s" else ""}.")
+                return@launch
+            }
+
+            val currentProfile = userProfile.value
+            if (currentProfile != null) {
+                val updatedProfile = currentProfile.copy(primaryGoal = newGoal)
+                val result = userRepository.saveProfile(updatedProfile)
+                if (result.isSuccess) {
+                    userPreferences.saveGoalLastChangedEpoch(now)
+                    refreshBehaviourData()
+                    onResult(true, "Switched primary goal to ${newGoal.lowercase().replaceFirstChar { it.uppercase() }}.")
+                } else {
+                    onResult(false, "Could not update primary goal.")
+                }
+            } else {
+                onResult(false, "User profile not found.")
+            }
         }
     }
 

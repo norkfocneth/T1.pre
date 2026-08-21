@@ -173,7 +173,9 @@ fun DashboardShell(
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
 
-    val nameToShow = profile.displayName ?: profile.username
+    val liveProfile by mainViewModel.userProfile.collectAsStateWithLifecycle()
+    val activeProfile = liveProfile ?: profile
+    val nameToShow = activeProfile.displayName ?: activeProfile.username
     val cachedScore by mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
     val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
     val totalFocusSessions by mainViewModel.totalFocusSessions.collectAsStateWithLifecycle()
@@ -230,30 +232,42 @@ fun DashboardShell(
                                 dashboardState = dashboardState,
                                 onOpenSettings = { mainViewModel.openPermissionSettings() },
                                 focusScore = dashboardState.currentFocusScore,
-                                streak = profile.streak,
+                                streak = activeProfile.streak,
                                 totalFocusSessions = totalFocusSessions,
                                 viewModel = mainViewModel
                             )
                         }
                         T1Tab.RANK -> {
                             LeaderboardScreen(
-                                username = profile.username
+                                username = activeProfile.username
                             )
                         }
                         T1Tab.USER -> {
                             val focusRemindersEnabled by mainViewModel.focusRemindersEnabled.collectAsStateWithLifecycle()
                             val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
+                            val goalLastChangedEpoch by mainViewModel.goalLastChangedEpoch.collectAsStateWithLifecycle()
                             ProfileScreen(
-                                displayName = profile.displayName,
-                                username = profile.username,
+                                displayName = activeProfile.displayName,
+                                username = activeProfile.username,
                                 totalFocusSessions = totalFocusSessions,
                                 totalFocusDuration = totalFocusDuration,
                                 weeklyTrend = weeklyTrend,
-                                streak = profile.streak,
+                                streak = activeProfile.streak,
                                 focusRemindersEnabled = focusRemindersEnabled,
                                 onFocusRemindersChange = { mainViewModel.setFocusRemindersEnabled(it) },
                                 privacyGhostMode = privacyGhostMode,
                                 onPrivacyGhostModeChange = { mainViewModel.setPrivacyGhostMode(it) },
+                                primaryGoal = activeProfile.primaryGoal ?: "PRODUCTIVITY",
+                                goalLastChangedEpoch = goalLastChangedEpoch,
+                                onGoalChange = { newGoal ->
+                                    mainViewModel.updatePrimaryGoal(newGoal) { success, msg ->
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            msg,
+                                            android.widget.Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                },
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->

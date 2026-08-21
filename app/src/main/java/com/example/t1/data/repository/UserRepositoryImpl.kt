@@ -71,7 +71,9 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun saveProfile(profile: UserProfile): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            T1Logger.i("Saving profile remotely to Supabase")
+            // Offline-first: always update local Room cache first
+            saveCachedProfile(profile)
+            T1Logger.i("Profile saved to local Room cache. Now syncing remotely to Supabase.")
             val epochString = java.time.Instant.ofEpochMilli(profile.createdAt).toString()
             val profileDto = com.example.t1.data.remote.model.ProfileDto(
                 id = profile.id,
@@ -104,14 +106,12 @@ class UserRepositoryImpl @Inject constructor(
             )
             val success = supabaseService.upsertProfile(profileDto)
             if (!success) {
-                return@withContext Result.failure(Exception("Failed to upsert profile to Supabase"))
+                T1Logger.w("Supabase upsert failed, but local profile was updated successfully.")
             }
-            T1Logger.i("Profile upserted to Supabase successfully. Saving to local Room cache.")
-            saveCachedProfile(profile)
             Result.success(Unit)
         } catch (e: Exception) {
-            T1Logger.e("Exception saving user profile", e)
-            Result.failure(e)
+            T1Logger.e("Exception syncing user profile remotely", e)
+            Result.success(Unit)
         }
     }
 

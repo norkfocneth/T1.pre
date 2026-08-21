@@ -33,24 +33,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.ui.draw.blur
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -103,6 +109,9 @@ fun ProfileScreen(
     onFocusRemindersChange: (Boolean) -> Unit,
     privacyGhostMode: Boolean = false,
     onPrivacyGhostModeChange: (Boolean) -> Unit = {},
+    primaryGoal: String = "PRODUCTIVITY",
+    goalLastChangedEpoch: Long = 0L,
+    onGoalChange: ((String) -> Unit)? = null,
     onUpdateName: ((String) -> Unit)? = null,
     onStartTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -129,6 +138,7 @@ fun ProfileScreen(
     var editTitle by remember { mutableStateOf(title) }
 
     var showSignOut by remember { mutableStateOf(false) }
+    var showGoalSelector by remember { mutableStateOf(false) }
 
     val handleSaveEdit = {
         val trimmed = editName.trim()
@@ -676,6 +686,67 @@ fun ProfileScreen(
                     }
                 )
 
+                // Primary Focus Goal Preference (1 switch / week cooldown)
+                val sevenDaysMs = 7 * 24 * 60 * 60 * 1000L
+                val now = System.currentTimeMillis()
+                val isGoalLocked = goalLastChangedEpoch > 0L && (now - goalLastChangedEpoch) < sevenDaysMs
+                val remainingGoalDays = if (isGoalLocked) {
+                    val remainingMs = (goalLastChangedEpoch + sevenDaysMs) - now
+                    kotlin.math.max(1, (remainingMs / (24 * 60 * 60 * 1000L)).toInt())
+                } else 0
+
+                val goalDisplayName = when (primaryGoal.uppercase()) {
+                    "PRODUCTIVITY" -> "Productivity"
+                    "SOCIAL" -> "Social Control"
+                    "EDUCATION" -> "Education"
+                    "ENTERTAINMENT" -> "Entertainment Control"
+                    "COMMUNICATION" -> "Chat Control"
+                    else -> "Productivity"
+                }
+
+                PreferenceRow(
+                    icon = Icons.Default.Adjust,
+                    title = "Primary Focus Goal",
+                    subtitle = if (isGoalLocked) {
+                        "$goalDisplayName · Locked for $remainingGoalDays day${if (remainingGoalDays > 1) "s" else ""}"
+                    } else {
+                        "$goalDisplayName · 1 switch/week available"
+                    },
+                    trailing = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isGoalLocked) Card else Foreground.copy(alpha = 0.1f))
+                                    .border(1.dp, if (isGoalLocked) Border else Foreground.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = goalDisplayName,
+                                    style = LabelSmall.copy(
+                                        color = if (isGoalLocked) MutedForeground else Foreground,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                            }
+                            Icon(
+                                imageVector = if (isGoalLocked) Icons.Default.Lock else Icons.Default.ChevronRight,
+                                contentDescription = "Change Goal",
+                                tint = MutedForeground,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    },
+                    onClick = {
+                        Haptics.playLight(view)
+                        showGoalSelector = true
+                    }
+                )
+
                 // Interactive Guided Product Tour
                 PreferenceRow(
                     icon = Icons.Default.AutoAwesome,
@@ -782,6 +853,295 @@ fun ProfileScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // Primary Goal Selector Modal Overlay
+        if (showGoalSelector) {
+            GoalSelectorModal(
+                currentGoal = primaryGoal,
+                goalLastChangedEpoch = goalLastChangedEpoch,
+                onDismiss = { showGoalSelector = false },
+                onConfirmGoal = { newGoal ->
+                    onGoalChange?.invoke(newGoal)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun GoalSelectorModal(
+    currentGoal: String,
+    goalLastChangedEpoch: Long,
+    onDismiss: () -> Unit,
+    onConfirmGoal: (String) -> Unit
+) {
+    val view = LocalView.current
+    val sevenDaysMs = 7 * 24 * 60 * 60 * 1000L
+    val now = System.currentTimeMillis()
+    val isLocked = goalLastChangedEpoch > 0L && (now - goalLastChangedEpoch) < sevenDaysMs
+    val remainingMs = if (isLocked) (goalLastChangedEpoch + sevenDaysMs) - now else 0L
+    val remainingDays = kotlin.math.max(1, (remainingMs / (24 * 60 * 60 * 1000L)).toInt())
+    val remainingHours = kotlin.math.max(1, (remainingMs / (60 * 60 * 1000L)).toInt())
+
+    var selectedGoal by remember { mutableStateOf(currentGoal.uppercase()) }
+
+    val goals = listOf(
+        Triple("SOCIAL", "Social Control", "Minimize addictive social apps (Instagram, Snapchat, Reddit, X, FB)"),
+        Triple("PRODUCTIVITY", "Productivity", "Maximize deep work, coding, design, docs, and builder craft"),
+        Triple("EDUCATION", "Education", "Optimize study focus, active learning, reading, and exam preparation"),
+        Triple("ENTERTAINMENT", "Entertainment Control", "Restrain YouTube bingeing, OTT streaming, and gaming"),
+        Triple("COMMUNICATION", "Chat Control", "Eliminate impulsive messaging and non-stop chat pings")
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.82f))
+            .clickable { onDismiss() },
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(Color(0xFF0D0E13))
+                .border(1.dp, Border, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .clickable(enabled = false) {}
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Drag handle
+                Box(
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Border)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "PRIMARY FOCUS GOAL",
+                            style = TrackingWide.copy(
+                                color = Foreground,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Text(
+                            text = "Adapts daily benchmarks & focus ring tracking",
+                            style = BodySmall.copy(color = MutedForeground, fontSize = 11.sp)
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = MutedForeground,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable {
+                                Haptics.playLight(view)
+                                onDismiss()
+                            }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Warning / Cooldown Banner
+                if (isLocked) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF1E1414))
+                            .border(1.dp, Color(0xFFE53935).copy(alpha = 0.45f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Locked",
+                                tint = Color(0xFFE53935),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Goal Switch Locked",
+                                    style = BodySmall.copy(color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "You can change again in $remainingDays day${if (remainingDays > 1) "s" else ""} ($remainingHours hrs). Focus algorithms require weekly stability.",
+                                    style = LabelSmall.copy(color = MutedForeground, fontSize = 11.sp)
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF181610))
+                            .border(1.dp, Color(0xFFE5A135).copy(alpha = 0.45f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.WarningAmber,
+                                contentDescription = "Warning",
+                                tint = Color(0xFFF1B04C),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Choose Wisely · Think Again",
+                                    style = BodySmall.copy(color = Color(0xFFF1B04C), fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "You can only switch your Primary Goal ONCE every 7 days. Once confirmed, it will lock for a full week.",
+                                    style = LabelSmall.copy(color = MutedForeground, fontSize = 11.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Goals List
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    goals.forEach { (key, label, desc) ->
+                        val isSelected = selectedGoal == key
+                        val isCurrent = currentGoal.uppercase() == key
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isSelected) Foreground.copy(alpha = 0.08f) else Card)
+                                .border(
+                                    width = if (isSelected) 1.5.dp else 1.dp,
+                                    color = if (isSelected) Foreground else Border,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clickable {
+                                    if (!isLocked) {
+                                        Haptics.playLight(view)
+                                        selectedGoal = key
+                                    }
+                                }
+                                .padding(14.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = label,
+                                            style = BodyMedium.copy(
+                                                color = Foreground,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp
+                                            )
+                                        )
+                                        if (isCurrent) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "CURRENT",
+                                                style = LabelSmall.copy(
+                                                    color = Color(0xFF34C759),
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 9.sp
+                                                )
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = desc,
+                                        style = BodySmall.copy(
+                                            color = MutedForeground,
+                                            fontSize = 11.sp,
+                                            lineHeight = 15.sp
+                                        )
+                                    )
+                                }
+
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = {
+                                        if (!isLocked) {
+                                            Haptics.playLight(view)
+                                            selectedGoal = key
+                                        }
+                                    },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = Foreground,
+                                        unselectedColor = MutedForeground.copy(alpha = 0.4f)
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Confirm CTA Button
+                val isBtnEnabled = !isLocked && selectedGoal != currentGoal.uppercase()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(25.dp))
+                        .background(
+                            if (isBtnEnabled) Foreground else MutedForeground.copy(alpha = 0.2f)
+                        )
+                        .clickable(enabled = isBtnEnabled) {
+                            Haptics.playLight(view)
+                            onConfirmGoal(selectedGoal)
+                            onDismiss()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (isLocked) {
+                            "Locked (Available in $remainingDays d)"
+                        } else if (selectedGoal == currentGoal.uppercase()) {
+                            "Select a different goal"
+                        } else {
+                            "Confirm Goal Switch (Lock 7 Days)"
+                        },
+                        style = LabelLarge.copy(
+                            color = if (isBtnEnabled) Background else MutedForeground,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
                 }
             }
         }

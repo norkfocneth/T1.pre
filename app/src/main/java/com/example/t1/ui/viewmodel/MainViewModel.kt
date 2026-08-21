@@ -56,15 +56,67 @@ class MainViewModel @Inject constructor(
     val notificationsEnabled: StateFlow<Boolean> = userPreferences.notificationsEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val focusRemindersEnabled: StateFlow<Boolean> = userPreferences.focusRemindersEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     val tutorialCompleted: StateFlow<Boolean> = userPreferences.tutorialCompletedFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val tutorialVersion: StateFlow<Int> = userPreferences.tutorialVersionFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    val selectedExam: StateFlow<String> = userPreferences.selectedExamFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.example.t1.data.preferences.UserPreferences.DEFAULT_EXAM)
+
+    val examChangeCount: StateFlow<Int> = userPreferences.examChangeCountFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val examLastChangedEpoch: StateFlow<Long> = userPreferences.examLastChangedEpochFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    val privacyGhostMode: StateFlow<Boolean> = userPreferences.privacyGhostModeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.saveNotificationsEnabled(enabled)
+        }
+    }
+
+    fun setFocusRemindersEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.saveFocusRemindersEnabled(enabled)
+            if (enabled) {
+                com.example.t1.notification.T1NotificationScheduler.schedule(context)
+            }
+        }
+    }
+
+    fun setPrivacyGhostMode(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.savePrivacyGhostMode(enabled)
+        }
+    }
+
+    fun selectExamTrack(exam: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val lastEpoch = examLastChangedEpoch.value
+            val sevenDaysMs = 7 * 24 * 60 * 60 * 1000L
+            val currentCount = if (now - lastEpoch > sevenDaysMs) 0 else examChangeCount.value
+
+            if (currentCount >= 2) {
+                val remainingMs = (lastEpoch + sevenDaysMs) - now
+                val remainingDays = kotlin.math.max(1, (remainingMs / (24 * 60 * 60 * 1000L)).toInt())
+                onResult(false, "Exam track locked. You can switch in $remainingDays day${if (remainingDays > 1) "s" else ""}.")
+            } else {
+                val ok = userPreferences.saveSelectedExam(exam)
+                if (ok) {
+                    onResult(true, "Switched to $exam track.")
+                } else {
+                    onResult(false, "Could not switch exam track.")
+                }
+            }
         }
     }
 

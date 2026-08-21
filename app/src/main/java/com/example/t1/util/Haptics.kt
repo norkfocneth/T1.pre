@@ -107,4 +107,49 @@ object Haptics {
             context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         }
     }
+
+    /**
+     * Plays a soothing, calm zen acoustic tone (528Hz Solfeggio frequency with smooth exponential fade-out).
+     * 100% synthesized locally, zero copyright assets.
+     */
+    fun playZenChime() {
+        if (!isSoundEnabled) return
+        try {
+            Thread {
+                val sampleRate = 44100
+                val durationSec = 0.35
+                val numSamples = (durationSec * sampleRate).toInt()
+                val sample = DoubleArray(numSamples)
+                val generatedSnd = ByteArray(2 * numSamples)
+                val freqOfTone = 528.0 // 528 Hz - Zen/Transformation frequency
+
+                for (i in 0 until numSamples) {
+                    val t = i.toDouble() / sampleRate
+                    // Exponential gentle fade envelope
+                    val envelope = Math.exp(-7.0 * t)
+                    sample[i] = Math.sin(2.0 * Math.PI * freqOfTone * t) * envelope
+                }
+
+                var idx = 0
+                for (dVal in sample) {
+                    val valShort = (dVal * 32767).toInt().toShort()
+                    generatedSnd[idx++] = (valShort.toInt() and 0x00ff).toByte()
+                    generatedSnd[idx++] = ((valShort.toInt() and 0xff00) ushr 8).toByte()
+                }
+
+                val audioTrack = android.media.AudioTrack(
+                    android.media.AudioManager.STREAM_MUSIC,
+                    sampleRate,
+                    android.media.AudioFormat.CHANNEL_OUT_MONO,
+                    android.media.AudioFormat.ENCODING_PCM_16BIT,
+                    generatedSnd.size,
+                    android.media.AudioTrack.MODE_STATIC
+                )
+                audioTrack.write(generatedSnd, 0, generatedSnd.size)
+                audioTrack.play()
+                Thread.sleep((durationSec * 1000).toLong() + 50)
+                audioTrack.release()
+            }.start()
+        } catch (_: Exception) {}
+    }
 }

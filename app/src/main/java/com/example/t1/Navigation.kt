@@ -241,7 +241,8 @@ fun DashboardShell(
                             )
                         }
                         T1Tab.USER -> {
-                            val notificationsEnabled by mainViewModel.notificationsEnabled.collectAsStateWithLifecycle()
+                            val focusRemindersEnabled by mainViewModel.focusRemindersEnabled.collectAsStateWithLifecycle()
+                            val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
                             ProfileScreen(
                                 displayName = profile.displayName,
                                 username = profile.username,
@@ -249,8 +250,10 @@ fun DashboardShell(
                                 totalFocusDuration = totalFocusDuration,
                                 weeklyTrend = weeklyTrend,
                                 streak = profile.streak,
-                                focusRemindersEnabled = notificationsEnabled,
-                                onFocusRemindersChange = { mainViewModel.setNotificationsEnabled(it) },
+                                focusRemindersEnabled = focusRemindersEnabled,
+                                onFocusRemindersChange = { mainViewModel.setFocusRemindersEnabled(it) },
+                                privacyGhostMode = privacyGhostMode,
+                                onPrivacyGhostModeChange = { mainViewModel.setPrivacyGhostMode(it) },
                                 onBack = null,
                                 onSettings = { showSettings = true },
                                 onUpdateName = { newName ->

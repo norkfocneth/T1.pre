@@ -429,22 +429,22 @@ fun HomeScreen(
             }
 
             val deltaText = if (isGrowth) {
-                if (diffMinutes >= 0) "+$diffMinutes min vs your average" else "$diffMinutes min vs your average"
+                if (diffMinutes >= 0) "+$diffMinutes min vs yesterday" else "${-diffMinutes} min to beat yesterday"
             } else {
-                if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
+                if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs yesterday" else "↑ $diffMinutes min over yesterday"
             }
 
             val statusComparisonText = if (isGrowth) {
-                if (dashboardState.trend.equals("Declining", ignoreCase = true) || diffMinutes < 0) {
+                if (diffMinutes < 0) {
                     "Keep building your focus"
                 } else {
-                    "You are better from yesterday"
+                    "You are doing better from yesterday"
                 }
             } else {
-                if (dashboardState.trend.equals("Declining", ignoreCase = true) || diffMinutes > 0) {
-                    "You are not better from yesterday"
+                if (diffMinutes > 0) {
+                    "You are not doing better from yesterday"
                 } else {
-                    "You are better from yesterday"
+                    "You are doing better from yesterday"
                 }
             }
 
@@ -3022,9 +3022,9 @@ fun GoalComparisonCard(
     }
 
     val deltaText = if (isGrowth) {
-        if (diffMinutes >= 0) "+$diffMinutes min vs your average" else "$diffMinutes min vs your average"
+        if (diffMinutes >= 0) "+$diffMinutes min vs yesterday" else "${-diffMinutes} min to beat yesterday"
     } else {
-        if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs your average" else "↑ $diffMinutes min vs your average"
+        if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs yesterday" else "↑ $diffMinutes min over yesterday"
     }
 
     val goalLower = when (primaryGoal.uppercase()) {
@@ -3037,9 +3037,10 @@ fun GoalComparisonCard(
     }
 
     val motivationalText = when {
-        trend.equals("Improving", ignoreCase = true) -> "You're improving your $goalLower."
-        trend.equals("Declining", ignoreCase = true) -> "Let's get back on track."
-        else -> "Maintaining steady balance."
+        isGrowth && diffMinutes >= 0 -> "You are doing better from yesterday."
+        isGrowth && diffMinutes < 0 -> "Keep building your $goalLower focus."
+        !isGrowth && diffMinutes <= 0 -> "You are doing better from yesterday."
+        else -> "You are not doing better from yesterday."
     }
 
     Column(

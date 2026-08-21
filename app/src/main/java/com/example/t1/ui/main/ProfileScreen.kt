@@ -101,6 +101,8 @@ fun ProfileScreen(
     streak: Int,
     focusRemindersEnabled: Boolean,
     onFocusRemindersChange: (Boolean) -> Unit,
+    privacyGhostMode: Boolean = false,
+    onPrivacyGhostModeChange: (Boolean) -> Unit = {},
     onUpdateName: ((String) -> Unit)? = null,
     onStartTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -117,7 +119,6 @@ fun ProfileScreen(
     }
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    var privacyMode by remember { mutableStateOf(true) }
     var isEditing by remember { mutableStateOf(false) }
 
     val currentDisplayName = displayName.takeIf { !it.isNullOrBlank() } ?: username
@@ -659,16 +660,17 @@ fun ProfileScreen(
                     }
                 )
 
-                // Privacy Mode Toggle
+                // Privacy Mode Toggle (Option A: Leaderboard Stealth / Ghost Mode)
                 PreferenceRow(
                     icon = Icons.Default.Shield,
-                    title = "Privacy Mode",
+                    title = "Stealth Privacy Mode",
+                    subtitle = "Mask your name on public leaderboards as Anonymous / Shadow",
                     trailing = {
                         T1Toggle(
-                            value = privacyMode,
+                            value = privacyGhostMode,
                             onValueChange = {
                                 Haptics.playLight(view)
-                                privacyMode = it
+                                onPrivacyGhostModeChange(it)
                             }
                         )
                     }
@@ -841,6 +843,7 @@ fun AchievementCard(
 fun PreferenceRow(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     titleColor: Color = Foreground,
     onClick: (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null
@@ -872,14 +875,25 @@ fun PreferenceRow(
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            style = BodyMedium.copy(
-                color = titleColor,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = BodyMedium.copy(
+                    color = titleColor,
+                    fontWeight = FontWeight.Medium
+                )
+            )
+            if (subtitle != null) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = BodySmall.copy(
+                        color = MutedForeground.copy(alpha = 0.7f),
+                        fontSize = 11.sp
+                    )
+                )
+            }
+        }
         if (trailing != null) {
             trailing()
         }

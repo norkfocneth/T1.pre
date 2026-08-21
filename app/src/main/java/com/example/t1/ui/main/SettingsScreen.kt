@@ -155,16 +155,21 @@ fun SettingsScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Dark Mode Toggle
+                // Dark Mode Locked
                 PreferenceRow(
                     icon = Icons.Default.DarkMode,
                     title = "Dark Mode",
+                    subtitle = "OLED Obsidian Signature (Always Active)",
                     trailing = {
                         T1Toggle(
-                            value = darkMode,
+                            value = true,
                             onValueChange = {
                                 Haptics.playLight(view)
-                                darkMode = it
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "T1 is crafted for OLED Pitch Black. Light Mode coming soon.",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
                             }
                         )
                     }
@@ -174,13 +179,18 @@ fun SettingsScreen(
                 PreferenceRow(
                     icon = Icons.Default.VolumeUp,
                     title = "Sound Effects",
+                    subtitle = "Relaxing Zen audio & acoustic feedback",
                     trailing = {
                         T1Toggle(
                             value = soundEffects,
                             onValueChange = {
                                 soundEffects = it
                                 Haptics.save(context, hapticsEnabled = hapticFeedback, soundsEnabled = it)
-                                Haptics.playLight(view)
+                                if (it) {
+                                    Haptics.playZenChime()
+                                } else {
+                                    Haptics.playLight(view)
+                                }
                             }
                         )
                     }

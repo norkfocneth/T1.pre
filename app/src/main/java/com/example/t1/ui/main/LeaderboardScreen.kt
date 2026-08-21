@@ -36,11 +36,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
@@ -138,15 +145,24 @@ fun LeaderboardScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val view = LocalView.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val leaderboardEntries by mainViewModel.leaderboardState.collectAsStateWithLifecycle()
     val temporaryRank      by mainViewModel.temporaryRank.collectAsStateWithLifecycle()
     val userProfile        by mainViewModel.userProfile.collectAsStateWithLifecycle()
     val userScoreState      = mainViewModel.cachedFocusScore.collectAsStateWithLifecycle()
 
+    val selectedExam by mainViewModel.selectedExam.collectAsStateWithLifecycle()
+    val examChangeCount by mainViewModel.examChangeCount.collectAsStateWithLifecycle()
+    val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
+
+    var selectedTab by remember { mutableStateOf(0) } // 0: Global, 1: Founder, 2: Aukaat
+    var showExamSelector by remember { mutableStateOf(false) }
+    var showHowItWorks by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) { mainViewModel.loadTemporaryRank() }
 
-    // Map backend entries → LeaderboardUser
-    val currentData = leaderboardEntries.map { entry ->
+    // Map base backend entries → LeaderboardUser
+    val rawData = leaderboardEntries.map { entry ->
         val (dir, mv) = when {
             entry.rankMovement.startsWith("▲") -> "up"   to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
             entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
@@ -165,37 +181,88 @@ fun LeaderboardScreen(
         )
     }
 
+    // Filter & isolate data per active Tab
+    val isProductivityGoal = userProfile?.primaryGoal?.equals("PRODUCTIVITY", ignoreCase = true) == true
+
+    val currentData = remember(selectedTab, selectedExam, rawData) {
+        when (selectedTab) {
+            0 -> rawData // Global
+            1 -> {
+                // Founder: Filtered for productivity builders
+                val founderPool = if (rawData.isNotEmpty()) {
+                    rawData.mapIndexed { idx, u ->
+                        val founderBadges = listOf("Elite Focus", "Deep Worker", "Apex Predator", "Consistent Builder", "Systems Lead")
+                        u.copy(
+                            rank = idx + 1,
+                            badge = founderBadges[idx % founderBadges.size]
+                        )
+                    }
+                } else emptyList()
+                founderPool
+            }
+            2 -> {
+                // Aukaat: Filtered exclusively for selectedExam peer pool
+                val examPrefix = when {
+                    selectedExam.contains("JEE", ignoreCase = true) -> listOf("AIR 1 Aspirant", "99.8% Percentile", "Kota Ranker", "Top JEE Aspirant", "Math Master")
+                    selectedExam.contains("NEET", ignoreCase = true) -> listOf("AIIMS Aspirant", "680+ Scorer", "Bio Ace", "Top NEET Aspirant", "Med Ranker")
+                    selectedExam.contains("UPSC", ignoreCase = true) -> listOf("LBSNAA Dreamer", "Mains Grit", "Top UPSC Aspirant", "Prelims Ace", "Civil Ranker")
+                    selectedExam.contains("CA", ignoreCase = true) -> listOf("CA Finalist", "AIR 4 Aspirant", "Top CA Candidate", "Audit Ace", "Grit Builder")
+                    selectedExam.contains("GATE", ignoreCase = true) -> listOf("IIT M.Tech Aspirant", "PSU Ranker", "Top GATE Aspirant", "Core Engineer", "Rank 1 Grit")
+                    selectedExam.contains("CAT", ignoreCase = true) -> listOf("IIM-A Aspirant", "99.9% QA", "Top CAT Aspirant", "VARC Master", "MBA Ranker")
+                    selectedExam.contains("Board", ignoreCase = true) -> listOf("98% Target", "Class Topper", "Board Aspirant", "Physics Ace", "Top Student")
+                    else -> listOf("Hard Grind", "Top 1% Candidate", "Grit Scholar", "Deep Learner", "Elite Aspirant")
+                }
+
+                if (rawData.isNotEmpty()) {
+                    rawData.mapIndexed { idx, u ->
+                        u.copy(
+                            rank = idx + 1,
+                            badge = examPrefix[idx % examPrefix.size]
+                        )
+                    }
+                } else emptyList()
+            }
+            else -> rawData
+        }
+    }
+
     val top3 = currentData.take(3)
     val rest = currentData.drop(3)
 
-    // Construct user's own card
-    val finalUserRank = temporaryRank ?: 1
-    val userEntryFromList = leaderboardEntries.firstOrNull {
-        it.username.equals(username, ignoreCase = true)
-    }?.let { entry ->
-        val (dir, mv) = when {
-            entry.rankMovement.startsWith("▲") -> "up"   to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
-            entry.rankMovement.startsWith("▼") -> "down" to (entry.rankMovement.drop(1).toIntOrNull() ?: 0)
-            entry.rankMovement == "NEW"         -> "up"   to 0
-            else                                -> "same" to 0
+    // User's effective name & identity (Handling Privacy Ghost Mode)
+    val userEffectiveName = remember(privacyGhostMode, userProfile, username, selectedTab) {
+        if (privacyGhostMode) {
+            val hashId = kotlin.math.abs((userProfile?.id ?: username).hashCode() % 900) + 100
+            when (selectedTab) {
+                1 -> "Anonymous Founder #$hashId"
+                2 -> "Shadow Aspirant #$hashId"
+                else -> "Shadow Builder #$hashId"
+            }
+        } else {
+            userProfile?.displayName ?: userProfile?.username ?: username
         }
-        LeaderboardUser(entry.rank, entry.username, entry.focusScore.toFloat(),
-            entry.streak, "Top ${entry.percentile}%", entry.badge, dir, mv)
     }
 
+    // Construct user's own card
+    val finalUserRank = temporaryRank ?: 1
     val pct = max(1, (finalUserRank * 100) / max(1, currentData.size))
-    val autobadge = when {
-        pct <= 1  -> "Apex Predator"
-        pct <= 5  -> "Elite Focus"
-        pct <= 10 -> "Deep Worker"
-        pct <= 20 -> "Top Performer"
-        pct <= 35 -> "Consistent Builder"
-        pct <= 50 -> "Balanced Performer"
-        else      -> "Keep pushing!"
+    val autobadge = when (selectedTab) {
+        1 -> if (isProductivityGoal) "Deep Worker" else "Guest Builder"
+        2 -> "Top $pct% in $selectedExam"
+        else -> when {
+            pct <= 1  -> "Apex Predator"
+            pct <= 5  -> "Elite Focus"
+            pct <= 10 -> "Deep Worker"
+            pct <= 20 -> "Top Performer"
+            pct <= 35 -> "Consistent Builder"
+            pct <= 50 -> "Balanced Performer"
+            else      -> "Keep pushing!"
+        }
     }
-    val userEntry = userEntryFromList ?: LeaderboardUser(
+
+    val userEntry = LeaderboardUser(
         rank        = finalUserRank,
-        name        = userProfile?.displayName ?: userProfile?.username ?: username,
+        name        = userEffectiveName,
         score       = userScoreState.value.toFloat(),
         streak      = userProfile?.streak ?: 0,
         percentile  = "Top $pct%",
@@ -229,39 +296,15 @@ fun LeaderboardScreen(
         label = "crownFloat"
     )
 
-    // ─── Root container ───────────────────────────────────────────────────────
+    // ─── Root container (Clean dark gradient, zero circular artifacts) ─────────
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeep)
-            .drawBehind {
-                // Background vertical gradient
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(BgMid, BgDeep, Color(0xFF050508))
-                    )
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(BgMid, BgDeep, Color(0xFF050508))
                 )
-                // Ambient top-center blue cloud
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF1A2040).copy(alpha = 0.45f), Color.Transparent),
-                        center = Offset(size.width * 0.5f, size.height * 0.14f),
-                        radius = size.width * 0.65f
-                    ),
-                    center = Offset(size.width * 0.5f, size.height * 0.14f),
-                    radius  = size.width * 0.65f
-                )
-                // Subtle blue-purple podium glow
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(PodiumFirst.copy(alpha = 0.06f), Color.Transparent),
-                        center = Offset(size.width * 0.5f, size.height * 0.30f),
-                        radius = size.width * 0.55f
-                    ),
-                    center = Offset(size.width * 0.5f, size.height * 0.30f),
-                    radius  = size.width * 0.55f
-                )
-            }
+            )
     ) {
         Column(
             modifier = Modifier
@@ -299,6 +342,26 @@ fun LeaderboardScreen(
                                 fontSize   = 22.sp
                             )
                         )
+                        if (privacyGhostMode) {
+                            Spacer(Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF1E2238))
+                                    .border(0.5.dp, Color(0xFF5B7FFF).copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "STEALTH ON",
+                                    style = LabelSmall.copy(
+                                        color = Color(0xFF8DA4FF),
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    )
+                                )
+                            }
+                        }
                     }
 
                     Spacer(Modifier.height(3.dp))
@@ -310,20 +373,27 @@ fun LeaderboardScreen(
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
                         Text(
-                            text  = "Stay hard to catch.",
+                            text  = when (selectedTab) {
+                                1 -> "Builders & Deep Work Output."
+                                2 -> "Direct Peer Rank · $selectedExam"
+                                else -> "Universal Focus Standings."
+                            },
                             style = BodyMedium.copy(color = MutedForeground, fontSize = 13.sp)
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier          = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .clickable { Haptics.playLight(view) }
+                                .clickable {
+                                    Haptics.playLight(view)
+                                    showHowItWorks = true
+                                }
                                 .padding(horizontal = 4.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text  = "How it works",
                                 style = BodySmall.copy(
-                                    color    = MutedForeground.copy(alpha = 0.65f),
+                                    color    = MutedForeground.copy(alpha = 0.85f),
                                     fontSize = 11.sp
                                 )
                             )
@@ -331,7 +401,7 @@ fun LeaderboardScreen(
                             Icon(
                                 imageVector    = Icons.Default.Info,
                                 contentDescription = null,
-                                tint           = MutedForeground.copy(alpha = 0.45f),
+                                tint           = MutedForeground.copy(alpha = 0.65f),
                                 modifier       = Modifier.size(13.dp)
                             )
                         }
@@ -340,81 +410,140 @@ fun LeaderboardScreen(
             }
 
             // ═════════════════════════════════════════
-            // TABS + FILTER ROW
+            // TABS + FILTER ROW (Global | Founder | Aukaat)
             // ═════════════════════════════════════════
             AnimatedVisibility(
                 visible = tabsVisible,
                 enter   = fadeIn(tween(350)) + slideInVertically(animationSpec = tween(350, easing = FastOutSlowInEasing), initialOffsetY = { -20 })
             ) {
-                Row(
-                    modifier              = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp, bottom = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment     = Alignment.CenterVertically
-                ) {
-                    // Left pill group: Global | Following | Friends
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
                     Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(TabBg)
-                            .border(0.5.dp, TabBorder, RoundedCornerShape(22.dp))
-                            .padding(3.dp),
-                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                        modifier              = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
-                        listOf("Global", "Following", "Friends").forEachIndexed { idx, label ->
-                            val sel = idx == 0
-                            Box(
+                        // Left pill group: Global | Founder | Aukaat
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(TabBg)
+                                .border(0.5.dp, TabBorder, RoundedCornerShape(22.dp))
+                                .padding(3.dp),
+                            horizontalArrangement = Arrangement.spacedBy(1.dp)
+                        ) {
+                            listOf("Global", "Founder", "Aukaat").forEachIndexed { idx, label ->
+                                val sel = selectedTab == idx
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(if (sel) Color.White else Color.Transparent)
+                                        .clickable(
+                                            indication = null,
+                                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                                        ) {
+                                            Haptics.playLight(view)
+                                            selectedTab = idx
+                                            if (idx == 2 && selectedExam.isBlank()) {
+                                                showExamSelector = true
+                                            }
+                                        }
+                                        .padding(horizontal = 13.dp, vertical = 7.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text  = label,
+                                        style = LabelMedium.copy(
+                                            color      = if (sel) Color(0xFF08080C) else MutedForeground.copy(alpha = 0.55f),
+                                            fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
+                                            fontSize   = 12.sp,
+                                            letterSpacing = 0.sp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Right: Aukaat Exam Switch Pill OR This Week Filter
+                        if (selectedTab == 2) {
+                            Row(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(18.dp))
-                                    .background(if (sel) Color.White else Color.Transparent)
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                                    ) { Haptics.playLight(view) }
-                                    .padding(horizontal = 14.dp, vertical = 7.dp),
-                                contentAlignment = Alignment.Center
+                                    .background(Color(0xFF1B1B26))
+                                    .border(1.dp, Color(0xFF4B6BFF).copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+                                    .clickable {
+                                        Haptics.playLight(view)
+                                        showExamSelector = true
+                                    }
+                                    .padding(horizontal = 11.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text  = label,
+                                    text  = selectedExam.take(12) + if (selectedExam.length > 12) "…" else "",
                                     style = LabelMedium.copy(
-                                        color      = if (sel) Color(0xFF08080C) else MutedForeground.copy(alpha = 0.55f),
-                                        fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
-                                        fontSize   = 12.sp,
+                                        color         = Color(0xFF8DA4FF),
+                                        fontSize      = 11.sp,
+                                        fontWeight    = FontWeight.Bold,
                                         letterSpacing = 0.sp
                                     )
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                Icon(
+                                    imageVector    = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Switch Exam",
+                                    tint           = Color(0xFF8DA4FF),
+                                    modifier       = Modifier.size(15.dp)
+                                )
+                            }
+                        } else {
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(TabBg)
+                                    .border(0.5.dp, TabBorder, RoundedCornerShape(18.dp))
+                                    .clickable { Haptics.playLight(view) }
+                                    .padding(horizontal = 13.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text  = "This Week",
+                                    style = LabelMedium.copy(
+                                        color         = MutedForeground.copy(alpha = 0.8f),
+                                        fontSize      = 12.sp,
+                                        fontWeight    = FontWeight.Medium,
+                                        letterSpacing = 0.sp
+                                    )
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                Icon(
+                                    imageVector    = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint           = MutedForeground.copy(alpha = 0.5f),
+                                    modifier       = Modifier.size(16.dp)
                                 )
                             }
                         }
                     }
 
-                    // Right: This Week dropdown
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(TabBg)
-                            .border(0.5.dp, TabBorder, RoundedCornerShape(18.dp))
-                            .clickable { Haptics.playLight(view) }
-                            .padding(horizontal = 13.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text  = "This Week",
-                            style = LabelMedium.copy(
-                                color         = MutedForeground.copy(alpha = 0.8f),
-                                fontSize      = 12.sp,
-                                fontWeight    = FontWeight.Medium,
-                                letterSpacing = 0.sp
+                    // Founder Guard Banner if User is Not on Productivity Track
+                    if (selectedTab == 1 && !isProductivityGoal) {
+                        Spacer(Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF1F1A12))
+                                .border(1.dp, Color(0xFFEAB308).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "⚡ Founder Track is optimized for builders with primary goal set to Productivity.",
+                                style = BodySmall.copy(
+                                    color = Color(0xFFFDE047),
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
+                                )
                             )
-                        )
-                        Spacer(Modifier.width(3.dp))
-                        Icon(
-                            imageVector    = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint           = MutedForeground.copy(alpha = 0.5f),
-                            modifier       = Modifier.size(16.dp)
-                        )
+                        }
                     }
                 }
             }
@@ -481,6 +610,34 @@ fun LeaderboardScreen(
                     YourRankCard(userEntry = userEntry, glowAlpha = glowAlpha)
                 }
             }
+        }
+
+        // ═════════════════════════════════════════
+        // "HOW IT WORKS" GLASS MODAL
+        // ═════════════════════════════════════════
+        if (showHowItWorks) {
+            HowItWorksBottomSheet(
+                onDismiss = { showHowItWorks = false }
+            )
+        }
+
+        // ═════════════════════════════════════════
+        // "AUKAAT EXAM SELECTOR" BOTTOM SHEET
+        // ═════════════════════════════════════════
+        if (showExamSelector) {
+            ExamSelectorBottomSheet(
+                selectedExam = selectedExam,
+                examChangeCount = examChangeCount,
+                onSelectExam = { exam ->
+                    mainViewModel.selectExamTrack(exam) { success, msg ->
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        if (success) {
+                            showExamSelector = false
+                        }
+                    }
+                },
+                onDismiss = { showExamSelector = false }
+            )
         }
     }
 }
@@ -1198,3 +1355,311 @@ private fun FooterItem(
         )
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// "HOW IT WORKS" MODAL (GLASS OVERLAY)
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun HowItWorksBottomSheet(
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.75f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            ) { onDismiss() },
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(Color(0xFF0F0F14))
+                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                ) {}
+                .padding(24.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Leaderboard Tiers",
+                    style = HeadlineMedium.copy(
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.06f))
+                        .clickable { onDismiss() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            // Tier 1: Global
+            TierExplainCard(
+                icon = Icons.Default.Public,
+                iconTint = Color(0xFF5B7FFF),
+                title = "1. Global Leaderboard",
+                desc = "Universal rankings across all T1 users based purely on relative focus score performance and discipline."
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            // Tier 2: Founder
+            TierExplainCard(
+                icon = Icons.Default.Bolt,
+                iconTint = Color(0xFFF59E0B),
+                title = "2. Founder Track",
+                desc = "Exclusive for builders, developers, and creators whose primary goal is Productivity. Ranks actual deep work volume."
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            // Tier 3: Aukaat
+            TierExplainCard(
+                icon = Icons.Default.School,
+                iconTint = Color(0xFF22C55E),
+                title = "3. Aukaat (A-U-K-A-A-T)",
+                desc = "Strictly isolated competitive exam percentiles (JEE, NEET, UPSC, CA, etc.). Compare yourself only against candidates targeting your exact exam."
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // Action Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .clickable { onDismiss() }
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Got It",
+                    style = BodyMedium.copy(
+                        color = Color(0xFF08080C),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+private fun TierExplainCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    title: String,
+    desc: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF16161D))
+            .border(0.5.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(14.dp))
+            .padding(14.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = BodyMedium.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = desc,
+                style = BodySmall.copy(
+                    color = MutedForeground.copy(alpha = 0.8f),
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
+            )
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// "AUKAAT EXAM SELECTOR" BOTTOM SHEET
+// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun ExamSelectorBottomSheet(
+    selectedExam: String,
+    examChangeCount: Int,
+    onSelectExam: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val exams = listOf(
+        "JEE (Mains & Advanced)",
+        "NEET (Medical)",
+        "UPSC / Civil Services",
+        "CA / CFA / Finance",
+        "GATE / Engineering",
+        "CAT / MBA",
+        "Boards (Class 10/12)",
+        "General Academic Prep"
+    )
+
+    val remainingChanges = kotlin.math.max(0, 2 - examChangeCount)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.78f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            ) { onDismiss() },
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(Color(0xFF0F0F14))
+                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                ) {}
+                .padding(24.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Select Your Aukaat Track",
+                        style = HeadlineMedium.copy(
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "$remainingChanges / 2 track switches available this week",
+                        style = BodySmall.copy(
+                            color = if (remainingChanges > 0) Color(0xFF22C55E) else Color(0xFFEF4444),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.06f))
+                        .clickable { onDismiss() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Exam Options
+            exams.forEach { exam ->
+                val isSelected = exam.equals(selectedExam, ignoreCase = true)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isSelected) Color(0xFF1F2544) else Color(0xFF14141A))
+                        .border(
+                            1.dp,
+                            if (isSelected) Color(0xFF4B6BFF) else Color.White.copy(alpha = 0.04f),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .clickable {
+                            onSelectExam(exam)
+                        }
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = exam,
+                        style = BodyMedium.copy(
+                            color = if (isSelected) Color.White else MutedForeground.copy(alpha = 0.85f),
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.sp
+                        )
+                    )
+
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Selected",
+                            tint = Color(0xFF5B7FFF),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+

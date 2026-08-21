@@ -405,19 +405,33 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Goal Comparison & Status calculation
+            // Goal Comparison & Status calculation (Overall Category Tracking)
             val primaryGoal = userProfile?.primaryGoal ?: "PRODUCTIVITY"
             val todayGoalUsageMs = when (primaryGoal.uppercase()) {
-                "PRODUCTIVITY" -> dashboardState.categoryTimes["Productivity"] ?: 0L
-                "EDUCATION" -> dashboardState.categoryTimes["Education"] ?: 0L
-                "SOCIAL" -> dashboardState.categoryTimes["Social"] ?: 0L
-                "ENTERTAINMENT" -> dashboardState.categoryTimes["Entertainment"] ?: 0L
-                "COMMUNICATION" -> dashboardState.categoryTimes["Communication"] ?: 0L
-                else -> dashboardState.categoryTimes["Productivity"] ?: 0L
+                "PRODUCTIVITY" -> dashboardState.categoryTimes["Productivity"] ?: dashboardState.todayBehaviour?.productiveTimeMs ?: 0L
+                "EDUCATION" -> dashboardState.categoryTimes["Education"] ?: dashboardState.todayBehaviour?.educationTimeMs ?: 0L
+                "SOCIAL" -> dashboardState.categoryTimes["Social"] ?: dashboardState.todayBehaviour?.socialTimeMs ?: 0L
+                "ENTERTAINMENT" -> dashboardState.categoryTimes["Entertainment"] ?: dashboardState.todayBehaviour?.entertainmentTimeMs ?: 0L
+                "COMMUNICATION" -> dashboardState.categoryTimes["Communication"] ?: dashboardState.todayBehaviour?.communicationTimeMs ?: 0L
+                else -> dashboardState.categoryTimes["Productivity"] ?: dashboardState.todayBehaviour?.productiveTimeMs ?: 0L
+            }
+
+            val yesterdayGoalUsageMs = when (primaryGoal.uppercase()) {
+                "PRODUCTIVITY" -> dashboardState.yesterdayCategoryTimes["Productivity"] ?: dashboardState.yesterdayBehaviour?.productiveTimeMs ?: dashboardState.baselineGoalTimeMs
+                "EDUCATION" -> dashboardState.yesterdayCategoryTimes["Education"] ?: dashboardState.yesterdayBehaviour?.educationTimeMs ?: dashboardState.baselineGoalTimeMs
+                "SOCIAL" -> dashboardState.yesterdayCategoryTimes["Social"] ?: dashboardState.yesterdayBehaviour?.socialTimeMs ?: dashboardState.baselineGoalTimeMs
+                "ENTERTAINMENT" -> dashboardState.yesterdayCategoryTimes["Entertainment"] ?: dashboardState.yesterdayBehaviour?.entertainmentTimeMs ?: dashboardState.baselineGoalTimeMs
+                "COMMUNICATION" -> dashboardState.yesterdayCategoryTimes["Communication"] ?: dashboardState.yesterdayBehaviour?.communicationTimeMs ?: dashboardState.baselineGoalTimeMs
+                else -> dashboardState.yesterdayCategoryTimes["Productivity"] ?: dashboardState.yesterdayBehaviour?.productiveTimeMs ?: dashboardState.baselineGoalTimeMs
             }
 
             val isGrowth = primaryGoal.uppercase() == "PRODUCTIVITY" || primaryGoal.uppercase() == "EDUCATION"
-            val diffMinutes = ((todayGoalUsageMs - dashboardState.baselineGoalTimeMs) / 60000L).toInt()
+            val hasYesterdayBaseline = yesterdayGoalUsageMs > 0L || (dashboardState.yesterdayBehaviour != null && dashboardState.yesterdayBehaviour.totalScreenTimeMs > 0L)
+            val diffMinutes = if (hasYesterdayBaseline) {
+                ((todayGoalUsageMs - yesterdayGoalUsageMs) / 60000L).toInt()
+            } else {
+                ((todayGoalUsageMs) / 60000L).toInt()
+            }
 
             val goalTitle = when (primaryGoal.uppercase()) {
                 "PRODUCTIVITY" -> "PRODUCTIVITY"
@@ -428,13 +442,17 @@ fun HomeScreen(
                 else -> "PRODUCTIVITY"
             }
 
-            val deltaText = if (isGrowth) {
+            val deltaText = if (!hasYesterdayBaseline && todayGoalUsageMs > 0L) {
+                "${(todayGoalUsageMs / 60000L).toInt()} min today"
+            } else if (isGrowth) {
                 if (diffMinutes >= 0) "+$diffMinutes min vs yesterday" else "${-diffMinutes} min to beat yesterday"
             } else {
                 if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs yesterday" else "↑ $diffMinutes min over yesterday"
             }
 
-            val statusComparisonText = if (isGrowth) {
+            val statusComparisonText = if (!hasYesterdayBaseline && todayGoalUsageMs > 0L) {
+                "Tracking today's baseline"
+            } else if (isGrowth) {
                 if (diffMinutes < 0) {
                     "Keep building your focus"
                 } else {
@@ -528,7 +546,7 @@ fun HomeScreen(
                 primaryGoal = primaryGoal,
                 trend = dashboardState.trend,
                 todayUsageMs = todayGoalUsageMs,
-                baselineMs = dashboardState.baselineGoalTimeMs
+                baselineMs = yesterdayGoalUsageMs
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -3010,7 +3028,12 @@ fun GoalComparisonCard(
     modifier: Modifier = Modifier
 ) {
     val isGrowth = primaryGoal.uppercase() == "PRODUCTIVITY" || primaryGoal.uppercase() == "EDUCATION"
-    val diffMinutes = ((todayUsageMs - baselineMs) / 60000L).toInt()
+    val hasYesterdayBaseline = baselineMs > 0L
+    val diffMinutes = if (hasYesterdayBaseline) {
+        ((todayUsageMs - baselineMs) / 60000L).toInt()
+    } else {
+        ((todayUsageMs) / 60000L).toInt()
+    }
 
     val goalTitle = when (primaryGoal.uppercase()) {
         "PRODUCTIVITY" -> "PRODUCTIVITY"
@@ -3021,7 +3044,9 @@ fun GoalComparisonCard(
         else -> "PRODUCTIVITY"
     }
 
-    val deltaText = if (isGrowth) {
+    val deltaText = if (!hasYesterdayBaseline && todayUsageMs > 0L) {
+        "${(todayUsageMs / 60000L).toInt()} min today"
+    } else if (isGrowth) {
         if (diffMinutes >= 0) "+$diffMinutes min vs yesterday" else "${-diffMinutes} min to beat yesterday"
     } else {
         if (diffMinutes <= 0) "↓ ${-diffMinutes} min vs yesterday" else "↑ $diffMinutes min over yesterday"
@@ -3037,6 +3062,7 @@ fun GoalComparisonCard(
     }
 
     val motivationalText = when {
+        !hasYesterdayBaseline && todayUsageMs > 0L -> "Tracking today's baseline."
         isGrowth && diffMinutes >= 0 -> "You are doing better from yesterday."
         isGrowth && diffMinutes < 0 -> "Keep building your $goalLower focus."
         !isGrowth && diffMinutes <= 0 -> "You are doing better from yesterday."

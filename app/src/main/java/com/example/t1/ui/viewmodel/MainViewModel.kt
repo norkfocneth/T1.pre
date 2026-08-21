@@ -320,14 +320,14 @@ class MainViewModel @Inject constructor(
             if (result.isSuccess) {
                 val behaviour = result.getOrNull()
 
-                // Calculate category times dynamically using AppCategoryRepository
+                // Calculate category times dynamically using behaviour category totals and AppCategoryRepository
                 val categoryTimes = mutableMapOf(
-                    "Productivity" to 0L,
-                    "Education" to 0L,
-                    "Communication" to 0L,
-                    "Social" to 0L,
-                    "Entertainment" to 0L,
-                    "Utility" to 0L
+                    "Productivity" to (behaviour?.productiveTimeMs ?: 0L),
+                    "Education" to (behaviour?.educationTimeMs ?: 0L),
+                    "Communication" to (behaviour?.communicationTimeMs ?: 0L),
+                    "Social" to (behaviour?.socialTimeMs ?: 0L),
+                    "Entertainment" to (behaviour?.entertainmentTimeMs ?: 0L),
+                    "Utility" to (behaviour?.otherTimeMs ?: 0L)
                 )
                 behaviour?.topUsedApps?.forEach { app ->
                     val cat = appCategoryRepository.getCategory(app.packageName)
@@ -339,7 +339,43 @@ class MainViewModel @Inject constructor(
                         EngineCategory.ENTERTAINMENT -> "Entertainment"
                         EngineCategory.UTILITY -> "Utility"
                     }
-                    categoryTimes[catName] = (categoryTimes[catName] ?: 0L) + app.usageDurationMs
+                    if ((categoryTimes[catName] ?: 0L) == 0L) {
+                        categoryTimes[catName] = (categoryTimes[catName] ?: 0L) + app.usageDurationMs
+                    }
+                }
+
+                // Calculate yesterday's category times dynamically for accurate Today vs Yesterday baseline comparison
+                val yesterdayCategoryTimes = mutableMapOf(
+                    "Productivity" to (yesterdayBehaviour?.productiveTimeMs ?: 0L),
+                    "Education" to (yesterdayBehaviour?.educationTimeMs ?: 0L),
+                    "Communication" to (yesterdayBehaviour?.communicationTimeMs ?: 0L),
+                    "Social" to (yesterdayBehaviour?.socialTimeMs ?: 0L),
+                    "Entertainment" to (yesterdayBehaviour?.entertainmentTimeMs ?: 0L),
+                    "Utility" to (yesterdayBehaviour?.otherTimeMs ?: 0L)
+                )
+                yesterdayBehaviour?.topUsedApps?.forEach { app ->
+                    val cat = appCategoryRepository.getCategory(app.packageName)
+                    val catName = when (cat) {
+                        EngineCategory.PRODUCTIVITY -> "Productivity"
+                        EngineCategory.EDUCATION -> "Education"
+                        EngineCategory.COMMUNICATION -> "Communication"
+                        EngineCategory.SOCIAL -> "Social"
+                        EngineCategory.ENTERTAINMENT -> "Entertainment"
+                        EngineCategory.UTILITY -> "Utility"
+                    }
+                    if ((yesterdayCategoryTimes[catName] ?: 0L) == 0L) {
+                        yesterdayCategoryTimes[catName] = (yesterdayCategoryTimes[catName] ?: 0L) + app.usageDurationMs
+                    }
+                }
+
+                val primaryGoal = userProfile.value?.primaryGoal ?: "PRODUCTIVITY"
+                val baselineMs = when (primaryGoal.uppercase()) {
+                    "PRODUCTIVITY" -> yesterdayCategoryTimes["Productivity"] ?: 0L
+                    "EDUCATION" -> yesterdayCategoryTimes["Education"] ?: 0L
+                    "SOCIAL" -> yesterdayCategoryTimes["Social"] ?: 0L
+                    "ENTERTAINMENT" -> yesterdayCategoryTimes["Entertainment"] ?: 0L
+                    "COMMUNICATION" -> yesterdayCategoryTimes["Communication"] ?: 0L
+                    else -> yesterdayCategoryTimes["Productivity"] ?: 0L
                 }
 
                 // Calculate today's focus score
@@ -363,7 +399,9 @@ class MainViewModel @Inject constructor(
                         trend = currentScore?.trend ?: it.trend,
                         timeSaved = currentScore?.timeSaved ?: it.timeSaved,
                         percentile = pct,
-                        categoryTimes = categoryTimes
+                        categoryTimes = categoryTimes,
+                        yesterdayCategoryTimes = yesterdayCategoryTimes,
+                        baselineGoalTimeMs = baselineMs
                     )
                 }
             } else {

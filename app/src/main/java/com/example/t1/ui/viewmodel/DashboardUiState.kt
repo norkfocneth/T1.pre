@@ -25,5 +25,6 @@ data class DashboardUiState(
     val timeSaved: Long = 0L,
     val percentile: Int = 76,
     val categoryTimes: Map<String, Long> = emptyMap(),
+    val yesterdayCategoryTimes: Map<String, Long> = emptyMap(),
     val baselineGoalTimeMs: Long = 0L
 )

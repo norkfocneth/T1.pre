@@ -85,8 +85,9 @@ class LeaderboardRepositoryImpl @Inject constructor(
                     "NEW"
                 }
 
-                val pct = researchBenchmarkRepository.getPercentile(profile.focusScore)
-                val badge = performanceBadgeRepository.resolveBadge(pct)
+                val topPct = researchBenchmarkRepository.getTopPercentile(profile.focusScore)
+                val aheadPct = researchBenchmarkRepository.getPercentile(profile.focusScore)
+                val badge = performanceBadgeRepository.resolveBadge(aheadPct)
 
                 LeaderboardEntry(
                     username = profile.username,
@@ -94,7 +95,7 @@ class LeaderboardRepositoryImpl @Inject constructor(
                     focusScore = profile.focusScore,
                     streak = profile.streak,
                     rank = rank,
-                    percentile = pct,
+                    percentile = topPct,
                     badge = badge,
                     rankMovement = movement
                 )
@@ -186,8 +187,9 @@ class LeaderboardRepositoryImpl @Inject constructor(
                 }
 
                 // Percentile and Badge
-                val pct = researchBenchmarkRepository.getPercentile(profile.focusScore)
-                val badge = performanceBadgeRepository.resolveBadge(pct)
+                val topPct = researchBenchmarkRepository.getTopPercentile(profile.focusScore)
+                val aheadPct = researchBenchmarkRepository.getPercentile(profile.focusScore)
+                val badge = performanceBadgeRepository.resolveBadge(aheadPct)
 
                 // Rank Reason
                 val reason = when {
@@ -204,7 +206,7 @@ class LeaderboardRepositoryImpl @Inject constructor(
                     displayName = profile.displayName,
                     focusScore = profile.focusScore,
                     behaviourScore = profile.behaviourScore,
-                    percentile = pct,
+                    percentile = topPct,
                     rank = rank,
                     rankMovement = movement,
                     badge = badge,

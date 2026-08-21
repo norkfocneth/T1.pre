@@ -245,7 +245,24 @@ fun LeaderboardScreen(
 
     // Construct user's own card
     val finalUserRank = temporaryRank ?: 1
-    val pct = max(1, (finalUserRank * 100) / max(1, currentData.size))
+    val userScoreInt = userScoreState.value
+    val pct = when {
+        userScoreInt >= 95 -> 1
+        userScoreInt >= 90 -> 5
+        userScoreInt >= 85 -> 10
+        userScoreInt >= 80 -> 15
+        userScoreInt >= 76 -> 24
+        userScoreInt >= 70 -> 29
+        userScoreInt >= 65 -> 34
+        userScoreInt >= 60 -> 42
+        userScoreInt >= 55 -> 52
+        userScoreInt >= 50 -> 59
+        userScoreInt >= 45 -> 64
+        userScoreInt >= 40 -> 74
+        userScoreInt >= 35 -> 80
+        userScoreInt >= 20 -> 85
+        else -> 95
+    }
     val autobadge = when (selectedTab) {
         1 -> if (isProductivityGoal) "Deep Worker" else "Guest Builder"
         2 -> "Top $pct% in $selectedExam"
@@ -253,9 +270,10 @@ fun LeaderboardScreen(
             pct <= 1  -> "Apex Predator"
             pct <= 5  -> "Elite Focus"
             pct <= 10 -> "Deep Worker"
-            pct <= 20 -> "Top Performer"
-            pct <= 35 -> "Consistent Builder"
-            pct <= 50 -> "Balanced Performer"
+            pct <= 24 -> "Top Performer"
+            pct <= 42 -> "Consistent Builder"
+            pct <= 64 -> "Balanced Performer"
+            pct <= 85 -> "Grit Builder"
             else      -> "Keep pushing!"
         }
     }

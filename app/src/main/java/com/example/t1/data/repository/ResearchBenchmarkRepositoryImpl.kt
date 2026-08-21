@@ -9,52 +9,54 @@ import kotlin.math.roundToInt
 class ResearchBenchmarkRepositoryImpl @Inject constructor() : ResearchBenchmarkRepository {
 
     companion object {
-        const val BENCHMARK_VERSION = "BENCHMARK_V1"
+        const val BENCHMARK_VERSION = "BENCHMARK_V2"
     }
 
-    private val percentileLookup = IntArray(101)
-
-    init {
-        val keyPoints = listOf(
-            Pair(0, 2f),
-            Pair(5, 4f),
-            Pair(10, 7f),
-            Pair(15, 11f),
-            Pair(20, 16f),
-            Pair(25, 20f),
-            Pair(30, 25f),
-            Pair(35, 31f),
-            Pair(40, 36f),
-            Pair(45, 41f),
-            Pair(50, 46f),
-            Pair(55, 51f),
-            Pair(60, 56f),
-            Pair(65, 61f),
-            Pair(70, 65f),
-            Pair(74, 69f),
-            Pair(75, 71f),
-            Pair(80, 77f),
-            Pair(85, 83f),
-            Pair(90, 90f),
-            Pair(95, 96f),
-            Pair(100, 99f)
-        )
-
-        // Fill lookup table by linear interpolation between consecutive points
-        for (i in 0 until keyPoints.size - 1) {
-            val (x0, y0) = keyPoints[i]
-            val (x1, y1) = keyPoints[i + 1]
-            for (x in x0..x1) {
-                val fraction = (x - x0).toFloat() / (x1 - x0).toFloat()
-                val interpolatedValue = y0 + fraction * (y1 - y0)
-                percentileLookup[x] = interpolatedValue.roundToInt().coerceIn(0, 100)
-            }
+    /**
+     * Calculates the top percentage tier based on Focus Score:
+     * - 95..100 -> Top 1%
+     * - 90..94  -> Top 5%
+     * - 85..89  -> Top 10%
+     * - 80..84  -> Top 15%
+     * - 76..79  -> Top 24%
+     * - 70..75  -> Top 29%
+     * - 65..69  -> Top 34%
+     * - 60..64  -> Top 42%
+     * - 55..59  -> Top 52%
+     * - 50..54  -> Top 59%
+     * - 45..49  -> Top 64%
+     * - 40..44  -> Top 74%
+     * - 35..39  -> Top 80%
+     * - 20..34  -> Top 85%
+     * - 0..19   -> Top 95%
+     */
+    override fun getTopPercentile(focusScore: Int): Int {
+        val score = focusScore.coerceIn(0, 100)
+        return when {
+            score >= 95 -> 1
+            score >= 90 -> 5
+            score >= 85 -> 10
+            score >= 80 -> 15
+            score >= 76 -> 24
+            score >= 70 -> 29
+            score >= 65 -> 34
+            score >= 60 -> 42
+            score >= 55 -> 52
+            score >= 50 -> 59
+            score >= 45 -> 64
+            score >= 40 -> 74
+            score >= 35 -> 80
+            score >= 20 -> 85
+            else -> 95
         }
     }
 
+    /**
+     * Returns "Ahead of X% of users" (100 - topPercentile).
+     */
     override fun getPercentile(focusScore: Int): Int {
-        val score = focusScore.coerceIn(0, 100)
-        return percentileLookup[score]
+        val topPct = getTopPercentile(focusScore)
+        return (100 - topPct).coerceIn(1, 99)
     }
 
     override fun getBenchmarkVersion(): String {

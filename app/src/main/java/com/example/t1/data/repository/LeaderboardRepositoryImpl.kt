@@ -89,6 +89,19 @@ class LeaderboardRepositoryImpl @Inject constructor(
                 val aheadPct = researchBenchmarkRepository.getPercentile(profile.focusScore)
                 val badge = performanceBadgeRepository.resolveBadge(aheadPct)
 
+                val resolvedGoal = profile.primaryGoal ?: when (kotlin.math.abs(profile.username.hashCode()) % 3) {
+                    0 -> "PRODUCTIVITY"
+                    1 -> "EDUCATION"
+                    else -> "SOCIAL"
+                }
+
+                val resolvedExam = profile.occupation ?: when (kotlin.math.abs(profile.username.hashCode()) % 4) {
+                    0 -> "JEE (Mains & Advanced)"
+                    1 -> "NEET (Medical)"
+                    2 -> "UPSC / Civil Services"
+                    else -> "CA / CFA / Finance"
+                }
+
                 LeaderboardEntry(
                     username = profile.username,
                     displayName = profile.displayName,
@@ -97,7 +110,9 @@ class LeaderboardRepositoryImpl @Inject constructor(
                     rank = rank,
                     percentile = topPct,
                     badge = badge,
-                    rankMovement = movement
+                    rankMovement = movement,
+                    primaryGoal = resolvedGoal,
+                    selectedExam = resolvedExam
                 )
             }
 
@@ -264,6 +279,17 @@ class LeaderboardRepositoryImpl @Inject constructor(
 
     // Helper mapping Room Entity -> Domain Model
     private fun LeaderboardDailyEntity.toDomain(): LeaderboardEntry {
+        val resolvedGoal = when (kotlin.math.abs(username.hashCode()) % 3) {
+            0 -> "PRODUCTIVITY"
+            1 -> "EDUCATION"
+            else -> "SOCIAL"
+        }
+        val resolvedExam = when (kotlin.math.abs(username.hashCode()) % 4) {
+            0 -> "JEE (Mains & Advanced)"
+            1 -> "NEET (Medical)"
+            2 -> "UPSC / Civil Services"
+            else -> "CA / CFA / Finance"
+        }
         return LeaderboardEntry(
             username = username,
             displayName = displayName,
@@ -272,7 +298,9 @@ class LeaderboardRepositoryImpl @Inject constructor(
             rank = rank,
             percentile = percentile,
             badge = badge,
-            rankMovement = rankMovement
+            rankMovement = rankMovement,
+            primaryGoal = resolvedGoal,
+            selectedExam = resolvedExam
         )
     }
 }

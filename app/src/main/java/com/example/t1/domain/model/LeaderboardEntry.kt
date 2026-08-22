@@ -8,5 +8,7 @@ data class LeaderboardEntry(
     val rank: Int,
     val percentile: Int,
     val badge: String,
-    val rankMovement: String
+    val rankMovement: String,
+    val primaryGoal: String? = null,
+    val selectedExam: String? = null
 )

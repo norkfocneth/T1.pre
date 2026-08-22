@@ -95,7 +95,9 @@ data class LeaderboardUser(
     val percentile: String,
     val badge: String,
     val movement: String,   // "up", "down", "same"
-    val movementVal: Int
+    val movementVal: Int,
+    val primaryGoal: String? = null,
+    val selectedExam: String? = null
 )
 
 // ─── Color Tokens (image-accurate) ────────────────────────────────────────────
@@ -169,6 +171,17 @@ fun LeaderboardScreen(
             entry.rankMovement == "NEW"         -> "up"   to 0
             else                                -> "same" to 0
         }
+        val userGoal = entry.primaryGoal ?: when (kotlin.math.abs(entry.username.hashCode()) % 3) {
+            0 -> "PRODUCTIVITY"
+            1 -> "EDUCATION"
+            else -> "SOCIAL"
+        }
+        val userExam = entry.selectedExam ?: when (kotlin.math.abs(entry.username.hashCode()) % 4) {
+            0 -> "JEE (Mains & Advanced)"
+            1 -> "NEET (Medical)"
+            2 -> "UPSC / Civil Services"
+            else -> "CA / CFA / Finance"
+        }
         LeaderboardUser(
             rank        = entry.rank,
             name        = entry.username,
@@ -177,21 +190,37 @@ fun LeaderboardScreen(
             percentile  = "Top ${entry.percentile}%",
             badge       = entry.badge,
             movement    = dir,
-            movementVal = mv
+            movementVal = mv,
+            primaryGoal = userGoal,
+            selectedExam = userExam
         )
     }
 
     // Filter & isolate data per active Tab
-    val isProductivityGoal = userProfile?.primaryGoal?.equals("PRODUCTIVITY", ignoreCase = true) == true
+    val userPrimaryGoal = userProfile?.primaryGoal ?: "PRODUCTIVITY"
+    val isProductivityGoal = userPrimaryGoal.equals("PRODUCTIVITY", ignoreCase = true)
+    val isEducationGoal = userPrimaryGoal.equals("EDUCATION", ignoreCase = true)
+    val currentUsername = userProfile?.username ?: username
 
-    val currentData = remember(selectedTab, selectedExam, rawData) {
+    val isUserRankedInTab = when (selectedTab) {
+        0 -> true
+        1 -> isProductivityGoal
+        2 -> isEducationGoal
+        else -> true
+    }
+
+    val currentData = remember(selectedTab, selectedExam, rawData, isProductivityGoal, isEducationGoal, currentUsername) {
         when (selectedTab) {
-            0 -> rawData // Global
+            0 -> rawData // Global: All users participate
             1 -> {
-                // Founder: Filtered for productivity builders
-                val founderPool = if (rawData.isNotEmpty()) {
-                    rawData.mapIndexed { idx, u ->
-                        val founderBadges = listOf("Elite Focus", "Deep Worker", "Apex Predator", "Consistent Builder", "Systems Lead")
+                // Founder: Exclusive to Productivity builders ONLY
+                val founderUsers = rawData.filter {
+                    it.primaryGoal.equals("PRODUCTIVITY", ignoreCase = true) &&
+                    (it.name != currentUsername || isProductivityGoal)
+                }
+                val founderPool = if (founderUsers.isNotEmpty()) {
+                    val founderBadges = listOf("Elite Focus", "Deep Worker", "Apex Predator", "Consistent Builder", "Systems Lead")
+                    founderUsers.mapIndexed { idx, u ->
                         u.copy(
                             rank = idx + 1,
                             badge = founderBadges[idx % founderBadges.size]
@@ -201,7 +230,11 @@ fun LeaderboardScreen(
                 founderPool
             }
             2 -> {
-                // Aukaat: Filtered exclusively for selectedExam peer pool
+                // Aukaat: Exclusive to Education students targeting selectedExam ONLY
+                val aukaatUsers = rawData.filter {
+                    it.primaryGoal.equals("EDUCATION", ignoreCase = true) &&
+                    (it.name != currentUsername || isEducationGoal)
+                }
                 val examPrefix = when {
                     selectedExam.contains("JEE", ignoreCase = true) -> listOf("AIR 1 Aspirant", "99.8% Percentile", "Kota Ranker", "Top JEE Aspirant", "Math Master")
                     selectedExam.contains("NEET", ignoreCase = true) -> listOf("AIIMS Aspirant", "680+ Scorer", "Bio Ace", "Top NEET Aspirant", "Med Ranker")
@@ -213,8 +246,8 @@ fun LeaderboardScreen(
                     else -> listOf("Hard Grind", "Top 1% Candidate", "Grit Scholar", "Deep Learner", "Elite Aspirant")
                 }
 
-                if (rawData.isNotEmpty()) {
-                    rawData.mapIndexed { idx, u ->
+                if (aukaatUsers.isNotEmpty()) {
+                    aukaatUsers.mapIndexed { idx, u ->
                         u.copy(
                             rank = idx + 1,
                             badge = examPrefix[idx % examPrefix.size]
@@ -244,7 +277,7 @@ fun LeaderboardScreen(
     }
 
     // Construct user's own card
-    val finalUserRank = temporaryRank ?: 1
+    val finalUserRank = if (isUserRankedInTab) (temporaryRank ?: 1) else 0
     val userScoreInt = userScoreState.value
     val pct = when {
         userScoreInt >= 95 -> 1
@@ -264,8 +297,8 @@ fun LeaderboardScreen(
         else -> 95
     }
     val autobadge = when (selectedTab) {
-        1 -> if (isProductivityGoal) "Deep Worker" else "Guest Builder"
-        2 -> "Top $pct% in $selectedExam"
+        1 -> if (isProductivityGoal) "Deep Worker" else "Spectator"
+        2 -> if (isEducationGoal) "Top $pct% in $selectedExam" else "Spectator"
         else -> when {
             pct <= 1  -> "Apex Predator"
             pct <= 5  -> "Elite Focus"
@@ -554,9 +587,31 @@ fun LeaderboardScreen(
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "⚡ Founder Track is optimized for builders with primary goal set to Productivity.",
+                                text = "⚡ Founder Track is exclusive to builders with Primary Goal set to Productivity. Switch your goal in Profile to enter the arena.",
                                 style = BodySmall.copy(
                                     color = Color(0xFFFDE047),
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
+                                )
+                            )
+                        }
+                    }
+
+                    // Aukaat Guard Banner if User is Not on Education Track
+                    if (selectedTab == 2 && !isEducationGoal) {
+                        Spacer(Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF131F18))
+                                .border(1.dp, Color(0xFF22C55E).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "🎓 Aukaat Track is exclusive to students with Primary Goal set to Education. Switch your goal in Profile to rank in $selectedExam.",
+                                style = BodySmall.copy(
+                                    color = Color(0xFF86EFAC),
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -625,7 +680,17 @@ fun LeaderboardScreen(
                         .navigationBarsPadding()
                         .padding(top = 6.dp, bottom = 84.dp)
                 ) {
-                    YourRankCard(userEntry = userEntry, glowAlpha = glowAlpha)
+                    val unrankedDesc = when (selectedTab) {
+                        1 -> "Goal: ${userPrimaryGoal.lowercase().replaceFirstChar { it.uppercase() }} · Not Ranked in Founder"
+                        2 -> "Goal: ${userPrimaryGoal.lowercase().replaceFirstChar { it.uppercase() }} · Not Ranked in $selectedExam"
+                        else -> "Spectating"
+                    }
+                    YourRankCard(
+                        userEntry = userEntry,
+                        isRanked = isUserRankedInTab,
+                        unrankedReason = unrankedDesc,
+                        glowAlpha = glowAlpha
+                    )
                 }
             }
         }
@@ -1169,10 +1234,12 @@ private fun MovementBadge(movement: String, value: Int) {
 // YOUR RANK CARD
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
-private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
-    val charIdx  = userEntry.name.firstOrNull()?.code ?: 0
-    val avatarBg = AvatarColors[charIdx % AvatarColors.size]
-
+private fun YourRankCard(
+    userEntry: LeaderboardUser,
+    isRanked: Boolean,
+    unrankedReason: String,
+    glowAlpha: Float
+) {
     val pctVal = userEntry.percentile
         .replace("Top ", "").replace("top ", "").replace("%", "").trim()
 
@@ -1180,15 +1247,17 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
         .fillMaxWidth()
         .padding(horizontal = 20.dp)
     ) {
-        // Soft blue glow behind card
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .offset(y = 3.dp)
-                .blur(14.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(UserCardBorder.copy(alpha = glowAlpha * 0.22f))
-        )
+        // Soft blue glow behind card (only when ranked)
+        if (isRanked) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .offset(y = 3.dp)
+                    .blur(14.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(UserCardBorder.copy(alpha = glowAlpha * 0.22f))
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -1202,9 +1271,12 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
                 .border(
                     width = 1.dp,
                     brush = Brush.linearGradient(
-                        colors = listOf(
+                        colors = if (isRanked) listOf(
                             UserCardBorder.copy(alpha = 0.45f),
                             UserCardBorder.copy(alpha = 0.18f)
+                        ) else listOf(
+                            Color.White.copy(alpha = 0.12f),
+                            Color.White.copy(alpha = 0.05f)
                         )
                     ),
                     shape = RoundedCornerShape(14.dp)
@@ -1212,15 +1284,15 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
                 .padding(horizontal = 14.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // "Your Rank" + rank number
+            // "Your Rank" / "Status" + rank number
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier            = Modifier.width(46.dp)
+                modifier            = Modifier.width(48.dp)
             ) {
                 Text(
-                    text  = "Your Rank",
+                    text  = if (isRanked) "Your Rank" else "Status",
                     style = LabelSmall.copy(
-                        color         = UserRankBlue.copy(alpha = 0.75f),
+                        color         = if (isRanked) UserRankBlue.copy(alpha = 0.75f) else MutedForeground.copy(alpha = 0.6f),
                         fontSize      = 8.sp,
                         fontWeight    = FontWeight.Medium,
                         letterSpacing = 0.sp
@@ -1228,9 +1300,9 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text  = "${userEntry.rank}",
+                    text  = if (isRanked) "${userEntry.rank}" else "—",
                     style = ScoreSmall.copy(
-                        color      = Color.White,
+                        color      = if (isRanked) Color.White else MutedForeground.copy(alpha = 0.6f),
                         fontWeight = FontWeight.Bold,
                         fontSize   = 22.sp
                     )
@@ -1245,7 +1317,7 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
                     .size(38.dp)
                     .clip(CircleShape)
                     .background(AvatarDark)
-                    .border(1.dp, UserCardBorder.copy(alpha = 0.3f), CircleShape),
+                    .border(1.dp, if (isRanked) UserCardBorder.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -1273,11 +1345,13 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
                     overflow  = TextOverflow.Ellipsis
                 )
                 Text(
-                    text  = "Top $pctVal% · ${userEntry.badge}",
+                    text  = if (isRanked) "Top $pctVal% · ${userEntry.badge}" else unrankedReason,
                     style = BodySmall.copy(
-                        color    = MutedForeground.copy(alpha = 0.4f),
+                        color    = if (isRanked) MutedForeground.copy(alpha = 0.6f) else Color(0xFFFBBF24).copy(alpha = 0.85f),
                         fontSize = 11.sp
-                    )
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -1293,22 +1367,43 @@ private fun YourRankCard(userEntry: LeaderboardUser, glowAlpha: Float) {
 
             Spacer(Modifier.width(10.dp))
 
-            // Sparkline
-            SparklineChart(
-                movement = if (userEntry.movement == "same") "up" else userEntry.movement,
-                seed     = userEntry.rank,
-                modifier = Modifier
-                    .width(38.dp)
-                    .height(18.dp)
-            )
+            if (isRanked) {
+                // Sparkline
+                SparklineChart(
+                    movement = if (userEntry.movement == "same") "up" else userEntry.movement,
+                    seed     = userEntry.rank,
+                    modifier = Modifier
+                        .width(38.dp)
+                        .height(18.dp)
+                )
 
-            Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(8.dp))
 
-            // Movement
-            MovementBadge(
-                movement = if (userEntry.movement == "same") "up" else userEntry.movement,
-                value    = if (userEntry.movementVal == 0) 5 else userEntry.movementVal
-            )
+                // Movement
+                MovementBadge(
+                    movement = if (userEntry.movement == "same") "up" else userEntry.movement,
+                    value    = if (userEntry.movementVal == 0) 5 else userEntry.movementVal
+                )
+            } else {
+                // Spectator indicator
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "VIEW",
+                        style = LabelSmall.copy(
+                            color = MutedForeground.copy(alpha = 0.7f),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+                }
+            }
         }
     }
 }

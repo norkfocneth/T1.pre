@@ -21,6 +21,16 @@ class GoogleAuthProvider @Inject constructor(
 
     override suspend fun signIn(context: Context): Result<String> = withContext(Dispatchers.IO) {
         try {
+            // Pre-check network connectivity to prevent ERR_ADDRESS_UNREACHABLE in browser
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+            val network = connectivityManager?.activeNetwork
+            val capabilities = connectivityManager?.getNetworkCapabilities(network)
+            val isConnected = capabilities?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+
+            if (!isConnected) {
+                return@withContext Result.failure(java.io.IOException("No internet connection. Please check your Wi-Fi or mobile data."))
+            }
+
             T1Logger.i("Starting Google Sign-In via Supabase OAuth browser flow")
 
             val url = supabaseClient.auth.getOAuthUrl(provider = Google, redirectUrl = "t1://login-callback")

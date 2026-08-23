@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.offset
 import com.example.t1.domain.model.behaviour.AppCategory
 import androidx.compose.animation.core.*
@@ -1155,58 +1156,24 @@ fun HomeScreen(
             // Main Robot Coach FAB
             Box(
                 modifier = Modifier
-                    .size(54.dp)
+                    .size(56.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(GlowPrimary, Info)
-                        )
-                    )
-                    .border(1.5.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                    .background(Color(0xFF0F172A))
+                    .border(2.dp, Color(0xFFFF80BF).copy(alpha = 0.8f), CircleShape)
                     .clickable {
                         Haptics.playMedium(view)
                         showAICoach = true
                     },
                 contentAlignment = Alignment.Center
             ) {
-                // High-visibility Futuristic Robot Icon
-                androidx.compose.foundation.Canvas(modifier = Modifier.size(26.dp)) {
-                    val w = size.width
-                    val h = size.height
-
-                    // Robot head outline
-                    val headPath = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(w * 0.15f, h * 0.25f)
-                        lineTo(w * 0.85f, h * 0.25f)
-                        lineTo(w * 0.92f, h * 0.75f)
-                        lineTo(w * 0.65f, h * 0.95f)
-                        lineTo(w * 0.35f, h * 0.95f)
-                        lineTo(w * 0.08f, h * 0.75f)
-                        close()
-                    }
-                    drawPath(headPath, color = Color.White)
-
-                    // Antenna crown
-                    val antennaPath = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(w * 0.42f, h * 0.25f)
-                        lineTo(w * 0.5f, h * 0.05f)
-                        lineTo(w * 0.58f, h * 0.25f)
-                        close()
-                    }
-                    drawPath(antennaPath, color = Color.White)
-
-                    // Visor
-                    drawRoundRect(
-                        color = Color(0xFF0F172A),
-                        topLeft = Offset(w * 0.24f, h * 0.42f),
-                        size = androidx.compose.ui.geometry.Size(w * 0.52f, h * 0.22f),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx(), 4.dp.toPx())
-                    )
-
-                    // Neon glowing eyes
-                    drawCircle(color = Color(0xFF38BDF8), radius = 2.5.dp.toPx(), center = Offset(w * 0.37f, h * 0.53f))
-                    drawCircle(color = Color(0xFF38BDF8), radius = 2.5.dp.toPx(), center = Offset(w * 0.63f, h * 0.53f))
-                }
+                Image(
+                    painter = painterResource(id = com.example.t1.R.drawable.img_ai_coach_avatar),
+                    contentDescription = "T1 AI Coach",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
             }
         }
     }
@@ -1259,32 +1226,16 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Megatron-like styled icon
-                        Box(
+                        // 3D Cute AI Coach Avatar
+                        Image(
+                            painter = painterResource(id = com.example.t1.R.drawable.img_ai_coach_avatar),
+                            contentDescription = "T1 AI Coach",
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        colors = listOf(GlowPrimary, Info)
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.foundation.Canvas(modifier = Modifier.size(20.dp)) {
-                                val w = size.width
-                                val h = size.height
-                                val path = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(w * 0.2f, h * 0.1f)
-                                    lineTo(w * 0.8f, h * 0.1f)
-                                    lineTo(w * 0.9f, h * 0.4f)
-                                    lineTo(w * 0.5f, h * 0.95f)
-                                    lineTo(w * 0.1f, h * 0.4f)
-                                    close()
-                                }
-                                drawPath(path, color = Color.White)
-                            }
-                        }
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .border(1.5.dp, Color(0xFFFF80BF).copy(alpha = 0.6f), CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(

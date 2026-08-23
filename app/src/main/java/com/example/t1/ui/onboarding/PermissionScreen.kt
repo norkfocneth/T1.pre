@@ -1,5 +1,18 @@
 package com.example.t1.ui.onboarding
 
+import android.Manifest
+import android.app.AppOpsManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Process
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -39,6 +52,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +73,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.t1.theme.*
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
@@ -95,8 +112,71 @@ fun PermissionScreen(
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var grantedSet by remember { mutableStateOf(setOf<Int>()) }
+
+    // Launcher for Notification permission (Android 13+)
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            grantedSet = grantedSet + 1
+        }
+    }
+
+    // Function to check and update real permissions from Android system
+    fun refreshPermissions() {
+        val updated = grantedSet.toMutableSet()
+
+        // 1. Check Usage Access
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
+        val usageAllowed = if (appOps != null) {
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName)
+            } else {
+                @Suppress("DEPRECATION")
+                appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName)
+            }
+            mode == AppOpsManager.MODE_ALLOWED
+        } else false
+
+        if (usageAllowed) {
+            updated.add(0)
+            updated.add(2) // Background sync enabled when usage access is granted
+        }
+
+        // 2. Check Notification Access
+        val notifAllowed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        } else {
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+
+        if (notifAllowed) {
+            updated.add(1)
+        }
+
+        grantedSet = updated
+    }
+
+    // Lifecycle observer: Refresh permission status automatically whenever user returns from Settings
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshPermissions()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        refreshPermissions()
+    }
+
     val allGranted = grantedSet.size == permissionItems.size
 
     var introVisible by remember { mutableStateOf(false) }
@@ -185,7 +265,39 @@ fun PermissionScreen(
                             isGranted = isGranted,
                             onAllow = {
                                 Haptics.playLight(view)
-                                grantedSet = grantedSet + idx
+                                when (idx) {
+                                    0 -> {
+                                        // 1. Launch Usage Access Settings directly
+                                        try {
+                                            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                                                data = Uri.fromParts("package", context.packageName, null)
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            try {
+                                                val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                }
+                                                context.startActivity(intent)
+                                            } catch (ex: Exception) {
+                                                grantedSet = grantedSet + 0
+                                            }
+                                        }
+                                    }
+                                    1 -> {
+                                        // 2. Request Notification Permission
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        } else {
+                                            grantedSet = grantedSet + 1
+                                        }
+                                    }
+                                    2 -> {
+                                        // 3. Background Activity
+                                        grantedSet = grantedSet + 2
+                                    }
+                                }
                             }
                         )
                     }

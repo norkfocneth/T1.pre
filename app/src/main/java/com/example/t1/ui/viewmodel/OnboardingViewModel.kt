@@ -93,21 +93,22 @@ class OnboardingViewModel @Inject constructor(
             }
 
             val today = LocalDate.now()
-            val past7Days = (1..7).map { today.minusDays(it.toLong()) }
+            val past7Days = (0..6).map { today.minusDays(it.toLong()) }
             val summaries = past7Days.mapNotNull { date ->
                 behaviourRepository.getBehaviourForDate(date).getOrNull()
             }
+            val activeSummaries = summaries.filter { it.totalScreenTimeMs > 0 }
 
-            if (summaries.isNotEmpty()) {
-                val totalScreenTimeAvg = summaries.map { it.totalScreenTimeMs }.average().toLong()
+            if (activeSummaries.isNotEmpty()) {
+                val totalScreenTimeAvg = activeSummaries.map { it.totalScreenTimeMs }.average().toLong()
                 val hours = totalScreenTimeAvg / 3600000.0
                 val formattedScreenTime = String.format(Locale.US, "%.1fh", hours)
 
-                val avgSocial = summaries.map { it.socialTimeMs }.average()
-                val avgProd = summaries.map { it.productiveTimeMs }.average()
-                val avgEdu = summaries.map { it.educationTimeMs }.average()
-                val avgEnt = summaries.map { it.entertainmentTimeMs }.average()
-                val avgComm = summaries.map { it.communicationTimeMs }.average()
+                val avgSocial = activeSummaries.map { it.socialTimeMs }.average()
+                val avgProd = activeSummaries.map { it.productiveTimeMs }.average()
+                val avgEdu = activeSummaries.map { it.educationTimeMs }.average()
+                val avgEnt = activeSummaries.map { it.entertainmentTimeMs }.average()
+                val avgComm = activeSummaries.map { it.communicationTimeMs }.average()
 
                 val categoryAverages = mapOf(
                     "Social" to avgSocial,
@@ -119,7 +120,7 @@ class OnboardingViewModel @Inject constructor(
                 val topCat = categoryAverages.maxByOrNull { it.value }?.key ?: "Social"
 
                 val calculatedScore = FocusScoreEngine.calculateInitialScoreFrom7Days(
-                    dailySummaries = summaries,
+                    dailySummaries = activeSummaries,
                     goalCategory = primaryGoal
                 )
 
@@ -129,11 +130,19 @@ class OnboardingViewModel @Inject constructor(
                     topCategory = topCat
                 )
             } else {
-                OnboardingAnalysisData()
+                OnboardingAnalysisData(
+                    initialScore = 50,
+                    avgScreenTimeFormatted = "0.0h",
+                    topCategory = "Social"
+                )
             }
         } catch (e: Exception) {
             com.example.t1.util.T1Logger.e("Error analyzing 7 days usage in onboarding", e)
-            OnboardingAnalysisData()
+            OnboardingAnalysisData(
+                initialScore = 50,
+                avgScreenTimeFormatted = "0.0h",
+                topCategory = "Social"
+            )
         }
     }
 

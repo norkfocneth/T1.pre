@@ -196,6 +196,10 @@ fun DashboardShell(
         if (showSettings) {
             SettingsScreen(
                 onBack = { showSettings = false },
+                onSignOut = {
+                    showSettings = false
+                    onSignOut()
+                },
                 onDeleteAccount = { onSuccess, onFailure ->
                     mainViewModel.deleteUserAccount(
                         onSuccess = {

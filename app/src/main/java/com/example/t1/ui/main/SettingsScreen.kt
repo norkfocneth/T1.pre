@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -66,9 +67,12 @@ import com.example.t1.ui.onboarding.OnboardingBackground
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 
+import androidx.compose.material.icons.filled.ExitToApp
+
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onSignOut: () -> Unit,
     onDeleteAccount: (onSuccess: () -> Unit, onFailure: (String) -> Unit) -> Unit,
     onReplayTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -81,6 +85,7 @@ fun SettingsScreen(
     var soundEffects by remember { mutableStateOf(Haptics.isSoundEnabled) }
     var hapticFeedback by remember { mutableStateOf(Haptics.isEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
+    var showSignOutConfirm by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showPrivacyOverview by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
@@ -90,6 +95,8 @@ fun SettingsScreen(
             showPrivacyOverview = false
         } else if (showResetConfirm) {
             showResetConfirm = false
+        } else if (showSignOutConfirm) {
+            showSignOutConfirm = false
         } else if (showDeleteConfirm && !isDeleting) {
             showDeleteConfirm = false
         } else if (!isDeleting) {
@@ -104,8 +111,9 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
+                    .navigationBarsPadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(bottom = 40.dp),
+                    .padding(bottom = 80.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
             // Header bar
@@ -309,6 +317,17 @@ fun SettingsScreen(
                     onClick = {
                         Haptics.playLight(view)
                         showResetConfirm = true
+                    }
+                )
+
+                // Sign Out
+                PreferenceRow(
+                    icon = Icons.Default.ExitToApp,
+                    title = "Sign Out",
+                    titleColor = SignOut,
+                    onClick = {
+                        Haptics.playLight(view)
+                        showSignOutConfirm = true
                     }
                 )
 
@@ -555,6 +574,103 @@ fun SettingsScreen(
                                             style = LabelLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
                                         )
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sign Out Confirmation Overlay Modal
+        if (showSignOutConfirm) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .clickable {
+                        showSignOutConfirm = false
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedVisibility(
+                    visible = showSignOutConfirm,
+                    enter = fadeIn() + scaleIn(initialScale = 0.9f),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(320.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .border(1.dp, Border, RoundedCornerShape(20.dp))
+                            .background(Card)
+                            .clickable(enabled = false) {}
+                            .padding(24.dp)
+                    ) {
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ExitToApp,
+                                    contentDescription = "Sign Out",
+                                    tint = SignOut,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Sign Out?",
+                                    style = HeadlineSmall.copy(
+                                        color = Foreground,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Your profile and focus progress are securely preserved. You can sign back in anytime with your Google account.",
+                                style = BodyMedium.copy(
+                                    color = MutedForeground,
+                                    lineHeight = 20.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
+                                        .clip(RoundedCornerShape(24.dp))
+                                        .border(1.dp, Border, RoundedCornerShape(24.dp))
+                                        .clickable { showSignOutConfirm = false },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Cancel",
+                                        style = LabelLarge.copy(color = Foreground)
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
+                                        .clip(RoundedCornerShape(24.dp))
+                                        .background(SignOut)
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            showSignOutConfirm = false
+                                            onSignOut()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Sign Out",
+                                        style = LabelLarge.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                                    )
                                 }
                             }
                         }

@@ -626,7 +626,7 @@ fun LeaderboardScreen(
             // ═════════════════════════════════════════
             LazyColumn(
                 modifier       = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 20.dp)
+                contentPadding = PaddingValues(bottom = 140.dp)
             ) {
                 // ── Podium ───────────────────────────
                 item {

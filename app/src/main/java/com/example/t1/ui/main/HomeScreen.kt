@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -1114,46 +1115,98 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 90.dp, end = 24.dp), // Positioned above the BottomNav
+            .navigationBarsPadding()
+            .padding(bottom = 96.dp, end = 20.dp), // Positioned safely above BottomNav across all screen sizes
         contentAlignment = Alignment.BottomEnd
     ) {
+        val coachInfiniteTransition = rememberInfiniteTransition(label = "coachGlow")
+        val coachGlowScale by coachInfiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.15f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1600, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "coachGlowScale"
+        )
+        val coachGlowAlpha by coachInfiniteTransition.animateFloat(
+            initialValue = 0.25f,
+            targetValue = 0.65f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1600, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "coachGlowAlpha"
+        )
+
         Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(GlowPrimary, Info)
-                    )
-                )
-                .clickable {
-                    Haptics.playMedium(view)
-                    showAICoach = true
-                },
+            modifier = Modifier.size(62.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Draw a beautiful geometric Megatron/Transformer face logo
-            androidx.compose.foundation.Canvas(modifier = Modifier.size(24.dp)) {
-                val w = size.width
-                val h = size.height
-                val path = androidx.compose.ui.graphics.Path().apply {
-                    // Decepticon / Transformer geometric crest
-                    moveTo(w * 0.2f, h * 0.1f)
-                    lineTo(w * 0.8f, h * 0.1f)
-                    lineTo(w * 0.9f, h * 0.4f)
-                    lineTo(w * 0.6f, h * 0.6f)
-                    lineTo(w * 0.7f, h * 0.9f)
-                    lineTo(w * 0.5f, h * 0.7f)
-                    lineTo(w * 0.3f, h * 0.9f)
-                    lineTo(w * 0.4f, h * 0.6f)
-                    lineTo(w * 0.1f, h * 0.4f)
-                    close()
+            // Dynamic Ambient Aura
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .scale(coachGlowScale)
+                    .clip(CircleShape)
+                    .background(GlowPrimary.copy(alpha = coachGlowAlpha * 0.4f))
+            )
+
+            // Main Robot Coach FAB
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(GlowPrimary, Info)
+                        )
+                    )
+                    .border(1.5.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                    .clickable {
+                        Haptics.playMedium(view)
+                        showAICoach = true
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                // High-visibility Futuristic Robot Icon
+                androidx.compose.foundation.Canvas(modifier = Modifier.size(26.dp)) {
+                    val w = size.width
+                    val h = size.height
+
+                    // Robot head outline
+                    val headPath = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.15f, h * 0.25f)
+                        lineTo(w * 0.85f, h * 0.25f)
+                        lineTo(w * 0.92f, h * 0.75f)
+                        lineTo(w * 0.65f, h * 0.95f)
+                        lineTo(w * 0.35f, h * 0.95f)
+                        lineTo(w * 0.08f, h * 0.75f)
+                        close()
+                    }
+                    drawPath(headPath, color = Color.White)
+
+                    // Antenna crown
+                    val antennaPath = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.42f, h * 0.25f)
+                        lineTo(w * 0.5f, h * 0.05f)
+                        lineTo(w * 0.58f, h * 0.25f)
+                        close()
+                    }
+                    drawPath(antennaPath, color = Color.White)
+
+                    // Visor
+                    drawRoundRect(
+                        color = Color(0xFF0F172A),
+                        topLeft = Offset(w * 0.24f, h * 0.42f),
+                        size = androidx.compose.ui.geometry.Size(w * 0.52f, h * 0.22f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                    )
+
+                    // Neon glowing eyes
+                    drawCircle(color = Color(0xFF38BDF8), radius = 2.5.dp.toPx(), center = Offset(w * 0.37f, h * 0.53f))
+                    drawCircle(color = Color(0xFF38BDF8), radius = 2.5.dp.toPx(), center = Offset(w * 0.63f, h * 0.53f))
                 }
-                drawPath(path, color = Color.White)
-                
-                // Small glowing red eyes
-                drawCircle(color = Destructive, radius = 2.dp.toPx(), center = Offset(w * 0.4f, h * 0.35f))
-                drawCircle(color = Destructive, radius = 2.dp.toPx(), center = Offset(w * 0.6f, h * 0.35f))
             }
         }
     }
@@ -1163,7 +1216,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(Color.Black.copy(alpha = 0.65f))
                 .clickable { showAICoach = false }, // Click outside to close
             contentAlignment = Alignment.BottomCenter
         ) {
@@ -1190,8 +1243,9 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.75f)
+                    .navigationBarsPadding()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 100.dp) // Floating above the BottomNav
+                    .padding(bottom = 85.dp) // Floating above the BottomNav
                     .clip(RoundedCornerShape(24.dp))
                     .background(Card)
                     .border(1.dp, Border, RoundedCornerShape(24.dp))

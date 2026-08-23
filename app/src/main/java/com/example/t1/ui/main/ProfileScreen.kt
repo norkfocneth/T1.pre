@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -155,8 +156,9 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 100.dp), // space for bottom navigation
+                .padding(bottom = 140.dp), // space for bottom navigation
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header bar
@@ -189,17 +191,35 @@ fun ProfileScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MutedForeground,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .clickable {
-                            Haptics.playLight(view)
-                            onSettings()
-                        }
-                )
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ExitToApp,
+                        contentDescription = "Sign Out",
+                        tint = SignOut,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable {
+                                Haptics.playLight(view)
+                                showSignOut = true
+                            }
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = MutedForeground,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable {
+                                Haptics.playLight(view)
+                                onSettings()
+                            }
+                    )
+                }
             }
 
             // Avatar Section
@@ -768,6 +788,46 @@ fun ProfileScreen(
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Dedicated High-Visibility Sign Out Button Card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Card)
+                    .border(1.dp, SignOut.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
+                    .clickable {
+                        Haptics.playLight(view)
+                        showSignOut = true
+                    }
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ExitToApp,
+                        contentDescription = "Sign Out",
+                        tint = SignOut,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Sign Out Account",
+                        style = LabelLarge.copy(
+                            color = SignOut,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(80.dp))
         }
 
         // Sign Out Backdrop Modal Overlay

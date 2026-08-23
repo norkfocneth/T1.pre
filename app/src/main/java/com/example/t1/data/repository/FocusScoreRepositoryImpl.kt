@@ -73,7 +73,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
                 }
             }
 
-            // 3. Load past Focus Scores (last 3 days)
+            // 3. Load past Focus Scores (last 3 days prior to today)
             val allFocusHistory = dailyFocusScoreDao.getScoreHistory(userId)
             val pastFocusScores = allFocusHistory
                 .filter { it.date < dateStr }
@@ -83,6 +83,11 @@ class FocusScoreRepositoryImpl @Inject constructor(
             val yesterdayFocusScore = allFocusHistory
                 .lastOrNull { it.date < dateStr }
                 ?.finalFocusScore
+
+            val existingTodayEntity = allFocusHistory.firstOrNull { it.date == dateStr }
+            val stableStartOfDayScore = yesterdayFocusScore
+                ?: existingTodayEntity?.questionnaireScore
+                ?: profile.focusScore
 
             val todayDate = LocalDate.parse(dateStr)
             val yesterdayDate = todayDate.minusDays(1)
@@ -125,7 +130,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
                 0
             }
 
-            // 4. Compute Focus Score on Dispatchers.Default
+            // 4. Compute Focus Score on Dispatchers.Default using stable start-of-day baseline
             val focusResult = withContext(Dispatchers.Default) {
                 FocusScoreEngine.calculateFocusScore(
                     goalCategory = primaryGoal,
@@ -134,7 +139,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
                     completedFocusSessionsCount = sessionsCount,
                     yesterdayFocusScore = yesterdayFocusScore,
                     pastFocusScores = pastFocusScores,
-                    defaultBaseScore = questionnaireScore
+                    defaultBaseScore = stableStartOfDayScore
                 )
             }
 
@@ -149,7 +154,7 @@ class FocusScoreRepositoryImpl @Inject constructor(
             val focusEntity = DailyFocusScoreEntity(
                 userId = userId,
                 date = dateStr,
-                questionnaireScore = questionnaireScore,
+                questionnaireScore = stableStartOfDayScore,
                 behaviourScore = behaviourScore,
                 confidence = confidence,
                 finalFocusScore = focusResult.finalScore,

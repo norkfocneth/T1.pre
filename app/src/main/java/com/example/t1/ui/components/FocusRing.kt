@@ -243,26 +243,49 @@ fun FocusRing(
                     // Score
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     ) {
-                        Text(
-                            text = "${animatedScore.value.toInt()}",
-                            style = ScoreXL.copy(
-                                fontWeight = FontWeight.Bold,
-                                brush = Brush.linearGradient(
-                                    colors = listOf(GradientTextStart, GradientTextEnd)
-                                )
-                            ),
-                            lineHeight = 72.sp
-                        )
-                        Text(
-                            text = "FOCUS SCORE",
-                            style = TrackingWide.copy(
-                                color = MutedForeground,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                        if (score <= 0) {
+                            Text(
+                                text = "Permission Required",
+                                style = LabelLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Foreground,
+                                    fontSize = 14.sp
+                                ),
+                                textAlign = TextAlign.Center
                             )
-                        )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Grant usage access to calculate your focus score",
+                                style = BodySmall.copy(
+                                    color = MutedForeground,
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            Text(
+                                text = "${animatedScore.value.toInt()}",
+                                style = ScoreXL.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(GradientTextStart, GradientTextEnd)
+                                    )
+                                ),
+                                lineHeight = 72.sp
+                            )
+                            Text(
+                                text = "FOCUS SCORE",
+                                style = TrackingWide.copy(
+                                    fontSize = 11.sp,
+                                    letterSpacing = 2.sp,
+                                    color = MutedForeground
+                                )
+                            )
+                        }
                     }
                 }
             }

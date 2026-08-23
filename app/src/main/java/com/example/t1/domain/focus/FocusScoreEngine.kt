@@ -133,12 +133,12 @@ object FocusScoreEngine {
         // 7. Focus Session Bonus: +1 point per completed session (capped at +3 points)
         val sessionBonus = (completedFocusSessionsCount * 1.0f).coerceAtMost(3.0f)
 
-        // 8. Total positive daily progression cap (diminishing returns logic)
+        // 8. Total daily progression cap (diminishing returns and loss prevention logic)
         val totalChange = streakAdjustedDelta + sessionBonus
         val cappedChange = if (totalChange > 0f) {
             totalChange.coerceAtMost(band.maxDailyGain)
         } else {
-            totalChange
+            totalChange.coerceAtLeast(-band.maxDailyLoss)
         }
 
         // 9. New raw score
@@ -160,7 +160,7 @@ object FocusScoreEngine {
         }
 
         return FocusScoreResult(
-            finalScore = finalScore.coerceIn(0, 99),
+            finalScore = finalScore.coerceIn(1, 99),
             trend = trend
         )
     }

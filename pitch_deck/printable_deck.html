@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T1: Top 1% — Investor & Startup Pitch Deck PDF</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050508;
+            --bg-secondary: #0c0c12;
+            --card-bg: rgba(18, 18, 26, 0.85);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #FFFFFF;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --accent-pink: #FF3B94;
+            --accent-pink-glow: rgba(255, 59, 148, 0.35);
+            --accent-cyan: #38BDF8;
+            --accent-cyan-glow: rgba(56, 189, 248, 0.35);
+            --accent-purple: #A855F7;
+            --accent-emerald: #10B981;
+            --accent-amber: #F59E0B;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 0;
+        }
+
+        .slide-page {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            break-after: page;
+            position: relative;
+            background-color: var(--bg-primary);
+            padding: 70px 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        /* Ambient Glow Decor */
+        .glow-circle-1 {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 59, 148, 0.25) 0%, rgba(5,5,8,0) 70%);
+            top: -200px;
+            right: -200px;
+            filter: blur(90px);
+            z-index: 0;
+        }
+
+        .glow-circle-2 {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, rgba(5,5,8,0) 70%);
+            bottom: -200px;
+            left: -200px;
+            filter: blur(90px);
+            z-index: 0;
+        }
+
+        /* Header / Footer in Slide */
+        .slide-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .brand-logo {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #FFFFFF;
+        }
+
+        .brand-logo span {
+            color: var(--accent-pink);
+        }
+
+        .brand-tag {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(255, 59, 148, 0.15);
+            color: var(--accent-pink);
+            border: 1px solid rgba(255, 59, 148, 0.3);
+        }
+
+        .slide-number {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .slide-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 2;
+            margin: 20px 0;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-dim);
+            z-index: 2;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 20px;
+        }
+
+        /* Typography */
+        .slide-kicker {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent-pink);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slide-kicker::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-pink);
+        }
+
+        .slide-title {
+            font-family: var(--font-heading);
+            font-size: 58px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            color: #FFFFFF;
+            margin-bottom: 16px;
+        }
+
+        .slide-subtitle {
+            font-size: 24px;
+            color: var(--text-muted);
+            font-weight: 400;
+            max-width: 1300px;
+            line-height: 1.5;
+            margin-bottom: 36px;
+        }
+
+        /* Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 18px;
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 26px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            font-size: 18px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .card-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-top: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        /* Hero Specifics */
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 88px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+        }
+
+        .hero-punchline {
+            font-size: 30px;
+            color: #94A3B8;
+            max-width: 1200px;
+            line-height: 1.5;
+            margin-bottom: 48px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 80px;
+        }
+
+        .stat-num {
+            font-family: var(--font-heading);
+            font-size: 56px;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -1px;
+        }
+
+        .stat-num span {
+            color: var(--accent-pink);
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 6px;
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            border-radius: 999px;
+            background: rgba(255, 59, 148, 0.15);
+            border: 1px solid rgba(255, 59, 148, 0.4);
+            color: var(--accent-pink);
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 32px;
+        }
+
+        /* Flow Diagram */
+        .token-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(18, 18, 26, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px 48px;
+            margin-top: 32px;
+        }
+
+        .flow-step {
+            text-align: center;
+            flex: 1;
+        }
+
+        .flow-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .flow-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+
+        .flow-sub {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .flow-arrow {
+            color: var(--accent-pink);
+            font-size: 32px;
+            padding: 0 20px;
+            font-weight: bold;
+        }
+
+        /* Table */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .comp-table th {
+            text-align: left;
+            padding: 18px 24px;
+            color: var(--text-dim);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        .comp-table td {
+            padding: 22px 24px;
+            font-size: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+        }
+
+        .comp-table tr.highlight {
+            background: rgba(255, 59, 148, 0.08);
+        }
+
+        .comp-table tr.highlight td {
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
+        .check-green {
+            color: var(--accent-emerald);
+            font-weight: bold;
+        }
+
+        .cross-red {
+            color: #EF4444;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="glow-circle-2"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="brand-tag">PITCH DECK 2026</div>
+            <div class="slide-number">01 / 11</div>
+        </div>
+        <div class="slide-body" style="text-align: center; align-items: center;">
+            <div class="pill-badge">🚀 THE PROOF-OF-FOCUS ECOSYSTEM</div>
+            <h1 class="hero-title">T1: Master Your Attention.<br>Join the Top 1%.</h1>
+            <p class="hero-punchline">
+                The world’s first <strong>Proof-of-Focus Engine</strong> for students, founders, and high-performers — turning digital self-discipline into a verifiable, high-stakes token economy.
+            </p>
+            <div class="hero-stats">
+                <div>
+                    <div class="stat-num">7-Day</div>
+                    <div class="stat-label">Dynamic Relative Baseline</div>
+                </div>
+                <div>
+                    <div class="stat-num">0<span>-Day</span></div>
+                    <div class="stat-label">Local-First Privacy Architecture</div>
+                </div>
+                <div>
+                    <div class="stat-num">100<span>%</span></div>
+                    <div class="stat-label">Gamified Habit Accountability</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>Focneth • Confidential</div>
+            <div>https://focneth.com/t1</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">02 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">THE PROBLEM</div>
+            <h2 class="slide-title">The Trillion-Dollar Attention Trap</h2>
+            <p class="slide-subtitle">Algorithmic feeds are engineered for addiction. Existing screen time blockers fail because they treat humans like children.</p>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">Cognitive Decay</div>
+                    <div class="card-desc">The average young adult unlocks their phone <strong>90+ times/day</strong>, fracturing deep focus and reducing sustained problem-solving capacity by over 40%.</div>
+                    <div class="card-tag">Attention Deficit</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title">Blockers Don't Work</div>
+                    <div class="card-desc">Restrictive app blockers rely on brute-force locking. <strong>87% of users disable them within 48 hours</strong> when friction causes frustration.</div>
+                    <div class="card-tag">Broken UX Model</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">📉</div>
+                    <div class="card-title">Zero Proof of Work</div>
+                    <div class="card-desc">There is zero social status or tangible reward for digital self-discipline. Real focus goes unmeasured, unrewarded, and invisible.</div>
+                    <div class="card-tag">Missing Incentive Loop</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>The Problem</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">03 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">OUR PARADIGM SHIFT</div>
+            <h2 class="slide-title">An Unfiltered Mirror of Reality</h2>
+            <p class="slide-subtitle">T1 does not block your phone. It measures reality: <em>"Are you upgrading compared to yesterday?"</em></p>
+            <div class="grid-2">
+                <div class="glass-card" style="border-color: rgba(239, 68, 68, 0.4);">
+                    <div class="card-icon">❌</div>
+                    <div class="card-title" style="color: #F87171;">Old Blocker Model (Negative Friction)</div>
+                    <ul style="padding-left: 28px; color: var(--text-muted); font-size: 19px; line-height: 1.8; margin-top: 14px;">
+                        <li>Arbitrary 2-hour hard limits that users immediately bypass.</li>
+                        <li>Shame-based popups with zero personalized context.</li>
+                        <li>Treats all screen time equally (Coding vs Doomscrolling).</li>
+                        <li>High churn rate (>80% uninstall within 1st week).</li>
+                    </ul>
+                </div>
+                <div class="glass-card" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.05);">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title" style="color: var(--accent-cyan);">T1 Model (Relative Proof-of-Focus)</div>
+                    <ul style="padding-left: 28px; color: #E2E8F0; font-size: 19px; line-height: 1.8; margin-top: 14px;">
+                        <li><strong>7-Day Dynamic Behavioral Baseline:</strong> Compares you to your own authentic history.</li>
+                        <li><strong>Live Focus Score (0–99):</strong> Instant percentile benchmark against peer builders.</li>
+                        <li><strong>Contextual Categorization:</strong> Deep work rewarded, dopamine traps penalized.</li>
+                        <li><strong>Addictive Positive Habit Loop:</strong> Win tokens, build streaks, conquer leagues.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Paradigm Shift</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">04 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">PATENTED INTELLIGENCE</div>
+            <h2 class="slide-title">The 7-Day Relative Baseline Engine</h2>
+            <p class="slide-subtitle">Proprietary on-device algorithmic scoring engine computing focus without violating user privacy.</p>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-title">1. Local Ingestion</div>
+                    <div class="card-desc">Foreground application timestamps and unlock rates ingested via Android UsageStats API. Raw data stays <strong>100% on-device</strong>.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🧮</div>
+                    <div class="card-title">2. Relative Decay</div>
+                    <div class="card-desc">Anchored to start-of-day baseline. Mathematical normalization prevents scoring runaway and creates stable, genuine intra-day feedback.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">3. Percentile Rank</div>
+                    <div class="card-desc">Translates behavioral discipline into a single Focus Score (0–99) mapped to global percentiles (Elite, Balanced, Grit Builder).</div>
+                </div>
+            </div>
+            <div class="token-flow">
+                <div class="flow-step">
+                    <div class="flow-icon">📱</div>
+                    <div class="flow-title">Device Telemetry</div>
+                    <div class="flow-sub">Screen Time & Unlocks</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon">🧠</div>
+                    <div class="flow-title">7-Day Baseline</div>
+                    <div class="flow-sub">Relative Delta Calculation</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon">🎯</div>
+                    <div class="flow-title">Focus Score (0-99)</div>
+                    <div class="flow-sub">Peer Percentile Standings</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon">🪙</div>
+                    <div class="flow-title">T1 Proof Tokens</div>
+                    <div class="flow-sub">Minted on Deep Focus</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Core Engine Architecture</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">05 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">PRODUCT SUITE</div>
+            <h2 class="slide-title">Engineered for Extreme Focus</h2>
+            <p class="slide-subtitle">A cohesive, beautifully designed ecosystem for daily high performance.</p>
+            <div class="grid-4">
+                <div class="glass-card">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">3D AI Coach</div>
+                    <div class="card-desc">Local offline intelligent assistant providing attention insights, screen time audits, and focus prompts.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🏆</div>
+                    <div class="card-title">Goal Arenas</div>
+                    <div class="card-desc">Tailored competitive tracks: <strong>Founder Track</strong>, <strong>Aukaat Exam Track</strong>, and <strong>Social Control</strong>.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-title">Deep Work Timer</div>
+                    <div class="card-desc">Haptic-driven Pomodoro focus sessions minting proof-of-focus tokens with anti-tamper tracking.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🕶️</div>
+                    <div class="card-title">Stealth Privacy</div>
+                    <div class="card-desc">1-Tap Ghost mode masking identities on public leaderboards for discreet ultra-high performers.</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Product Ecosystem</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">06 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">PROOF-OF-FOCUS (PoF)</div>
+            <h2 class="slide-title">The T1 Token Economy</h2>
+            <p class="slide-subtitle">Turning cognitive sweat equity into verifiable, multi-utility digital reputation.</p>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="card-icon">🪙</div>
+                    <div class="card-title">1. Proof of Minting</div>
+                    <div class="card-desc">Tokens are <strong>never bought with money</strong> — they are mined exclusively through verified deep work sessions and daily baseline outperformance.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🎖️</div>
+                    <div class="card-title">2. In-App Utility Today</div>
+                    <div class="card-desc">Redeemable for cosmetic leaderboard badges, custom neon profile themes, streak freeze insurance, and VIP arena entry passes.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-title">3. Verifiable Reputation</div>
+                    <div class="card-desc">Acts as an on-chain/cryptographic resume of cognitive stamina for founders raising capital, engineers interviewing, or students competing.</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Proof-of-Focus Economy</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">07 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">TOKEN ROADMAP & VALUE CREATION</div>
+            <h2 class="slide-title">What We Will Do With Tokens in Future</h2>
+            <p class="slide-subtitle">Transforming T1 tokens into a multi-million dollar high-stakes accountability and real-world perk network.</p>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="card-icon">⚔️</div>
+                    <div class="card-title">High-Stakes Wagering Leagues</div>
+                    <div class="card-desc">Users pool tokens into 30-Day Sprint pools. The top 10% disciplined performers take the pot. <strong>Huge organic viral retention</strong>.</div>
+                    <div class="card-tag">Stakes & Skin-in-the-Game</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">🎁</div>
+                    <div class="card-title">Sponsored Merch & Partner Perks</div>
+                    <div class="card-desc">Partner with tech brands (Notion, Cursor, Whoop, Audible) offering exclusive software discounts and hardware merch redeemable only with earned T1 Tokens.</div>
+                    <div class="card-tag">Real-World Utility</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">📜</div>
+                    <div class="card-title">Proof-of-Discipline Credentials</div>
+                    <div class="card-desc">Optional minting of Soulbound Focus Certificates (SBTs) validating 500+ hours of verified deep work for universities, venture studios, and employers.</div>
+                    <div class="card-tag">Career / Credential Moat</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Future Token Roadmap</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">08 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">BUSINESS MODEL</div>
+            <h2 class="slide-title">Diversified, High-Margin Monetization</h2>
+            <p class="slide-subtitle">Clear path to $10M+ ARR through B2C consumer subscriptions, B2B university/team licensing, and challenge take-rates.</p>
+            <div class="grid-3">
+                <div class="glass-card" style="border-color: rgba(255, 59, 148, 0.4);">
+                    <div class="card-icon">👑</div>
+                    <div class="card-title">T1 Pro ($9.99 / mo)</div>
+                    <ul style="padding-left: 24px; color: var(--text-muted); font-size: 17px; line-height: 1.7; margin-top: 12px;">
+                        <li>Deep AI Coach cognitive analytics.</li>
+                        <li>Unlimited custom friend leagues.</li>
+                        <li>Extended 90-day focus history.</li>
+                        <li>2x Token mining multiplier.</li>
+                    </ul>
+                    <div class="card-tag" style="color: var(--accent-pink);">Core Consumer Engine</div>
+                </div>
+                <div class="glass-card" style="border-color: rgba(56, 189, 248, 0.4);">
+                    <div class="card-icon">🏢</div>
+                    <div class="card-title">T1 Enterprise & Campuses</div>
+                    <ul style="padding-left: 24px; color: var(--text-muted); font-size: 17px; line-height: 1.7; margin-top: 12px;">
+                        <li>Private leaderboards for engineering teams, startups, and exam coaching institutes (IIT-JEE/CAT/UPSC).</li>
+                        <li>$5 / seat / month B2B SaaS licensing.</li>
+                    </ul>
+                    <div class="card-tag" style="color: var(--accent-cyan);">High-LTV B2B Contracts</div>
+                </div>
+                <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Wager Pools & Marketplace</div>
+                    <ul style="padding-left: 24px; color: var(--text-muted); font-size: 17px; line-height: 1.7; margin-top: 12px;">
+                        <li>5–10% platform take-rate on high-stakes competitive prize pools.</li>
+                        <li>Sponsored brand placement in Token Perks marketplace.</li>
+                    </ul>
+                    <div class="card-tag" style="color: var(--accent-emerald);">Platform Network Effect</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Revenue Model</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">09 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">DEFENSIBILITY</div>
+            <h2 class="slide-title">Why Competitors Cannot Replicate T1</h2>
+            <p class="slide-subtitle">Combining local-first mathematical scoring with high-stakes social accountability.</p>
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Feature / Metric</th>
+                        <th>Opal / Forest</th>
+                        <th>Screen Time (Apple/Android)</th>
+                        <th style="color: var(--accent-pink);">T1: Top 1%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Approach</td>
+                        <td>Restrictive hard blocker</td>
+                        <td>Passive graph logging</td>
+                        <td class="check-green">Relative Baseline Upgrading</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>Gamified Proof Economy</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="check-green">✓ PoF Tokens + High-Stakes Leagues</td>
+                    </tr>
+                    <tr>
+                        <td>Local Privacy Architecture</td>
+                        <td class="cross-red">✗ Cloud VPN routing</td>
+                        <td class="check-green">✓ Local</td>
+                        <td class="check-green">✓ 100% On-Device Engine + 0-Day Erase</td>
+                    </tr>
+                    <tr>
+                        <td>Dynamic Peer Percentiles</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="check-green">✓ 0–99 Focus Score Standings</td>
+                    </tr>
+                    <tr>
+                        <td>AI Coach Integration</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="cross-red">✗ None</td>
+                        <td class="check-green">✓ Offline 3D AI Focus Companion</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Competitive Moat</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">10 / 11</div>
+        </div>
+        <div class="slide-body">
+            <div class="slide-kicker">MARKET OPPORTUNITY</div>
+            <h2 class="slide-title">Capturing 100M+ High-Aspiration Builders</h2>
+            <p class="slide-subtitle">Focusing on the hyper-driven segments who are willing to pay for cognitive advantage.</p>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="card-icon">🎓</div>
+                    <div class="card-title">1. Elite Exam Aspirants</div>
+                    <div class="card-desc">Over <strong>40M+ students</strong> preparing for hyper-competitive exams (IIT, Medical, Civil Services, SAT, MCAT) seeking raw study discipline and peer proof.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">💻</div>
+                    <div class="card-title">2. Tech Builders & Founders</div>
+                    <div class="card-desc">Software engineers, indie hackers, and founders who measure output in deep work blocks and need insulation from constant notifications.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">3. High-Performance Execs</div>
+                    <div class="card-desc">Knowledge workers and managers striving for digital minimalism, optimized sleep, and peak productivity metrics.</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Market Opportunity</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide-page">
+        <div class="glow-circle-1"></div>
+        <div class="glow-circle-2"></div>
+        <div class="slide-top">
+            <div class="brand-logo">T1<span>.</span></div>
+            <div class="slide-number">11 / 11</div>
+        </div>
+        <div class="slide-body" style="text-align: center; align-items: center;">
+            <div class="pill-badge">🚀 THE FUTURE OF ATTENTION</div>
+            <h1 class="hero-title" style="font-size: 72px;">Join Us in Building the<br>Proof-of-Focus Standard</h1>
+            <p class="hero-punchline">
+                In an age where AI creates infinite content, human deep focus is the single rarest and most valuable asset on Earth. <strong>T1 is the infrastructure that measures, protects, and rewards it.</strong>
+            </p>
+            <div class="hero-stats">
+                <div>
+                    <div class="stat-num" style="font-size: 36px; color: var(--accent-pink);">Phase 1</div>
+                    <div class="stat-label">Android Launch & 100k Users</div>
+                </div>
+                <div>
+                    <div class="stat-num" style="font-size: 36px; color: var(--accent-cyan);">Phase 2</div>
+                    <div class="stat-label">iOS + B2B Campus Leagues</div>
+                </div>
+                <div>
+                    <div class="stat-num" style="font-size: 36px; color: var(--accent-emerald);">Phase 3</div>
+                    <div class="stat-label">Token Wagering & Perks Network</div>
+                </div>
+            </div>
+            <div style="margin-top: 48px;">
+                <div style="font-family: var(--font-mono); font-size: 20px; color: #FFFFFF; font-weight: 600;">
+                    Focneth • <span style="color: var(--accent-pink);">support@focneth.com</span> • https://focneth.com/t1
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <div>T1: Top 1% Pitch Deck</div>
+            <div>Vision & Future Roadmap</div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -117,6 +117,7 @@ fun HomeScreen(
     val tokenWallet by viewModel.tokenWallet.collectAsStateWithLifecycle()
     val tokenTransactions by viewModel.tokenTransactions.collectAsStateWithLifecycle()
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
+    val weeklyTrend by viewModel.weeklyTrend.collectAsStateWithLifecycle()
 
     var showMerchCustomizer by remember { mutableStateOf(false) }
     var showWalletScreen by remember { mutableStateOf(false) }
@@ -1198,7 +1199,18 @@ fun HomeScreen(
                     timeSavedMs = dashboardState.timeSaved,
                     screenTimeMs = dashboardState.todayBehaviour?.totalScreenTimeMs ?: 0L,
                     unlocks = dashboardState.todayBehaviour?.unlockCount ?: 0,
-                    categoryTimes = dashboardState.categoryTimes
+                    categoryTimes = dashboardState.categoryTimes,
+                    yesterdayCategoryTimes = dashboardState.yesterdayCategoryTimes,
+                    topUsedApps = dashboardState.todayBehaviour?.topUsedApps ?: emptyList(),
+                    yesterdayTopUsedApps = dashboardState.yesterdayBehaviour?.topUsedApps ?: emptyList(),
+                    weeklyTrend = weeklyTrend,
+                    userGoal = userProfile?.primaryGoal ?: "Discipline",
+                    username = username,
+                    streak = streak,
+                    percentile = dashboardState.percentile,
+                    tokenBalance = tokenWallet?.balance ?: 0,
+                    appOpens = dashboardState.todayBehaviour?.appOpenCount ?: 0,
+                    baselineGoalTimeMs = dashboardState.baselineGoalTimeMs
                 )
                 mutableStateListOf(
                     "coach" to initialGreeting
@@ -1360,7 +1372,20 @@ fun HomeScreen(
                                         behaviourScore = dashboardState.behaviourScore,
                                         screenTimeMs = dashboardState.todayBehaviour?.totalScreenTimeMs ?: 0L,
                                         unlocks = dashboardState.todayBehaviour?.unlockCount ?: 0,
-                                        categoryTimes = dashboardState.categoryTimes
+                                        categoryTimes = dashboardState.categoryTimes,
+                                        yesterdayCategoryTimes = dashboardState.yesterdayCategoryTimes,
+                                        topUsedApps = dashboardState.todayBehaviour?.topUsedApps ?: emptyList(),
+                                        yesterdayTopUsedApps = dashboardState.yesterdayBehaviour?.topUsedApps ?: emptyList(),
+                                        weeklyTrend = weeklyTrend,
+                                        confidence = dashboardState.confidence,
+                                        timeSavedMs = dashboardState.timeSaved,
+                                        userGoal = userProfile?.primaryGoal ?: "Discipline",
+                                        username = username,
+                                        streak = streak,
+                                        percentile = dashboardState.percentile,
+                                        tokenBalance = tokenWallet?.balance ?: 0,
+                                        appOpens = dashboardState.todayBehaviour?.appOpenCount ?: 0,
+                                        baselineGoalTimeMs = dashboardState.baselineGoalTimeMs
                                     )
                                     messagesList.add("coach" to reply)
                                 }

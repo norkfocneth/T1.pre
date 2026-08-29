@@ -51,6 +51,11 @@ class UserRepositoryImpl @Inject constructor(
             Result.success(profileDto.toDomain())
         } catch (e: Exception) {
             T1Logger.e("Failed to fetch remote user profile", e)
+            val localCached = userProfileDao.getProfile()
+            if (localCached != null && localCached.id == userId) {
+                T1Logger.i("Offline resilient: Successfully restored local cached profile for user ID")
+                return@withContext Result.success(localCached.toDomain())
+            }
             Result.failure(e)
         }
     }

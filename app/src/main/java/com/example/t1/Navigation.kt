@@ -33,6 +33,7 @@ import com.example.t1.ui.onboarding.OnboardingPlaceholderScreen
 import com.example.t1.ui.onboarding.SplashLoadingScreen
 import com.example.t1.ui.onboarding.OnboardingFlow
 import com.example.t1.ui.onboarding.OnboardingStep
+import com.example.t1.ui.splash.CinematicSplashScreen
 import com.example.t1.ui.viewmodel.AuthState
 import com.example.t1.ui.viewmodel.AuthViewModel
 import com.example.t1.ui.viewmodel.MainViewModel
@@ -44,7 +45,8 @@ import kotlinx.coroutines.delay
 
 /**
  * Main application navigation component.
- * Maps deterministic AuthState transitions directly to visual screens.
+ * Maps deterministic AuthState transitions directly to visual screens,
+ * starting with a high-end cinematic Netflix-style intro splash.
  */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -53,36 +55,43 @@ fun MainNavigation(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
+    var isCinematicSplashDone by remember { mutableStateOf(false) }
 
     AnimatedContent(
-        targetState = authState,
+        targetState = Pair(isCinematicSplashDone, authState),
         transitionSpec = {
-            fadeIn(animationSpec = tween(250)).togetherWith(fadeOut(animationSpec = tween(250)))
+            fadeIn(animationSpec = tween(350)).togetherWith(fadeOut(animationSpec = tween(250)))
         },
         label = "auth_state_routing",
         modifier = Modifier.fillMaxSize()
-    ) { state ->
-        when (state) {
-            is AuthState.CheckingSession -> {
-                SplashLoadingScreen(message = "Restoring active session...")
-            }
-            is AuthState.Unauthenticated -> {
-                AuthScreen(viewModel = authViewModel)
-            }
-            is AuthState.Authenticating -> {
-                SplashLoadingScreen(message = "Connecting to Google...")
-            }
-            is AuthState.Authenticated -> {
-                SplashLoadingScreen(message = "Authenticating session with Supabase...")
-            }
-            is AuthState.LoadingProfile -> {
-                SplashLoadingScreen(message = "Synchronizing user profile...")
-            }
-            is AuthState.SigningOut -> {
-                SplashLoadingScreen(message = "Signing out safely...")
-            }
-            is AuthState.Error -> {
-                AuthErrorScreen(
+    ) { (splashDone, state) ->
+        if (!splashDone) {
+            CinematicSplashScreen(
+                onAnimationComplete = { isCinematicSplashDone = true }
+            )
+        } else {
+            when (state) {
+                is AuthState.CheckingSession -> {
+                    // Smooth visual bridge if session check is still finishing
+                    CinematicSplashScreen(onAnimationComplete = {})
+                }
+                is AuthState.Unauthenticated -> {
+                    AuthScreen(viewModel = authViewModel)
+                }
+                is AuthState.Authenticating -> {
+                    SplashLoadingScreen(message = "Connecting to Google...")
+                }
+                is AuthState.Authenticated -> {
+                    SplashLoadingScreen(message = "Authenticating session with Supabase...")
+                }
+                is AuthState.LoadingProfile -> {
+                    SplashLoadingScreen(message = "Synchronizing user profile...")
+                }
+                is AuthState.SigningOut -> {
+                    SplashLoadingScreen(message = "Signing out safely...")
+                }
+                is AuthState.Error -> {
+                    AuthErrorScreen(
                     errorType = state.errorType,
                     message = state.message,
                     onRetry = { authViewModel.restoreSession() },
@@ -155,6 +164,9 @@ fun MainNavigation(
         }
     }
 }
+}
+
+
 
 
 /**

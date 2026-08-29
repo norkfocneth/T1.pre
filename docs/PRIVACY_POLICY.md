@@ -1,10 +1,12 @@
 # Privacy Policy for T1: Top 1%
 
-**Last Updated: August 24, 2026**
-**Effective Date: August 24, 2026**
-**Developer / Organization: Focneth**
-**Application Package: com.focneth.t1**
-**Contact Email: support@focneth.com**
+**Last Updated: August 29, 2026**  
+**Effective Date: August 29, 2026**  
+**Developer / Organization: Focneth**  
+**Application Package: com.focneth.t1**  
+**Contact Email: support.t1.help@gmail.com**  
+**Official Website: https://pixel-perfect-replica-tawny-beta.vercel.app/home**  
+**Web Privacy Policy: https://pixel-perfect-replica-tawny-beta.vercel.app/home/privacy**  
 
 ---
 
@@ -29,6 +31,11 @@ To calculate your personal focus baselines, screen time differentials, and cogni
 - **What is accessed**: System package metadata to assign installed apps into standard behavioral categories (Productivity, Social, Entertainment, Education, Games, Utility).
 - **Why it is needed**: To classify foreground usage accurately without requiring manual categorization for hundreds of apps.
 - **Privacy Guarantee**: We do not store or transmit your list of installed apps.
+
+### C. On-Device AI Coach Engine
+- **What is processed**: Live telemetry, 7-day score trends, time-saved deltas, and user queries.
+- **Why it is needed**: To deliver personalized "Tomorrow's Blueprint", diagnostic feedback, and neuroscience-backed habit protocols.
+- **Privacy Guarantee**: All AI Coach reasoning and telemetry audits run strictly offline on your phone. No chat history or usage metrics are shared with external AI servers.
 
 ---
 
@@ -78,7 +85,7 @@ You have the permanent right to delete your entire account and associated data a
 2. Scroll to the **Account & Danger Zone** section $\rightarrow$ Tap **Delete Account**.
 3. Upon confirmation, your user profile, authentication records, focus scores, tokens, and historical records are **permanently and irreversibly purged** from our cloud databases (Supabase) and local device cache within 0 seconds.
 
-Alternatively, you can submit an account deletion request via email to `support@focneth.com` with your registered email address.
+Alternatively, you can submit an account deletion request via email to `support.t1.help@gmail.com` with your registered email address.
 
 ---
 
@@ -110,8 +117,9 @@ We may update this Privacy Policy periodically to reflect new features or regula
 ---
 
 ## 11. Contact Us
-If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact our Data Protection Officer at:
+If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact our team at:
 
 - **Organization**: Focneth
-- **Email**: support@focneth.com
-- **Website**: https://focneth.com/t1
+- **Email**: support.t1.help@gmail.com
+- **Website**: https://pixel-perfect-replica-tawny-beta.vercel.app/home
+- **Privacy Policy**: https://pixel-perfect-replica-tawny-beta.vercel.app/home/privacy

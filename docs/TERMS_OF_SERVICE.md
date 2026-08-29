@@ -1,10 +1,12 @@
 # Terms of Service for T1: Top 1%
 
-**Last Updated: August 24, 2026**
-**Effective Date: August 24, 2026**
-**Developer / Organization: Focneth**
-**Application Package: com.focneth.t1**
-**Contact Email: support@focneth.com**
+**Last Updated: August 29, 2026**  
+**Effective Date: August 29, 2026**  
+**Developer / Organization: Focneth**  
+**Application Package: com.focneth.t1**  
+**Contact Email: support.t1.help@gmail.com**  
+**Official Website: https://pixel-perfect-replica-tawny-beta.vercel.app/home**  
+**Web Terms of Service: https://pixel-perfect-replica-tawny-beta.vercel.app/home/terms**  
 
 ---
 
@@ -20,7 +22,7 @@ To use T1, you must be at least 13 years of age (or the minimum age of digital c
 
 ## 3. Account Registration & Security
 - **Authentication**: Access to T1 requires sign-in via Google OAuth. You agree to maintain the security and confidentiality of your credentials.
-- **Account Responsibility**: You are responsible for all activities that occur under your account. If you suspect any unauthorized access, you must notify Focneth immediately at `support@focneth.com`.
+- **Account Responsibility**: You are responsible for all activities that occur under your account. If you suspect any unauthorized access, you must notify Focneth immediately at `support.t1.help@gmail.com`.
 
 ---
 
@@ -94,5 +96,6 @@ We reserve the right to update or modify these Terms at any time. When modificat
 For questions, support, or legal inquiries regarding these Terms, please contact us at:
 
 - **Organization**: Focneth
-- **Email**: support@focneth.com
-- **Website**: https://focneth.com/t1
+- **Email**: support.t1.help@gmail.com
+- **Website**: https://pixel-perfect-replica-tawny-beta.vercel.app/home
+- **Terms of Service**: https://pixel-perfect-replica-tawny-beta.vercel.app/home/terms

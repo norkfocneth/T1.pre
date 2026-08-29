@@ -290,7 +290,7 @@ fun PrivacyOverviewDialog(
                                         )
                                     )
                                     Text(
-                                        text = "Read complete legal documentation on focneth.com",
+                                        text = "Read complete legal documentation online",
                                         style = BodySmall.copy(
                                             color = MutedForeground,
                                             fontSize = 11.sp

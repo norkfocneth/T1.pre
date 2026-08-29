@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.SettingsSuggest
@@ -270,7 +271,14 @@ fun SettingsScreen(
                 PreferenceRow(
                     icon = Icons.Default.Info,
                     title = "About T1",
-                    onClick = { Haptics.playLight(view) }
+                    onClick = {
+                        Haptics.playLight(view)
+                        try {
+                            uriHandler.openUri("https://pixel-perfect-replica-tawny-beta.vercel.app/home/about")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
                 // Privacy Policy
@@ -280,6 +288,20 @@ fun SettingsScreen(
                     onClick = {
                         Haptics.playLight(view)
                         showPrivacyOverview = true
+                    }
+                )
+
+                // Terms & Conditions
+                PreferenceRow(
+                    icon = Icons.Default.Description,
+                    title = "Terms & Conditions",
+                    onClick = {
+                        Haptics.playLight(view)
+                        try {
+                            uriHandler.openUri("https://pixel-perfect-replica-tawny-beta.vercel.app/home/terms")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
 
@@ -685,7 +707,7 @@ fun SettingsScreen(
                 onDismiss = { showPrivacyOverview = false },
                 onOpenWebPolicy = {
                     try {
-                        uriHandler.openUri("https://focneth.com/t1/privacy")
+                        uriHandler.openUri("https://pixel-perfect-replica-tawny-beta.vercel.app/home/privacy")
                     } catch (e: Exception) {
                         Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                     }

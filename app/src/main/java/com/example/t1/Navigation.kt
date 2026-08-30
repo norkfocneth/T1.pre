@@ -3,19 +3,23 @@ package com.example.t1
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,7 +50,7 @@ import kotlinx.coroutines.delay
 /**
  * Main application navigation component.
  * Maps deterministic AuthState transitions directly to visual screens,
- * starting with a high-end cinematic Netflix-style intro splash.
+ * with an ultra-premium Netflix-style intro splash overlay that plays strictly once.
  */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -55,25 +59,22 @@ fun MainNavigation(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
-    var isCinematicSplashDone by remember { mutableStateOf(false) }
+    var isCinematicSplashDone by rememberSaveable { mutableStateOf(false) }
 
-    AnimatedContent(
-        targetState = Pair(isCinematicSplashDone, authState),
-        transitionSpec = {
-            fadeIn(animationSpec = tween(350)).togetherWith(fadeOut(animationSpec = tween(250)))
-        },
-        label = "auth_state_routing",
-        modifier = Modifier.fillMaxSize()
-    ) { (splashDone, state) ->
-        if (!splashDone) {
-            CinematicSplashScreen(
-                onAnimationComplete = { isCinematicSplashDone = true }
-            )
-        } else {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // ─── 1. Main Application Content (Deterministic Auth State Routing) ───
+        AnimatedContent(
+            targetState = authState,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(350)).togetherWith(fadeOut(animationSpec = tween(250)))
+            },
+            label = "auth_state_routing",
+            modifier = Modifier.fillMaxSize()
+        ) { state ->
             when (state) {
                 is AuthState.CheckingSession -> {
-                    // Smooth visual bridge if session check is still finishing
-                    CinematicSplashScreen(onAnimationComplete = {})
+                    // OLED black placeholder while checking session in the background
+                    Box(modifier = Modifier.fillMaxSize().background(Color.Black))
                 }
                 is AuthState.Unauthenticated -> {
                     AuthScreen(viewModel = authViewModel)
@@ -92,78 +93,92 @@ fun MainNavigation(
                 }
                 is AuthState.Error -> {
                     AuthErrorScreen(
-                    errorType = state.errorType,
-                    message = state.message,
-                    onRetry = { authViewModel.restoreSession() },
-                    onSignOut = { authViewModel.signOut() }
-                )
-            }
-            is AuthState.NavigateToOnboarding -> {
-                val onboardingViewModel: OnboardingViewModel = hiltViewModel()
-                val onboardingState by onboardingViewModel.uiState.collectAsStateWithLifecycle()
-                val userId = state.userId
-
-                LaunchedEffect(onboardingState) {
-                    if (onboardingState is OnboardingUiState.Success) {
-                        com.example.t1.util.T1Logger.i("Onboarding completed successfully. Restoring session.")
-                        authViewModel.restoreSession()
-                        onboardingViewModel.resetState()
-                    }
-                }
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    OnboardingFlow(
-                        initialStep = OnboardingStep.QUESTIONS,
-                        onComplete = { username, displayName, focusScore, primaryGoal, overrides ->
-                            com.example.t1.util.T1Logger.i("Onboarding finished. Saving profile.")
-                            onboardingViewModel.completeOnboarding(
-                                userId = userId,
-                                username = username,
-                                displayName = displayName,
-                                focusScore = focusScore,
-                                primaryGoal = primaryGoal,
-                                customOverrides = overrides
-                            )
-                        }
-                    )
-
-                    when (val oState = onboardingState) {
-                        is OnboardingUiState.Loading -> {
-                            SplashLoadingScreen(message = "Saving your profile...")
-                        }
-                        is OnboardingUiState.Error -> {
-                            AuthErrorScreen(
-                                errorType = com.example.t1.domain.model.AuthError.SUPABASE_ERROR,
-                                message = oState.message,
-                                onRetry = { onboardingViewModel.resetState() },
-                                onSignOut = { authViewModel.signOut() }
-                            )
-                        }
-                        else -> {}
-                    }
-                }
-            }
-            is AuthState.Dashboard -> {
-                val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
-                var dismissedPermission by remember { mutableStateOf(false) }
-
-                if (dashboardState.permissionState is com.example.t1.domain.permission.UsagePermissionState.Denied && !dismissedPermission) {
-                    com.example.t1.ui.permission.UsagePermissionScreen(
-                        onOpenSettings = { mainViewModel.openPermissionSettings() },
-                        onRetry = { mainViewModel.refreshBehaviourData() },
-                        onLater = { dismissedPermission = true }
-                    )
-                } else {
-                    DashboardShell(
-                        profile = state.profile,
-                        mainViewModel = mainViewModel,
+                        errorType = state.errorType,
+                        message = state.message,
+                        onRetry = { authViewModel.restoreSession() },
                         onSignOut = { authViewModel.signOut() }
                     )
                 }
+                is AuthState.NavigateToOnboarding -> {
+                    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+                    val onboardingState by onboardingViewModel.uiState.collectAsStateWithLifecycle()
+                    val userId = state.userId
+
+                    LaunchedEffect(onboardingState) {
+                        if (onboardingState is OnboardingUiState.Success) {
+                            com.example.t1.util.T1Logger.i("Onboarding completed successfully. Restoring session.")
+                            authViewModel.restoreSession()
+                            onboardingViewModel.resetState()
+                        }
+                    }
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        OnboardingFlow(
+                            initialStep = OnboardingStep.QUESTIONS,
+                            onComplete = { username, displayName, focusScore, primaryGoal, overrides ->
+                                com.example.t1.util.T1Logger.i("Onboarding finished. Saving profile.")
+                                onboardingViewModel.completeOnboarding(
+                                    userId = userId,
+                                    username = username,
+                                    displayName = displayName,
+                                    focusScore = focusScore,
+                                    primaryGoal = primaryGoal,
+                                    customOverrides = overrides
+                                )
+                            }
+                        )
+
+                        when (val oState = onboardingState) {
+                            is OnboardingUiState.Loading -> {
+                                SplashLoadingScreen(message = "Saving your profile...")
+                            }
+                            is OnboardingUiState.Error -> {
+                                AuthErrorScreen(
+                                    errorType = com.example.t1.domain.model.AuthError.SUPABASE_ERROR,
+                                    message = oState.message,
+                                    onRetry = { onboardingViewModel.resetState() },
+                                    onSignOut = { authViewModel.signOut() }
+                                )
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+                is AuthState.Dashboard -> {
+                    val dashboardState by mainViewModel.dashboardState.collectAsStateWithLifecycle()
+                    var dismissedPermission by remember { mutableStateOf(false) }
+
+                    if (dashboardState.permissionState is com.example.t1.domain.permission.UsagePermissionState.Denied && !dismissedPermission) {
+                        com.example.t1.ui.permission.UsagePermissionScreen(
+                            onOpenSettings = { mainViewModel.openPermissionSettings() },
+                            onRetry = { mainViewModel.refreshBehaviourData() },
+                            onLater = { dismissedPermission = true }
+                        )
+                    } else {
+                        DashboardShell(
+                            profile = state.profile,
+                            mainViewModel = mainViewModel,
+                            onSignOut = { authViewModel.signOut() }
+                        )
+                    }
+                }
             }
         }
+
+        // ─── 2. Netflix-Style Cinematic Splash Overlay (Guaranteed strictly ONCE) ───
+        AnimatedVisibility(
+            visible = !isCinematicSplashDone,
+            enter = fadeIn(tween(100)),
+            exit = fadeOut(animationSpec = tween(450, easing = LinearEasing)),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CinematicSplashScreen(
+                onAnimationComplete = {
+                    isCinematicSplashDone = true
+                }
+            )
+        }
     }
-}
 }
 
 

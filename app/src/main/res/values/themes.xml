@@ -6,10 +6,10 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <!-- Splash screen theme — pure black, T1. logo, fast dismiss -->
+    <!-- Splash screen theme — pitch black OLED, seamless transition to Compose Cinematic Intro -->
     <style name="Theme.T1.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#000000</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_t1</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_empty</item>
         <item name="windowSplashScreenIconBackgroundColor">#000000</item>
         <item name="postSplashScreenTheme">@style/Theme.T1</item>
     </style>

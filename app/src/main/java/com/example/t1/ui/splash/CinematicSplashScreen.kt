@@ -29,9 +29,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.t1.theme.Background
 import com.example.t1.theme.DisplayLarge
-import com.example.t1.theme.Foreground
 import com.example.t1.theme.Inter
 import com.example.t1.theme.SpaceGrotesk
 import com.example.t1.util.Haptics
@@ -41,12 +39,13 @@ import kotlinx.coroutines.launch
 /**
  * Ultra-Premium, Netflix-Style Cinematic Intro Splash Screen for T1.
  * 
- * Flow:
+ * Choreography:
  * 1. Pitch black OLED canvas.
- * 2. Razor-sharp "T1." emerges with luminous ambient glow.
- * 3. Futuristic "TOP 1%" sub-headline tracks in with subtle haptics.
- * 4. Iconic Netflix-style Exponential Zoom & Motion Surge into the camera.
- * 5. Smooth seamless reveal into the Home Screen.
+ * 2. Stage 1 (0ms - 800ms): "T1." emerges slowly & majestically with luminous ambient glow.
+ * 3. Stage 2 (800ms - 1600ms): "TOP 1%" sub-headline tracks in with elegant letter spacing & haptics.
+ * 4. Stage 3 (1600ms - 2100ms): Readability hold for visual absorption.
+ * 5. Stage 4 (2100ms - 2800ms): Iconic Ta-Dum Exponential Zoom Surge into the camera.
+ * 6. Smooth seamless reveal into the App.
  */
 @Composable
 fun CinematicSplashScreen(
@@ -57,7 +56,7 @@ fun CinematicSplashScreen(
 
     // Animation Controllers
     val t1Alpha = remember { Animatable(0f) }
-    val t1Scale = remember { Animatable(0.85f) }
+    val t1Scale = remember { Animatable(0.88f) }
     
     val subtitleAlpha = remember { Animatable(0f) }
     val subtitleLetterSpacing = remember { Animatable(3f) }
@@ -67,74 +66,79 @@ fun CinematicSplashScreen(
     val ambientGlowIntensity = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        // Stage 1: "T1." Emerges (0ms - 500ms)
+        // ─── Stage 1: "T1." Emerges Calmly & Majestically (0ms - 800ms) ───
         launch {
             t1Alpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 450, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing)
             )
         }
         launch {
             t1Scale.animateTo(
                 targetValue = 1.0f,
-                animationSpec = tween(durationMillis = 550, easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f))
+                animationSpec = tween(durationMillis = 800, easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f))
             )
         }
         launch {
             ambientGlowIntensity.animateTo(
-                targetValue = 0.55f,
-                animationSpec = tween(durationMillis = 600, easing = LinearEasing)
+                targetValue = 0.6f,
+                animationSpec = tween(durationMillis = 800, easing = LinearEasing)
+            )
+        }
+
+        delay(600)
+        try { Haptics.playLight(view) } catch (_: Exception) {}
+
+        // ─── Stage 2: "TOP 1%" Subtitle Fade & Graceful Tracking Expansion (800ms - 1600ms) ───
+        delay(200)
+        launch {
+            subtitleAlpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
+            )
+        }
+        launch {
+            subtitleLetterSpacing.animateTo(
+                targetValue = 7.5f,
+                animationSpec = tween(durationMillis = 750, easing = CubicBezierEasing(0.16f, 1f, 0.3f, 1f))
             )
         }
 
         delay(400)
         try { Haptics.playLight(view) } catch (_: Exception) {}
 
-        // Stage 2: "TOP 1%" Subtitle Fade & Tracking Expansion (500ms - 1000ms)
-        launch {
-            subtitleAlpha.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-            )
-        }
-        launch {
-            subtitleLetterSpacing.animateTo(
-                targetValue = 7f,
-                animationSpec = tween(durationMillis = 500, easing = LinearEasing)
-            )
-        }
+        // ─── Stage 3: Readability & Brand Absorption Hold (1600ms - 2100ms) ───
+        delay(500)
 
-        delay(550)
-
-        // Stage 3: The Iconic Netflix Zoom Surge (1050ms - 1650ms)
+        // ─── Stage 4: The Iconic Netflix Zoom Surge (2100ms - 2800ms) ───
         try { Haptics.playMedium(view) } catch (_: Exception) {}
 
         launch {
             ambientGlowIntensity.animateTo(
-                targetValue = 0.9f,
-                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                targetValue = 1.0f,
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
             )
         }
         launch {
             cinematicZoom.animateTo(
-                targetValue = 14.0f,
+                targetValue = 15.0f,
                 animationSpec = tween(
-                    durationMillis = 600,
+                    durationMillis = 700,
                     easing = CubicBezierEasing(0.7f, 0f, 0.84f, 0f) // Exponential zoom surge
                 )
             )
         }
         launch {
-            delay(280)
+            delay(350)
             cinematicFadeOut.animateTo(
                 targetValue = 0f,
-                animationSpec = tween(durationMillis = 320, easing = LinearEasing)
+                animationSpec = tween(durationMillis = 350, easing = LinearEasing)
             )
         }
 
-        delay(620)
+        delay(720)
 
-        // Stage 4: Trigger transition to Dashboard / Auth
+        // ─── Stage 5: Trigger transition to App ───
         onAnimationComplete()
     }
 
@@ -153,8 +157,8 @@ fun CinematicSplashScreen(
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFFF80BF).copy(alpha = 0.22f * ambientGlowIntensity.value * cinematicFadeOut.value),
-                            Color(0xFF80D8FF).copy(alpha = 0.12f * ambientGlowIntensity.value * cinematicFadeOut.value),
+                            Color(0xFFFF80BF).copy(alpha = 0.24f * ambientGlowIntensity.value * cinematicFadeOut.value),
+                            Color(0xFF80D8FF).copy(alpha = 0.14f * ambientGlowIntensity.value * cinematicFadeOut.value),
                             Color.Transparent
                         ),
                         center = centerOffset,

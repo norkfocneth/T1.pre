@@ -625,7 +625,10 @@ class MainViewModel @Inject constructor(
             T1Logger.i("Delete user account triggered for user ID: ${profile.id}")
             val deleteResult = userRepository.deleteProfile(profile.id)
             if (deleteResult.isSuccess) {
-                T1Logger.i("Profile deleted successfully. Performing final sign-out.")
+                tokenRepository.clearCache()
+                _tokenWallet.value = null
+                _tokenTransactions.value = emptyList()
+                T1Logger.i("Profile and tokens deleted successfully. Performing final sign-out.")
                 val signOutResult = sessionManager.performSignOut()
                 if (signOutResult.isSuccess) {
                     onSuccess()

@@ -164,6 +164,8 @@ open class SessionManager @Inject constructor(
         dailyBehaviourDao.clearAll()
         dailyBehaviourScoreDao.clearAll()
         dailyFocusScoreDao.clearAll()
+        tokenWalletDao.clearAll()
+        tokenTransactionDao.clearAll()
         return signOutResult
     }
 }

@@ -47,6 +47,10 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.t1.ui.tour.GuidedProductTourOverlay
 import kotlinx.coroutines.delay
 
+object SplashStateManager {
+    var hasCompletedSplash: Boolean = false
+}
+
 /**
  * Main application navigation component.
  * Maps deterministic AuthState transitions directly to visual screens,
@@ -59,7 +63,7 @@ fun MainNavigation(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
-    var isCinematicSplashDone by rememberSaveable { mutableStateOf(false) }
+    var isCinematicSplashDone by rememberSaveable { mutableStateOf(SplashStateManager.hasCompletedSplash) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // ─── 1. Main Application Content (Deterministic Auth State Routing) ───
@@ -79,17 +83,18 @@ fun MainNavigation(
                 is AuthState.Unauthenticated -> {
                     AuthScreen(viewModel = authViewModel)
                 }
-                is AuthState.Authenticating -> {
-                    SplashLoadingScreen(message = "Connecting to Google...")
-                }
-                is AuthState.Authenticated -> {
-                    SplashLoadingScreen(message = "Authenticating session with Supabase...")
-                }
-                is AuthState.LoadingProfile -> {
-                    SplashLoadingScreen(message = "Synchronizing user profile...")
-                }
+                is AuthState.Authenticating,
+                is AuthState.Authenticated,
+                is AuthState.LoadingProfile,
                 is AuthState.SigningOut -> {
-                    SplashLoadingScreen(message = "Signing out safely...")
+                    val message = when (state) {
+                        is AuthState.Authenticating -> "Connecting to Google..."
+                        is AuthState.Authenticated -> "Authenticating session with Supabase..."
+                        is AuthState.LoadingProfile -> "Synchronizing user profile..."
+                        is AuthState.SigningOut -> "Signing out safely..."
+                        else -> "Please wait..."
+                    }
+                    SplashLoadingScreen(message = message)
                 }
                 is AuthState.Error -> {
                     AuthErrorScreen(
@@ -174,6 +179,7 @@ fun MainNavigation(
         ) {
             CinematicSplashScreen(
                 onAnimationComplete = {
+                    SplashStateManager.hasCompletedSplash = true
                     isCinematicSplashDone = true
                 }
             )

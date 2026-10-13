@@ -533,7 +533,7 @@ fun SettingsScreen(
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "This will permanently delete your profile, scores, and historical focus sessions from both your device and cloud servers. This cannot be undone.",
+                                text = "This will permanently delete your profile, tokens, focus scores, and historical activity from both your device and cloud servers. This cannot be undone.",
                                 style = BodyMedium.copy(
                                     color = MutedForeground,
                                     lineHeight = 20.sp

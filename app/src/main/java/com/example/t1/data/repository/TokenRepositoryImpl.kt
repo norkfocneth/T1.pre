@@ -143,11 +143,24 @@ class TokenRepositoryImpl @Inject constructor(
             // First, push any pending local transactions
             syncPendingTransactions(userId)
 
-            // Download remote wallet and transactions
-            val remoteWallet = supabaseService.getTokenWallet(userId) ?: return Result.failure(Exception("Wallet not found on server"))
+            // Download remote wallet and transactions (or initialize 0-balance wallet if none exists)
+            val remoteWallet = supabaseService.getTokenWallet(userId) ?: run {
+                val now = System.currentTimeMillis()
+                val newWalletDto = TokenWalletDto(
+                    userId = userId,
+                    balance = 0,
+                    lifetimeEarned = 0,
+                    lifetimeSpent = 0,
+                    lastUpdated = now,
+                    createdAt = now
+                )
+                supabaseService.upsertTokenWallet(newWalletDto)
+                newWalletDto
+            }
             val remoteTxs = supabaseService.getTokenTransactions(userId)
 
-            // Sync transactions locally
+            // Sync transactions locally (clear existing cached transactions first to prevent ghost transactions)
+            tokenTransactionDao.clearAll()
             remoteTxs.forEach { remoteTx ->
                 val localTx = TokenTransactionEntity(
                     transactionId = remoteTx.transactionId,

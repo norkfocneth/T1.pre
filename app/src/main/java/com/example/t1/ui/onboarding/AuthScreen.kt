@@ -302,25 +302,13 @@ fun SplashLoadingScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = "T1.",
-                    style = DisplayMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        brush = Brush.linearGradient(
-                            colors = listOf(GradientTextStart, GradientTextEnd)
-                        )
-                    ),
-                    letterSpacing = (-1.5).sp,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-
                 CircularProgressIndicator(
                     color = Foreground,
                     strokeWidth = 3.dp,
                     modifier = Modifier.size(36.dp)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = message,

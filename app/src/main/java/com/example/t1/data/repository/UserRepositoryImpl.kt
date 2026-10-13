@@ -23,7 +23,8 @@ import javax.inject.Singleton
 class UserRepositoryImpl @Inject constructor(
     private val supabaseClient: SupabaseClient,
     private val supabaseService: SupabaseService,
-    private val userProfileDao: UserProfileDao
+    private val userProfileDao: UserProfileDao,
+    private val t1Database: com.example.t1.data.database.T1Database
 ) : UserRepository {
 
     override val cachedProfileFlow: Flow<UserProfile?> = userProfileDao.getProfileFlow().map { entity ->
@@ -140,17 +141,63 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun deleteProfile(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            T1Logger.i("Deleting profile remotely from Supabase for user $userId")
+            T1Logger.i("Purging all remote user data from Supabase for user $userId")
+
+            // 1. Delete remote token transactions
+            try {
+                supabaseService.postgrest.from("token_transactions").delete {
+                    filter { eq("user_id", userId) }
+                }
+                T1Logger.i("Remote token_transactions deleted for user $userId")
+            } catch (e: Exception) {
+                T1Logger.w("Failed to delete remote token_transactions: ${e.message}")
+            }
+
+            // 2. Delete remote token wallet
+            try {
+                supabaseService.postgrest.from("token_wallets").delete {
+                    filter { eq("user_id", userId) }
+                }
+                T1Logger.i("Remote token_wallets deleted for user $userId")
+            } catch (e: Exception) {
+                T1Logger.w("Failed to delete remote token_wallets: ${e.message}")
+            }
+
+            // 3. Delete remote daily focus scores
+            try {
+                supabaseService.postgrest.from("daily_focus_scores").delete {
+                    filter { eq("user_id", userId) }
+                }
+                T1Logger.i("Remote daily_focus_scores deleted for user $userId")
+            } catch (e: Exception) {
+                T1Logger.w("Failed to delete remote daily_focus_scores: ${e.message}")
+            }
+
+            // 4. Delete remote leaderboard daily
+            try {
+                supabaseService.postgrest.from("leaderboard_daily").delete {
+                    filter { eq("user_id", userId) }
+                }
+                T1Logger.i("Remote leaderboard_daily deleted for user $userId")
+            } catch (e: Exception) {
+                T1Logger.w("Failed to delete remote leaderboard_daily: ${e.message}")
+            }
+
+            // 5. Delete remote profile
             supabaseService.postgrest.from("profiles").delete {
                 filter {
                     eq("id", userId)
                 }
             }
-            T1Logger.i("Profile deleted from Supabase. Clearing local cache.")
-            clearCache()
+            T1Logger.i("Remote profile deleted from Supabase. Purging all local Room database tables.")
+
+            // 6. Clear local database completely
+            t1Database.clearAllTables()
+            T1Logger.i("All local database tables cleared successfully.")
+
             Result.success(Unit)
         } catch (e: Exception) {
-            T1Logger.e("Failed to delete user profile", e)
+            T1Logger.e("Failed to delete user profile and data", e)
             Result.failure(e)
         }
     }

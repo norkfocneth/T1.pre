@@ -5,8 +5,8 @@
 **Developer / Organization: Focneth**  
 **Application Package: com.focneth.t1**  
 **Contact Email: support.t1.help@gmail.com**  
-**Official Website: https://pixel-perfect-replica-tawny-beta.vercel.app/home**  
-**Web Terms of Service: https://pixel-perfect-replica-tawny-beta.vercel.app/home/terms**  
+**Official Website: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home**  
+**Web Terms of Service: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms**  
 
 ---
 
@@ -97,5 +97,5 @@ For questions, support, or legal inquiries regarding these Terms, please contact
 
 - **Organization**: Focneth
 - **Email**: support.t1.help@gmail.com
-- **Website**: https://pixel-perfect-replica-tawny-beta.vercel.app/home
-- **Terms of Service**: https://pixel-perfect-replica-tawny-beta.vercel.app/home/terms
+- **Website**: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home
+- **Terms of Service**: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms

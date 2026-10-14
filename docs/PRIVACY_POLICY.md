@@ -5,8 +5,8 @@
 **Developer / Organization: Focneth**  
 **Application Package: com.focneth.t1**  
 **Contact Email: support.t1.help@gmail.com**  
-**Official Website: https://pixel-perfect-replica-tawny-beta.vercel.app/home**  
-**Web Privacy Policy: https://pixel-perfect-replica-tawny-beta.vercel.app/home/privacy**  
+**Official Website: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home**  
+**Web Privacy Policy: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy**  
 
 ---
 
@@ -121,5 +121,5 @@ If you have any questions, concerns, or requests regarding this Privacy Policy o
 
 - **Organization**: Focneth
 - **Email**: support.t1.help@gmail.com
-- **Website**: https://pixel-perfect-replica-tawny-beta.vercel.app/home
-- **Privacy Policy**: https://pixel-perfect-replica-tawny-beta.vercel.app/home/privacy
+- **Website**: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home
+- **Privacy Policy**: https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy

@@ -16,6 +16,7 @@ import com.example.t1.domain.repository.ResearchBenchmarkRepository
 import com.example.t1.domain.repository.AppCategoryRepository
 import com.example.t1.domain.repository.EngineCategory
 import com.example.t1.data.database.dao.FocusSessionDao
+import com.example.t1.domain.token.TokenRewardEngine
 import com.example.t1.util.T1Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -225,9 +226,10 @@ class MainViewModel @Inject constructor(
                         }
                     }
 
-                    // Trigger daily login reward check
+                    // Trigger daily login reward and focus score delta reward
                     launch {
-                        triggerDailyLoginReward(profile.id)
+                        triggerDailyLoginReward(profile)
+                        triggerDailyFocusScoreDeltaReward(profile.id, profile.focusScore)
                     }
 
                     // Silent migration to Focus Score V2 in the background
@@ -569,24 +571,30 @@ class MainViewModel @Inject constructor(
                 userRepository.saveProfile(updatedProfile)
                 T1Logger.i("Focus session logged successfully. Total sessions: $totalSessions")
 
-                // 4. Trigger token earned and milestone notifications
-                val earnResult = tokenRepository.addTransaction(
-                    userId = profile.id,
-                    amount = 5,
-                    type = "EARN",
-                    reason = "FOCUS_SESSION"
-                )
-                if (earnResult.isSuccess) {
-                    _tokenEarnedEvent.emit(5)
-                    t1NotificationManager.postNotification(
-                        id = 3003,
-                        title = "Tokens Earned",
-                        text = "+5 T1 Tokens earned. Reward added to your wallet.",
-                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
-                        type = "token_reward"
+                // 4. Trigger token earned using TokenRewardEngine and milestone notifications
+                val durationMinutes = (durationSeconds / 60).toInt()
+                val todaySessionTokens = tokenRepository.getFocusSessionTokensEarnedToday(profile.id)
+                val sessionReward = TokenRewardEngine.calculateFocusSessionReward(durationMinutes, todaySessionTokens)
+
+                if (sessionReward > 0) {
+                    val earnResult = tokenRepository.addTransaction(
+                        userId = profile.id,
+                        amount = sessionReward,
+                        type = "EARN",
+                        reason = "FOCUS_SESSION"
                     )
-                } else {
-                    T1Logger.w("Focus session token reward skipped: ${earnResult.exceptionOrNull()?.message}")
+                    if (earnResult.isSuccess) {
+                        _tokenEarnedEvent.emit(sessionReward)
+                        t1NotificationManager.postNotification(
+                            id = 3003,
+                            title = "Focus Session Reward",
+                            text = "+$sessionReward T1 Tokens earned (${durationMinutes}m focus). Reward added to your wallet.",
+                            channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                            type = "token_reward"
+                        )
+                    } else {
+                        T1Logger.w("Focus session token reward skipped: ${earnResult.exceptionOrNull()?.message}")
+                    }
                 }
 
                 if (totalSessions == 10 || totalSessions == 25 || totalSessions == 50 || totalSessions == 100) {
@@ -643,28 +651,117 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun triggerDailyLoginReward(userId: String) {
+    private suspend fun triggerDailyLoginReward(profile: UserProfile) {
+        val reward = TokenRewardEngine.calculateDailyLoginReward(profile.streak)
         val result = tokenRepository.addTransaction(
-            userId = userId,
-            amount = 5,
+            userId = profile.id,
+            amount = reward.baseTokens,
             type = "EARN",
             reason = "DAILY_LOGIN"
         )
         if (result.isSuccess) {
-            _tokenEarnedEvent.emit(5)
+            _tokenEarnedEvent.emit(reward.baseTokens)
             t1NotificationManager.postNotification(
                 id = 3005,
-                title = "Daily Login Reward",
-                text = "You earned +5 T1 Tokens for logging in today!",
+                title = "Daily Login Streak (${reward.streakDay}d)",
+                text = "🔥 +${reward.baseTokens} T1 Tokens earned for logging in today!",
                 channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
                 type = "token_reward"
             )
+
+            // Trigger streak milestone reward if reached
+            if (reward.streakMilestoneBonus > 0 && reward.milestoneLabel != null) {
+                val milestoneResult = tokenRepository.addTransaction(
+                    userId = profile.id,
+                    amount = reward.streakMilestoneBonus,
+                    type = "EARN",
+                    reason = "STREAK_MILESTONE"
+                )
+                if (milestoneResult.isSuccess) {
+                    _tokenEarnedEvent.emit(reward.streakMilestoneBonus)
+                    t1NotificationManager.postNotification(
+                        id = 3006,
+                        title = reward.milestoneLabel,
+                        text = "🏆 Milestone Achieved! +${reward.streakMilestoneBonus} Bonus T1 Tokens added to your wallet!",
+                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                        type = "milestone"
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun triggerDailyFocusScoreDeltaReward(userId: String, currentScore: Int) {
+        val today = java.time.LocalDate.now()
+        val yesterdayStr = today.minusDays(1).toString()
+        val yesterdayScoreEntity = focusScoreRepository.getScoreForDate(yesterdayStr) ?: run {
+            val history = focusScoreRepository.getScoreHistory()
+            history.filter { it.date < today.toString() }.maxByOrNull { it.date }
+        }
+
+        if (yesterdayScoreEntity != null) {
+            val yesterdayScore = yesterdayScoreEntity.finalFocusScore
+            val deltaReward = TokenRewardEngine.calculateFocusScoreDeltaReward(
+                todayScore = currentScore,
+                yesterdayScore = yesterdayScore,
+                hasActiveBounceBack = false
+            )
+
+            if (deltaReward.tokens > 0) {
+                val earnResult = tokenRepository.addTransaction(
+                    userId = userId,
+                    amount = deltaReward.tokens,
+                    type = "EARN",
+                    reason = "FOCUS_SCORE_DELTA"
+                )
+                if (earnResult.isSuccess) {
+                    _tokenEarnedEvent.emit(deltaReward.tokens)
+                    t1NotificationManager.postNotification(
+                        id = 3007,
+                        title = deltaReward.notificationTitle,
+                        text = deltaReward.notificationMessage,
+                        channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                        type = "token_reward"
+                    )
+                }
+            } else if (deltaReward.isBounceBackTriggered) {
+                t1NotificationManager.postNotification(
+                    id = 3008,
+                    title = deltaReward.notificationTitle,
+                    text = deltaReward.notificationMessage,
+                    channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_CRITICAL,
+                    type = "bounce_back_challenge"
+                )
+            }
+        }
+    }
+
+    fun claimMysteryChest() {
+        viewModelScope.launch {
+            val profile = userProfile.value ?: return@launch
+            val rewardTokens = TokenRewardEngine.rollMysteryChestReward()
+            val result = tokenRepository.addTransaction(
+                userId = profile.id,
+                amount = rewardTokens,
+                type = "EARN",
+                reason = "MYSTERY_CHEST"
+            )
+            if (result.isSuccess) {
+                _tokenEarnedEvent.emit(rewardTokens)
+                t1NotificationManager.postNotification(
+                    id = 3009,
+                    title = "🎁 Daily Mystery Chest Claimed!",
+                    text = "+$rewardTokens T1 Tokens found in your mystery chest!",
+                    channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
+                    type = "token_reward"
+                )
+            }
         }
     }
 
     // Reward Simulation Functions for Developer/User testing
     fun earnDailyMission() {
-        triggerSimulatedReward("DAILY_MISSION", 15)
+        triggerSimulatedReward("DAILY_MISSION", 40)
     }
 
     fun earnWeeklyMission() {
@@ -676,23 +773,23 @@ class MainViewModel @Inject constructor(
     }
 
     fun earnPersonalBest() {
-        triggerSimulatedReward("PERSONAL_BEST", 30)
+        triggerSimulatedReward("PERSONAL_BEST", 50)
     }
 
     fun earnBeatYesterday() {
-        triggerSimulatedReward("BEAT_YESTERDAY", 10)
+        triggerSimulatedReward("FOCUS_SCORE_DELTA", 50)
     }
 
     fun earnWeeklyAverage() {
-        triggerSimulatedReward("WEEKLY_AVERAGE", 40)
+        triggerSimulatedReward("WEEKLY_AVERAGE", 75)
     }
 
     fun earnStreak7() {
-        triggerSimulatedReward("STREAK_7", 70)
+        triggerSimulatedReward("STREAK_7", 150)
     }
 
     fun earnStreak30() {
-        triggerSimulatedReward("STREAK_30", 300)
+        triggerSimulatedReward("STREAK_30", 1000)
     }
 
     fun earnHiddenAchievement() {

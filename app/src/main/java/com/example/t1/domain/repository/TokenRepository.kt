@@ -10,6 +10,7 @@ interface TokenRepository {
     fun getTransactionsFlow(userId: String): Flow<List<TokenTransactionEntity>>
     suspend fun getTransactions(userId: String): List<TokenTransactionEntity>
     suspend fun addTransaction(userId: String, amount: Int, type: String, reason: String): Result<Unit>
+    suspend fun getFocusSessionTokensEarnedToday(userId: String): Int
     suspend fun syncWallet(userId: String): Result<Unit>
     suspend fun syncPendingTransactions(userId: String): Result<Unit>
     suspend fun clearCache()

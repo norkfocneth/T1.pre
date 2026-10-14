@@ -87,6 +87,18 @@ class TokenRepositoryImpl @Inject constructor(
                 val existing = tokenTransactionDao.getTransactionCount(userId, "MONTHLY_CHALLENGE", startOfMonth, endOfMonth)
                 if (existing > 0) return Result.failure(Exception("Monthly challenge reward already claimed this month."))
             }
+            "FOCUS_SCORE_DELTA" -> {
+                val existing = tokenTransactionDao.getTransactionCount(userId, "FOCUS_SCORE_DELTA", startOfDay, endOfDay)
+                if (existing > 0) return Result.failure(Exception("Focus score delta reward already claimed today."))
+            }
+            "TIME_SAVED" -> {
+                val existing = tokenTransactionDao.getTransactionCount(userId, "TIME_SAVED", startOfDay, endOfDay)
+                if (existing > 0) return Result.failure(Exception("Time saved reward already claimed today."))
+            }
+            "MYSTERY_CHEST" -> {
+                val existing = tokenTransactionDao.getTransactionCount(userId, "MYSTERY_CHEST", startOfDay, endOfDay)
+                if (existing > 0) return Result.failure(Exception("Daily mystery chest reward already claimed today."))
+            }
         }
 
         // Create transaction
@@ -136,6 +148,19 @@ class TokenRepositoryImpl @Inject constructor(
             android.util.Log.w("TokenRepository", "Network offline. Transaction cached as pending: ${e.message}")
             return Result.success(Unit)
         }
+    }
+
+    override suspend fun getFocusSessionTokensEarnedToday(userId: String): Int {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val startOfDay = calendar.timeInMillis
+        val endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1
+
+        val sessionTxs = tokenTransactionDao.getTransactionsForReason(userId, "FOCUS_SESSION", startOfDay, endOfDay)
+        return sessionTxs.sumOf { it.amount }
     }
 
     override suspend fun syncWallet(userId: String): Result<Unit> {

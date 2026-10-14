@@ -27,6 +27,9 @@ interface TokenTransactionDao {
     @Query("SELECT COUNT(*) FROM token_transactions WHERE userId = :userId AND reason = :reason AND timestamp >= :startTimestamp AND timestamp <= :endTimestamp")
     suspend fun getTransactionCount(userId: String, reason: String, startTimestamp: Long, endTimestamp: Long): Int
 
+    @Query("SELECT * FROM token_transactions WHERE userId = :userId AND reason = :reason AND timestamp >= :startTimestamp AND timestamp <= :endTimestamp")
+    suspend fun getTransactionsForReason(userId: String, reason: String, startTimestamp: Long, endTimestamp: Long): List<TokenTransactionEntity>
+
     @Query("DELETE FROM token_transactions")
     suspend fun clearAll()
 }

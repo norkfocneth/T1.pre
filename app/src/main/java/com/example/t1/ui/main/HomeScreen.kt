@@ -661,9 +661,10 @@ fun HomeScreen(
 
             // Streak Multiplier Card (XP multiplier dopamine hook)
             val (multiplierText, multiplierVal) = when {
-                streak >= 10 -> "🔥🔥🔥 10 Day Focus Multiplier" to "x3"
-                streak >= 5 -> "🔥🔥 5 Day Focus Multiplier" to "x2"
-                streak >= 3 -> "🔥 3 Day Focus Multiplier" to "x1.5"
+                streak >= 21 -> "🏆 21 Day Habit Master" to "+600 Tokens"
+                streak >= 14 -> "⚡ 14 Day Streak Master" to "+350 Tokens"
+                streak >= 7 -> "🔥🔥 7 Day Streak Warrior" to "+150 Tokens"
+                streak >= 3 -> "🔥 3 Day Focus Multiplier" to "x1.5 Boost"
                 else -> "" to ""
             }
             if (multiplierText.isNotEmpty()) {
@@ -724,6 +725,70 @@ fun HomeScreen(
                             style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Black)
                         )
                     }
+                }
+            }
+
+            // Merchandise Goal Tracker (6,000 Tokens Target)
+            val currentBalance = tokenWallet?.balance ?: 0
+            val merchPaceQuick = remember(currentBalance) {
+                com.example.t1.domain.token.TokenRewardEngine.calculateMerchPace(currentBalance)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Card)
+                    .border(1.dp, Border, RoundedCornerShape(16.dp))
+                    .clickable {
+                        Haptics.playLight(view)
+                        showMerchCustomizer = true
+                    }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = com.example.t1.R.drawable.t1_token),
+                    contentDescription = "Token",
+                    modifier = Modifier.size(28.dp).clip(CircleShape)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "T1 Signature Tee Goal",
+                            style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "${(merchPaceQuick.percentComplete * 100).toInt()}%",
+                            style = LabelSmall.copy(color = GlowPrimary, fontWeight = FontWeight.Bold)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.08f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(merchPaceQuick.percentComplete)
+                                .clip(CircleShape)
+                                .background(Brush.horizontalGradient(listOf(Color(0xFF2563EB), Color(0xFF60A5FA))))
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$currentBalance / 6,000 Tokens • ~${merchPaceQuick.estimatedDaysLeft} days remaining at your pace",
+                        style = BodySmall.copy(color = MutedForeground, fontSize = 9.sp)
+                    )
                 }
             }
 
@@ -2177,7 +2242,7 @@ fun MerchCustomizerScreen(
                                     )
                                     Column {
                                         Text(
-                                            text = "6,900",
+                                            text = "6,000",
                                             style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
                                         )
                                         Text(
@@ -2186,6 +2251,54 @@ fun MerchCustomizerScreen(
                                         )
                                     }
                                 }
+                            }
+
+                            // Goal Progress Bar
+                            val merchPace = remember(currentTokens) {
+                                com.example.t1.domain.token.TokenRewardEngine.calculateMerchPace(currentTokens)
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "$currentTokens / 6,000",
+                                        style = LabelSmall.copy(color = Foreground, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "${(merchPace.percentComplete * 100).toInt()}%",
+                                        style = LabelSmall.copy(color = GlowPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(4.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.1f))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .fillMaxWidth(merchPace.percentComplete)
+                                            .clip(CircleShape)
+                                            .background(
+                                                Brush.horizontalGradient(
+                                                    listOf(Color(0xFF3B82F6), Color(0xFF60A5FA))
+                                                )
+                                            )
+                                    )
+                                }
+                                Text(
+                                    text = if (merchPace.tokensRemaining == 0) "Goal Reached! Ready to redeem." else "~${merchPace.estimatedDaysLeft} days left at your current pace",
+                                    style = BodySmall.copy(color = MutedForeground, fontSize = 8.sp)
+                                )
                             }
 
                             // Status Label
@@ -2828,7 +2941,7 @@ fun TokenWalletScreen(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Daily Mission (+15)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                    Text("Daily Streak (+10..40)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
                                 }
                                 Box(
                                     modifier = Modifier
@@ -2847,7 +2960,7 @@ fun TokenWalletScreen(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Weekly (+100)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                    Text("Focus Delta (+25..90)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
                                 }
                             }
                             Row(
@@ -2871,7 +2984,7 @@ fun TokenWalletScreen(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Focus Session (+5)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                    Text("Focus Session (+15..35)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
                                 }
                                 Box(
                                     modifier = Modifier
@@ -2890,7 +3003,7 @@ fun TokenWalletScreen(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("7d Streak (+70)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                    Text("7d Streak (+150)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
                                 }
                                 Box(
                                     modifier = Modifier
@@ -2909,7 +3022,7 @@ fun TokenWalletScreen(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Global T100 (+1K)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
+                                    Text("21d Habit (+600)", style = LabelSmall.copy(color = Foreground, fontSize = 9.sp))
                                 }
                             }
                         }
@@ -2944,7 +3057,7 @@ fun TokenWalletScreen(
                                     style = LabelMedium.copy(color = Foreground, fontWeight = FontWeight.Bold)
                                 )
                                 Text(
-                                    text = "Unlock with 6,900 Tokens. Minimal identity.",
+                                    text = "Unlock with 6,000 Tokens. Minimal identity.",
                                     style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp)
                                 )
                             }

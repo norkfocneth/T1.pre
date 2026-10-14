@@ -34,12 +34,29 @@ android {
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystoreFile = rootProject.file("release-upload.jks")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = localProperties.getProperty("release.store_password") ?: "T1FocusRelease2026!"
+                keyAlias = localProperties.getProperty("release.key_alias") ?: "t1-upload-key"
+                keyPassword = localProperties.getProperty("release.key_password") ?: "T1FocusRelease2026!"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            val keystoreFile = rootProject.file("release-upload.jks")
+            signingConfig = if (keystoreFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
     compileOptions {

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -192,6 +193,30 @@ class UserPreferences @Inject constructor(
         context.dataStore.edit { preferences ->
             preferences[KEY_TUTORIAL_COMPLETED] = false
             preferences[KEY_TUTORIAL_VERSION] = 0
+        }
+    }
+
+    suspend fun getLastDailyLoginClaimDate(userId: String): String? {
+        val key = stringPreferencesKey("last_login_claim_date_$userId")
+        return context.dataStore.data.firstOrNull()?.get(key)
+    }
+
+    suspend fun setLastDailyLoginClaimDate(userId: String, dateStr: String) {
+        val key = stringPreferencesKey("last_login_claim_date_$userId")
+        context.dataStore.edit { preferences ->
+            preferences[key] = dateStr
+        }
+    }
+
+    suspend fun getLastFocusDeltaClaimDate(userId: String): String? {
+        val key = stringPreferencesKey("last_focus_delta_claim_date_$userId")
+        return context.dataStore.data.firstOrNull()?.get(key)
+    }
+
+    suspend fun setLastFocusDeltaClaimDate(userId: String, dateStr: String) {
+        val key = stringPreferencesKey("last_focus_delta_claim_date_$userId")
+        context.dataStore.edit { preferences ->
+            preferences[key] = dateStr
         }
     }
 

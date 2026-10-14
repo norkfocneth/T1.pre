@@ -81,6 +81,9 @@ class MainViewModel @Inject constructor(
     val goalLastChangedEpoch: StateFlow<Long> = userPreferences.goalLastChangedEpochFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
+    private var lastHandledLoginRewardDate: String? = null
+    private var lastHandledDeltaRewardDate: String? = null
+
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.saveNotificationsEnabled(enabled)
@@ -652,6 +655,14 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun triggerDailyLoginReward(profile: UserProfile) {
+        val todayStr = java.time.LocalDate.now().toString()
+        if (lastHandledLoginRewardDate == todayStr) return
+        val lastClaimDate = userPreferences.getLastDailyLoginClaimDate(profile.id)
+        if (lastClaimDate == todayStr) {
+            lastHandledLoginRewardDate = todayStr
+            return
+        }
+
         val reward = TokenRewardEngine.calculateDailyLoginReward(profile.streak)
         val result = tokenRepository.addTransaction(
             userId = profile.id,
@@ -660,6 +671,8 @@ class MainViewModel @Inject constructor(
             reason = "DAILY_LOGIN"
         )
         if (result.isSuccess) {
+            lastHandledLoginRewardDate = todayStr
+            userPreferences.setLastDailyLoginClaimDate(profile.id, todayStr)
             _tokenEarnedEvent.emit(reward.baseTokens)
             t1NotificationManager.postNotification(
                 id = 3005,
@@ -688,11 +701,23 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
+        } else {
+            // Already claimed or restricted for today
+            lastHandledLoginRewardDate = todayStr
+            userPreferences.setLastDailyLoginClaimDate(profile.id, todayStr)
         }
     }
 
     private suspend fun triggerDailyFocusScoreDeltaReward(userId: String, currentScore: Int) {
         val today = java.time.LocalDate.now()
+        val todayStr = today.toString()
+        if (lastHandledDeltaRewardDate == todayStr) return
+        val lastClaimDate = userPreferences.getLastFocusDeltaClaimDate(userId)
+        if (lastClaimDate == todayStr) {
+            lastHandledDeltaRewardDate = todayStr
+            return
+        }
+
         val yesterdayStr = today.minusDays(1).toString()
         val yesterdayScoreEntity = focusScoreRepository.getScoreForDate(yesterdayStr) ?: run {
             val history = focusScoreRepository.getScoreHistory()
@@ -715,6 +740,8 @@ class MainViewModel @Inject constructor(
                     reason = "FOCUS_SCORE_DELTA"
                 )
                 if (earnResult.isSuccess) {
+                    lastHandledDeltaRewardDate = todayStr
+                    userPreferences.setLastFocusDeltaClaimDate(userId, todayStr)
                     _tokenEarnedEvent.emit(deltaReward.tokens)
                     t1NotificationManager.postNotification(
                         id = 3007,
@@ -723,8 +750,13 @@ class MainViewModel @Inject constructor(
                         channelId = com.example.t1.notification.T1NotificationManager.CHANNEL_IMPORTANT,
                         type = "token_reward"
                     )
+                } else {
+                    lastHandledDeltaRewardDate = todayStr
+                    userPreferences.setLastFocusDeltaClaimDate(userId, todayStr)
                 }
             } else if (deltaReward.isBounceBackTriggered) {
+                lastHandledDeltaRewardDate = todayStr
+                userPreferences.setLastFocusDeltaClaimDate(userId, todayStr)
                 t1NotificationManager.postNotification(
                     id = 3008,
                     title = deltaReward.notificationTitle,

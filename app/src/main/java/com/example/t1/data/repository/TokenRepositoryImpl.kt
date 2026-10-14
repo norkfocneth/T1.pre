@@ -4,12 +4,14 @@ import com.example.t1.data.database.dao.TokenWalletDao
 import com.example.t1.data.database.dao.TokenTransactionDao
 import com.example.t1.data.database.entity.TokenWalletEntity
 import com.example.t1.data.database.entity.TokenTransactionEntity
+import com.example.t1.data.preferences.UserPreferences
 import com.example.t1.data.remote.SupabaseService
 import com.example.t1.data.remote.model.TokenWalletDto
 import com.example.t1.data.remote.model.TokenTransactionDto
 import com.example.t1.domain.repository.TokenRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.UUID
 import javax.inject.Inject
@@ -19,7 +21,8 @@ import javax.inject.Singleton
 class TokenRepositoryImpl @Inject constructor(
     private val walletDao: TokenWalletDao,
     private val tokenTransactionDao: TokenTransactionDao,
-    private val supabaseService: SupabaseService
+    private val supabaseService: SupabaseService,
+    private val userPreferences: UserPreferences
 ) : TokenRepository {
 
     override fun getWalletFlow(userId: String): Flow<TokenWalletEntity?> {
@@ -45,6 +48,7 @@ class TokenRepositoryImpl @Inject constructor(
         reason: String
     ): Result<Unit> {
         val now = System.currentTimeMillis()
+        val todayStr = LocalDate.now().toString()
         
         // Cooldown and Daily/Weekly/Monthly limits check
         val calendar = Calendar.getInstance()
@@ -55,12 +59,19 @@ class TokenRepositoryImpl @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         val startOfDay = calendar.timeInMillis
-        val endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1
+        val endOfDay = startOfDay + 24 * 60 * 60 * 1000L - 1L
 
         when (reason) {
             "DAILY_LOGIN" -> {
+                val lastClaimDate = userPreferences.getLastDailyLoginClaimDate(userId)
+                if (lastClaimDate == todayStr) {
+                    return Result.failure(Exception("Daily login reward already claimed today."))
+                }
                 val existing = tokenTransactionDao.getTransactionCount(userId, "DAILY_LOGIN", startOfDay, endOfDay)
-                if (existing > 0) return Result.failure(Exception("Daily login reward already claimed today."))
+                if (existing > 0) {
+                    userPreferences.setLastDailyLoginClaimDate(userId, todayStr)
+                    return Result.failure(Exception("Daily login reward already claimed today."))
+                }
             }
             "DAILY_MISSION" -> {
                 val existing = tokenTransactionDao.getTransactionCount(userId, "DAILY_MISSION", startOfDay, endOfDay)
@@ -88,8 +99,15 @@ class TokenRepositoryImpl @Inject constructor(
                 if (existing > 0) return Result.failure(Exception("Monthly challenge reward already claimed this month."))
             }
             "FOCUS_SCORE_DELTA" -> {
+                val lastDeltaClaimDate = userPreferences.getLastFocusDeltaClaimDate(userId)
+                if (lastDeltaClaimDate == todayStr) {
+                    return Result.failure(Exception("Focus score delta reward already claimed today."))
+                }
                 val existing = tokenTransactionDao.getTransactionCount(userId, "FOCUS_SCORE_DELTA", startOfDay, endOfDay)
-                if (existing > 0) return Result.failure(Exception("Focus score delta reward already claimed today."))
+                if (existing > 0) {
+                    userPreferences.setLastFocusDeltaClaimDate(userId, todayStr)
+                    return Result.failure(Exception("Focus score delta reward already claimed today."))
+                }
             }
             "TIME_SAVED" -> {
                 val existing = tokenTransactionDao.getTransactionCount(userId, "TIME_SAVED", startOfDay, endOfDay)
@@ -117,6 +135,12 @@ class TokenRepositoryImpl @Inject constructor(
         // Insert locally
         tokenTransactionDao.insertTransaction(localTx)
         recalculateLocalWallet(userId)
+
+        if (reason == "DAILY_LOGIN") {
+            userPreferences.setLastDailyLoginClaimDate(userId, todayStr)
+        } else if (reason == "FOCUS_SCORE_DELTA") {
+            userPreferences.setLastFocusDeltaClaimDate(userId, todayStr)
+        }
 
         // Try syncing to Supabase
         val remoteDto = TokenTransactionDto(
@@ -157,7 +181,7 @@ class TokenRepositoryImpl @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         val startOfDay = calendar.timeInMillis
-        val endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1
+        val endOfDay = startOfDay + 24 * 60 * 60 * 1000L - 1L
 
         val sessionTxs = tokenTransactionDao.getTransactionsForReason(userId, "FOCUS_SESSION", startOfDay, endOfDay)
         return sessionTxs.sumOf { it.amount }
@@ -184,8 +208,7 @@ class TokenRepositoryImpl @Inject constructor(
             }
             val remoteTxs = supabaseService.getTokenTransactions(userId)
 
-            // Sync transactions locally (clear existing cached transactions first to prevent ghost transactions)
-            tokenTransactionDao.clearAll()
+            // Sync transactions locally (merge remote transactions into Room cache)
             remoteTxs.forEach { remoteTx ->
                 val localTx = TokenTransactionEntity(
                     transactionId = remoteTx.transactionId,

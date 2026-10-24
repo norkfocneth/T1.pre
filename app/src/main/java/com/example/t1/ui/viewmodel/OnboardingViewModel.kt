@@ -81,7 +81,8 @@ class OnboardingViewModel @Inject constructor(
 
     suspend fun analyze7DaysUsage(
         primaryGoal: String,
-        customOverrides: Map<String, String>
+        customOverrides: Map<String, String>,
+        questionAnswers: List<Int> = emptyList()
     ): OnboardingAnalysisData {
         return try {
             // Save category overrides first so behavior queries respect them
@@ -130,17 +131,53 @@ class OnboardingViewModel @Inject constructor(
                     topCategory = topCat
                 )
             } else {
+                // Intelligent calculation based on user's questionnaire responses before permissions
+                val topCat = when (questionAnswers.getOrNull(0)) {
+                    1 -> "Productivity"
+                    2 -> "Gaming"
+                    3 -> "Communication"
+                    else -> "Social"
+                }
+
+                val formattedScreenTime = when (questionAnswers.getOrNull(1)) {
+                    0 -> "2.5h"
+                    1 -> "4.2h"
+                    2 -> "6.1h"
+                    3 -> "7.8h"
+                    else -> "4.8h"
+                }
+
+                // Dynamic baseline score based on user self-reported answers
+                var estimatedScore = 74
+                when (questionAnswers.getOrNull(1)) {
+                    0 -> estimatedScore -= 6
+                    1 -> estimatedScore -= 14
+                    2 -> estimatedScore -= 22
+                    3 -> estimatedScore -= 30
+                    else -> estimatedScore -= 16
+                }
+                when (questionAnswers.getOrNull(3)) { // Wasting time
+                    1 -> estimatedScore -= 6
+                    2 -> estimatedScore -= 14
+                    else -> {}
+                }
+                when (questionAnswers.getOrNull(5)) { // Seriousness
+                    2 -> estimatedScore += 6
+                    else -> {}
+                }
+                val finalScore = estimatedScore.coerceIn(32, 85)
+
                 OnboardingAnalysisData(
-                    initialScore = 50,
-                    avgScreenTimeFormatted = "0.0h",
-                    topCategory = "Social"
+                    initialScore = finalScore,
+                    avgScreenTimeFormatted = formattedScreenTime,
+                    topCategory = topCat
                 )
             }
         } catch (e: Exception) {
             com.example.t1.util.T1Logger.e("Error analyzing 7 days usage in onboarding", e)
             OnboardingAnalysisData(
-                initialScore = 50,
-                avgScreenTimeFormatted = "0.0h",
+                initialScore = 52,
+                avgScreenTimeFormatted = "4.5h",
                 topCategory = "Social"
             )
         }

@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: radial-gradient(circle at 50% 16%, #f1f5f9 0%, #e2e8f0 35%, #cbd5e1 65%, #94a3b8 100%);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient light overlay */
+  .bg-ambient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 5%, rgba(255,255,255,0.85) 0%, transparent 45%),
+                linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.15) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Header Section (Opal Style) */
+  .header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-top: 100px;
+    padding: 0 60px;
+  }
+
+  .headline {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1.06;
+    color: #09090b;
+    letter-spacing: -2.5px;
+  }
+
+  .subline {
+    font-size: 26px;
+    font-weight: 500;
+    color: #334155;
+    margin-top: 16px;
+    letter-spacing: -0.5px;
+    line-height: 1.35;
+  }
+
+  /* Phone Stage */
+  .stage {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    height: 1380px;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+  }
+
+  /* 3D Smartphone Frame */
+  .phone-frame {
+    width: 670px;
+    height: 1400px;
+    background: #09090b;
+    border-radius: 56px;
+    padding: 14px;
+    box-shadow: 
+      0 0 0 3px #3f3f46,
+      0 0 0 8px #09090b,
+      0 40px 90px -15px rgba(15, 23, 42, 0.45),
+      0 60px 120px -25px rgba(0, 0, 0, 0.35);
+    position: relative;
+    transform: rotate(0deg) translateY(30px);
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+
+  /* Floating Notification Cards (Opal signature look) */
+  .floating-card {
+    position: absolute;
+    width: 480px;
+    background: rgba(15, 23, 42, 0.90);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 26px;
+    padding: 22px 24px;
+    color: white;
+    z-index: 20;
+    box-shadow: 0 30px 60px -12px rgba(0,0,0,0.55);
+  }
+
+  .card-1 {
+    top: 480px;
+    left: 60px;
+    transform: rotate(-1.5deg);
+  }
+
+  .card-2 {
+    top: 680px;
+    right: 60px;
+    transform: rotate(2deg);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .card-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(239,68,68,0.2);
+    border: 1.5px solid #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .card-2 .card-icon {
+    background: rgba(59,130,246,0.2);
+    border-color: #3b82f6;
+  }
+
+  .card-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.3px;
+  }
+
+  .card-body {
+    font-size: 16.5px;
+    line-height: 1.4;
+    color: #cbd5e1;
+    font-weight: 400;
+  }
+
+  .card-body strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* Floating 3D Shards (Opal signature stones) */
+  .shard {
+    position: absolute;
+    background: linear-gradient(135deg, #475569 0%, #0f172a 100%);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+    z-index: 15;
+  }
+
+  .shard-1 {
+    width: 45px;
+    height: 55px;
+    top: 420px;
+    left: 70px;
+    clip-path: polygon(30% 0%, 90% 20%, 100% 70%, 60% 100%, 0% 70%);
+    transform: rotate(25deg);
+  }
+
+  .shard-2 {
+    width: 35px;
+    height: 42px;
+    top: 610px;
+    right: 110px;
+    clip-path: polygon(50% 0%, 100% 50%, 70% 100%, 0% 80%);
+    transform: rotate(-35deg);
+  }
+
+  .shard-3 {
+    width: 55px;
+    height: 65px;
+    bottom: 280px;
+    right: 70px;
+    clip-path: polygon(20% 0%, 100% 30%, 80% 100%, 10% 90%);
+    transform: rotate(15deg);
+  }
+
+  /* Bottom Credibility / Press Bar */
+  .footer-bar {
+    position: absolute;
+    bottom: 45px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .footer-divider {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #475569;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-ambient"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1 class="headline">Locks the apps<br>you keep opening.</h1>
+    <p class="subline">Past you set the rules. Future you wins.</p>
+  </div>
+
+  <!-- Phone Stage -->
+  <div class="stage">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        
+    <div style="width:100%; height:100%; background:#09090b; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center;">
+      <div style="width:100px; height:100px; border-radius:26px; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); display:flex; align-items:center; justify-content:center; margin-bottom:32px; box-shadow:0 20px 40px rgba(220,39,67,0.35);">
+        <div style="width:52px; height:52px; border:4.5px solid white; border-radius:14px; position:relative; display:flex; align-items:center; justify-content:center;">
+          <div style="width:20px; height:20px; border:4.5px solid white; border-radius:50%;"></div>
+          <div style="width:6px; height:6px; background:white; border-radius:50%; position:absolute; top:4px; right:4px;"></div>
+        </div>
+      </div>
+      <h2 style="font-size:34px; font-weight:800; color:#fff; margin-bottom:12px; letter-spacing:-0.5px;">Instagram is<br>Blocked by T1.</h2>
+      <p style="font-size:18px; color:#94a3b8; line-height:1.45; margin-bottom:48px; max-width:380px;">You set this rule this morning.<br><strong style="color:#fff;">Past you was right.</strong></p>
+      <div style="width:100%; max-width:360px; height:64px; border-radius:32px; background:#fff; color:#000; font-weight:800; font-size:18px; display:flex; align-items:center; justify-content:center; letter-spacing:0.5px; box-shadow:0 15px 30px rgba(255,255,255,0.25);">Dismiss (Stay Locked In)</div>
+      <span style="font-size:12px; color:#64748b; margin-top:24px; letter-spacing:1px; text-transform:uppercase; font-weight:700;">Locked by T1 Monk Mode</span>
+    </div>
+  
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Cards (Opal signature style) -->
+  <div class="floating-card card-1">
+    <div class="card-header">
+      <div class="card-icon">🚫</div>
+      <div class="card-title">Dopamine Loop Broken</div>
+    </div>
+    <div class="card-body">
+      Attempted to open Instagram.<br><strong>No negotiations with your future self.</strong>
+    </div>
+  </div>
+
+  <div class="floating-card card-2">
+    <div class="card-header">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">Monk Mode Shield</div>
+    </div>
+    <div class="card-body">
+      Distractions eliminated until 18:00.<br><strong>Deep work flow protected.</strong>
+    </div>
+  </div>
+
+  <!-- Floating 3D Elements -->
+  <img src="shield.png" style="position:absolute; top:370px; right:60px; width:160px; filter:drop-shadow(0 25px 35px rgba(0,0,0,0.5)); transform:rotate(12deg); z-index:25;">
+
+  <!-- Floating Shards -->
+  <div class="shard shard-1"></div>
+  <div class="shard shard-2"></div>
+  <div class="shard shard-3"></div>
+
+  <!-- Bottom Credibility Bar -->
+  <div class="footer-bar">
+    
+      <span>RADICAL ELIMINATION</span>
+      <div class="footer-divider"></div>
+    
+      <span>MONK MODE</span>
+      <div class="footer-divider"></div>
+    
+      <span>NO CHEATS</span>
+      <div class="footer-divider"></div>
+    
+      <span>ZERO COMPROMISE</span>
+      
+    
+  </div>
+</body>
+</html>

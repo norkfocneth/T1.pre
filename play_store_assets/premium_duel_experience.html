@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T1 Focus Duel - Ultra Premium Minimalist UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #000000;
+    --bg-card: rgba(18, 18, 22, 0.75);
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --border-glass-hover: rgba(255, 255, 255, 0.16);
+    --text-primary: #FFFFFF;
+    --text-secondary: #8E8E98;
+    --text-muted: #575764;
+    --accent-glow: #7B9FDB;
+    --mint-glow: #4ADE80;
+    --amber-glow: #F59E0B;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: #050507;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .device-canvas {
+    width: 1080px;
+    height: 2400px;
+    background-color: var(--bg-base);
+    background-image: 
+      radial-gradient(circle at 50% 10%, rgba(35, 45, 75, 0.25) 0%, transparent 50%),
+      radial-gradient(circle at 50% 85%, rgba(20, 20, 30, 0.3) 0%, transparent 60%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 110px 56px 80px 56px;
+  }
+
+  /* 100% Authentic Status Bar */
+  .status-bar {
+    position: absolute;
+    top: 44px;
+    left: 56px;
+    right: 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 32px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.5px;
+  }
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 28px;
+  }
+  .battery-icon {
+    width: 48px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .battery-icon::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 6px;
+    width: 3px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 0 2px 2px 0;
+  }
+  .battery-fill {
+    width: 80%;
+    height: 100%;
+    background: #FFFFFF;
+    border-radius: 2px;
+  }
+
+  /* Top Navigation */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 36px;
+    margin-bottom: 50px;
+  }
+  .nav-btn {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .nav-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+  }
+  .token-pill {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-glass);
+    border-radius: 44px;
+    padding: 16px 28px;
+    backdrop-filter: blur(20px);
+  }
+  .token-pill .t1-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .token-pill .t1-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  .token-pill .t1-lbl {
+    font-size: 22px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Floating Search Capsule */
+  .search-capsule {
+    width: 100%;
+    height: 114px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--border-glass);
+    border-radius: 34px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 46px;
+    backdrop-filter: blur(30px);
+  }
+  .search-capsule svg {
+    width: 38px;
+    height: 38px;
+    fill: none;
+    stroke: var(--text-secondary);
+    stroke-width: 2.5;
+  }
+  .search-capsule input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: #FFFFFF;
+    letter-spacing: -0.3px;
+  }
+
+  /* Premium Glass Cards */
+  .glass-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid var(--border-glass);
+    border-radius: 40px;
+    padding: 46px 44px;
+    backdrop-filter: blur(40px);
+    margin-bottom: 46px;
+    position: relative;
+  }
+
+  /* User Profile Header */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .profile-id {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+  .monogram-halo {
+    width: 124px;
+    height: 124px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 50px;
+    font-weight: 700;
+    color: #FFFFFF;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+  }
+  .profile-text h3 {
+    font-size: 44px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .verified-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .profile-text p {
+    font-size: 26px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .stat-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    padding: 14px 26px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+  }
+
+  /* Segmented Pill Selector */
+  .segment-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .segmented-track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-glass);
+    border-radius: 28px;
+    padding: 10px;
+    margin-bottom: 44px;
+  }
+  .segment-pill {
+    height: 92px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .segment-pill.active {
+    background: #FFFFFF;
+    color: #000000;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+  }
+
+  /* Compact Rules Banner */
+  .rule-strip {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    padding: 30px 36px;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .rule-strip .icon-bubble {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .rule-strip p {
+    font-size: 24px;
+    color: var(--text-secondary);
+    line-height: 38px;
+    font-weight: 500;
+  }
+  .rule-strip strong {
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+
+  /* Luxury Action Button */
+  .luxury-btn {
+    width: 100%;
+    height: 126px;
+    border-radius: 63px;
+    background: #FFFFFF;
+    color: #000000;
+    border: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.12);
+    margin-top: auto;
+  }
+  .ghost-btn {
+    width: 100%;
+    height: 110px;
+    border-radius: 55px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--border-glass);
+    color: var(--text-secondary);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     LIVE DUAL ARENA SPECIFIC
+     ───────────────────────────────────────────────────────────── */
+  .arena-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+    border: 1px solid var(--border-glass);
+    border-radius: 44px;
+    padding: 56px 48px;
+    position: relative;
+    backdrop-filter: blur(40px);
+  }
+  .arena-card.in-focus-glow {
+    border-color: rgba(74, 222, 128, 0.25);
+    box-shadow: 0 0 50px rgba(74, 222, 128, 0.04);
+  }
+  .arena-card.paused-glow {
+    border-color: rgba(245, 158, 11, 0.25);
+    box-shadow: 0 0 50px rgba(245, 158, 11, 0.03);
+  }
+
+  .arena-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .player-meta {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .player-monogram {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  .player-meta h4 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+  }
+  .player-meta p {
+    font-size: 24px;
+    color: var(--text-secondary);
+  }
+
+  /* Status Micro-Pill */
+  .status-tag {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .status-tag.active {
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    color: var(--mint-glow);
+  }
+  .status-tag.paused {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: var(--amber-glow);
+  }
+  .pulse-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .status-tag.active .pulse-dot {
+    background: var(--mint-glow);
+    box-shadow: 0 0 10px var(--mint-glow);
+  }
+  .status-tag.paused .pulse-dot {
+    background: var(--amber-glow);
+  }
+
+  /* Timer Focus Ring Canvas */
+  .timer-center-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 30px 0 10px 0;
+    position: relative;
+  }
+  .timer-big-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 154px;
+    font-weight: 700;
+    letter-spacing: -3px;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .timer-big-text.dimmed {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .slim-progress {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .slim-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: #FFFFFF;
+  }
+  .slim-progress-fill.amber {
+    background: var(--amber-glow);
+  }
+
+  /* Center VS Bridge */
+  .vs-bridge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 36px 0;
+    position: relative;
+  }
+  .vs-bridge-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .vs-capsule {
+    position: relative;
+    z-index: 2;
+    padding: 8px 30px;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 30px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     NOT FOUND SCREEN
+     ───────────────────────────────────────────────────────────── */
+  .zero-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid var(--border-glass);
+    border-radius: 40px;
+    padding: 90px 48px;
+    text-align: center;
+    backdrop-filter: blur(40px);
+    margin-bottom: 48px;
+  }
+  .zero-icon-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 36px auto;
+    font-size: 54px;
+    color: var(--text-secondary);
+  }
+  .zero-card h3 {
+    font-size: 44px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  .zero-card p {
+    font-size: 26px;
+    color: var(--text-secondary);
+    line-height: 42px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .competitor-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 26px 32px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-glass);
+    border-radius: 28px;
+    margin-bottom: 18px;
+  }
+  .comp-left {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .comp-monogram {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  .comp-text h4 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+  }
+  .comp-text p {
+    font-size: 22px;
+    color: var(--text-secondary);
+  }
+  .comp-action {
+    padding: 14px 30px;
+    border-radius: 24px;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     INCOMING CHALLENGE SHEET / MODAL
+     ───────────────────────────────────────────────────────────── */
+  .sheet-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(25px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 40px 80px 40px;
+    z-index: 100;
+  }
+  .sheet-modal {
+    background: linear-gradient(180deg, rgba(28, 28, 34, 0.95) 0%, rgba(16, 16, 20, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 48px;
+    padding: 60px 50px;
+    text-align: center;
+    box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.8);
+  }
+  .sheet-icon-bubble {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 36px auto;
+    font-size: 48px;
+  }
+  .sheet-modal h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .sheet-modal .challenger-name {
+    font-size: 30px;
+    color: var(--text-secondary);
+    margin-bottom: 44px;
+  }
+  .sheet-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    padding: 30px 16px;
+    margin-bottom: 44px;
+  }
+  .sheet-stat-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+  }
+  .sheet-stat-lbl {
+    font-size: 20px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .sheet-buttons {
+    display: flex;
+    gap: 20px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     VICTORY SCREEN
+     ───────────────────────────────────────────────────────────── */
+  .victory-hero {
+    text-align: center;
+    margin: 120px 0 60px 0;
+  }
+  .laurel-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    margin: 0 auto 36px auto;
+  }
+  .victory-hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 68px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .victory-hero p {
+    font-size: 28px;
+    color: var(--text-secondary);
+  }
+  .pot-award-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 36px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .pot-award-card h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  .breakdown-table {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: 32px;
+    padding: 36px 40px;
+    margin-bottom: 60px;
+  }
+  .b-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 28px;
+  }
+  .b-row:last-child {
+    border-bottom: none;
+  }
+  .b-row .b-lbl {
+    color: var(--text-secondary);
+  }
+  .b-row .b-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1. SEARCH & RIVAL FOUND SCREEN -->
+<div id="screen-1-found" class="device-canvas">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span>5G</span>
+      <div class="battery-icon"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="top-nav">
+    <div class="nav-btn">←</div>
+    <div class="nav-title">Focus Duel</div>
+    <div class="token-pill">
+      <div class="t1-mark">T1</div>
+      <div class="t1-num">215</div>
+      <div class="t1-lbl">Tokens</div>
+    </div>
+  </div>
+
+  <div class="search-capsule">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" value="@hero.t1" readonly>
+  </div>
+
+  <div class="glass-card">
+    <div class="profile-header">
+      <div class="profile-id">
+        <div class="monogram-halo">H</div>
+        <div class="profile-text">
+          <h3>@hero.t1 <span class="verified-dot">✓</span></h3>
+          <p>Rank #1 Global • 98 Focus Score</p>
+        </div>
+      </div>
+      <div class="stat-badge">🔥 14D Streak</div>
+    </div>
+  </div>
+
+  <div class="segment-title">Session Duration</div>
+  <div class="segmented-track">
+    <div class="segment-pill">15m</div>
+    <div class="segment-pill active">25m</div>
+    <div class="segment-pill">45m</div>
+    <div class="segment-pill">60m</div>
+  </div>
+
+  <div class="segment-title">Stake Amount</div>
+  <div class="segmented-track">
+    <div class="segment-pill">10</div>
+    <div class="segment-pill">25</div>
+    <div class="segment-pill active">50 T1</div>
+    <div class="segment-pill">100</div>
+  </div>
+
+  <div class="rule-strip">
+    <div class="icon-bubble">⚖</div>
+    <p>Leaving T1 <strong>pauses countdown</strong>. First to reach 00:00 claims the <strong>100 T1 pot</strong>.</p>
+  </div>
+
+  <button class="luxury-btn">
+    <span>⚔</span>
+    <span>Challenge to Focus Duel</span>
+  </button>
+</div>
+
+<!-- 2. SEARCH NOT FOUND ZERO-STATE -->
+<div id="screen-2-not-found" class="device-canvas">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span>5G</span>
+      <div class="battery-icon"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="top-nav">
+    <div class="nav-btn">←</div>
+    <div class="nav-title">Focus Duel</div>
+    <div class="token-pill">
+      <div class="t1-mark">T1</div>
+      <div class="t1-num">215</div>
+      <div class="t1-lbl">Tokens</div>
+    </div>
+  </div>
+
+  <div class="search-capsule">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" value="@unknown_rival" readonly>
+  </div>
+
+  <div class="zero-card">
+    <div class="zero-icon-ring">⊘</div>
+    <h3>Rival Not Found</h3>
+    <p>No active competitor registered with "@unknown_rival". Verify the username or challenge from the global leaderboard below.</p>
+  </div>
+
+  <div class="segment-title">Suggested Competitors</div>
+
+  <div class="competitor-item">
+    <div class="comp-left">
+      <div class="comp-monogram">A</div>
+      <div class="comp-text">
+        <h4>@alex_dev</h4>
+        <p>Rank #2 • Focus Score 92</p>
+      </div>
+    </div>
+    <div class="comp-action">Challenge</div>
+  </div>
+
+  <div class="competitor-item">
+    <div class="comp-left">
+      <div class="comp-monogram">P</div>
+      <div class="comp-text">
+        <h4>@priya_code</h4>
+        <p>Rank #4 • Focus Score 95</p>
+      </div>
+    </div>
+    <div class="comp-action">Challenge</div>
+  </div>
+
+  <div class="competitor-item">
+    <div class="comp-left">
+      <div class="comp-monogram">S</div>
+      <div class="comp-text">
+        <h4>@sarah.builds</h4>
+        <p>Rank #3 • Focus Score 88</p>
+      </div>
+    </div>
+    <div class="comp-action">Challenge</div>
+  </div>
+
+  <div class="competitor-item">
+    <div class="comp-left">
+      <div class="comp-monogram">H</div>
+      <div class="comp-text">
+        <h4>@hyken.t1</h4>
+        <p>Rank #1 • Focus Score 99</p>
+      </div>
+    </div>
+    <div class="comp-action">Challenge</div>
+  </div>
+</div>
+
+<!-- 3. INCOMING CHALLENGE MODAL (OPPONENT'S SCREEN) -->
+<div id="screen-3-modal" class="device-canvas">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span>5G</span>
+      <div class="battery-icon"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="sheet-overlay">
+    <div class="sheet-modal">
+      <div class="sheet-icon-bubble">⚔</div>
+      <h2>Challenge Received</h2>
+      <p class="challenger-name">@sarah.builds challenged you to a Focus Duel</p>
+
+      <div class="sheet-stats">
+        <div>
+          <div class="sheet-stat-val">25m</div>
+          <div class="sheet-stat-lbl">Duration</div>
+        </div>
+        <div>
+          <div class="sheet-stat-val">50 T1</div>
+          <div class="sheet-stat-lbl">Stake</div>
+        </div>
+        <div>
+          <div class="sheet-stat-val">100 T1</div>
+          <div class="sheet-stat-lbl">Total Pot</div>
+        </div>
+      </div>
+
+      <div class="rule-strip" style="margin-bottom: 40px;">
+        <div class="icon-bubble">⏱</div>
+        <p>Leaving the T1 app <strong>freezes your countdown</strong>. First competitor to 00:00 wins the stake.</p>
+      </div>
+
+      <div class="sheet-buttons">
+        <button class="ghost-btn" style="flex: 1;">Decline</button>
+        <button class="luxury-btn" style="flex: 1.8; margin-top: 0;">Accept & Enter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. LIVE DUAL SPLIT ARENA SCREEN -->
+<div id="screen-4-live-arena" class="device-canvas">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span>5G</span>
+      <div class="battery-icon"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="top-nav">
+    <div class="nav-btn">✕</div>
+    <div class="nav-title">Live Focus Duel</div>
+    <div class="token-pill">
+      <div class="t1-mark">T1</div>
+      <div class="t1-num">100</div>
+      <div class="t1-lbl">Pot</div>
+    </div>
+  </div>
+
+  <!-- Player 1: You (In Focus) -->
+  <div class="arena-card in-focus-glow">
+    <div class="arena-header">
+      <div class="player-meta">
+        <div class="player-monogram">Y</div>
+        <div>
+          <h4>@foc.t1 (You)</h4>
+          <p>Score 94</p>
+        </div>
+      </div>
+      <div class="status-tag active">
+        <span class="pulse-dot"></span>
+        <span>In Focus (App Open)</span>
+      </div>
+    </div>
+
+    <div class="timer-center-box">
+      <div class="timer-big-text">18:24</div>
+      <div class="slim-progress">
+        <div class="slim-progress-fill" style="width: 65%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center VS Divider -->
+  <div class="vs-bridge">
+    <div class="vs-bridge-line"></div>
+    <div class="vs-capsule">VS</div>
+  </div>
+
+  <!-- Player 2: Opponent (Paused / Exited App) -->
+  <div class="arena-card paused-glow">
+    <div class="arena-header">
+      <div class="player-meta">
+        <div class="player-monogram">H</div>
+        <div>
+          <h4>@hero.t1</h4>
+          <p>Score 98</p>
+        </div>
+      </div>
+      <div class="status-tag paused">
+        <span class="pulse-dot"></span>
+        <span>App Exited (Paused)</span>
+      </div>
+    </div>
+
+    <div class="timer-center-box">
+      <div class="timer-big-text dimmed">21:05</div>
+      <div class="slim-progress">
+        <div class="slim-progress-fill amber" style="width: 40%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 50px; text-align: center;">
+    <p style="font-size: 24px; color: var(--text-secondary); margin-bottom: 28px;">
+      First competitor to hit 00:00 claims the 100 T1 stake.
+    </p>
+    <button class="ghost-btn">Abandon Duel</button>
+  </div>
+</div>
+
+<!-- 5. VICTORY OUTCOME SCREEN -->
+<div id="screen-5-victory" class="device-canvas">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span>5G</span>
+      <div class="battery-icon"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="top-nav">
+    <div class="nav-btn">✕</div>
+    <div class="nav-title">Duel Outcome</div>
+    <div class="token-pill">
+      <div class="t1-mark">T1</div>
+      <div class="t1-num">265</div>
+      <div class="t1-lbl">Tokens</div>
+    </div>
+  </div>
+
+  <div class="victory-hero">
+    <div class="laurel-ring">🏆</div>
+    <h1>Focus Victory</h1>
+    <p>You stayed locked in against @hero.t1</p>
+  </div>
+
+  <div class="pot-award-card">
+    <h2>+50 T1 Tokens Won</h2>
+  </div>
+
+  <div class="breakdown-table">
+    <div class="segment-title" style="margin-bottom: 16px;">Duel Performance Breakdown</div>
+
+    <div class="b-row">
+      <span class="b-lbl">Your Focus Time</span>
+      <span class="b-val">25:00 (100% Unbroken)</span>
+    </div>
+    <div class="b-row">
+      <span class="b-lbl">Opponent Paused Time</span>
+      <span class="b-val">06:41 outside app</span>
+    </div>
+    <div class="b-row">
+      <span class="b-lbl">Duel Stake</span>
+      <span class="b-val">50 T1 Staked</span>
+    </div>
+    <div class="b-row">
+      <span class="b-lbl">New Wallet Balance</span>
+      <span class="b-val">265 T1 Tokens</span>
+    </div>
+  </div>
+
+  <button class="luxury-btn">
+    <span>Claim & Return to Home</span>
+  </button>
+</div>
+
+</body>
+</html>

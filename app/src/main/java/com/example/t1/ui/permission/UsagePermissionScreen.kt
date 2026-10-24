@@ -377,7 +377,7 @@ fun UsagePermissionScreen(
                 onDismiss = { showPrivacyOverview = false },
                 onOpenWebPolicy = {
                     try {
-                        uriHandler.openUri("https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy")
+                        uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/privacy")
                     } catch (e: Exception) {
                         Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                     }

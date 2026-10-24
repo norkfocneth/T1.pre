@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -91,6 +92,9 @@ fun AuthScreen(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
+    // Manifesto Screen state (Audio 3 requirement)
+    var showManifesto by remember { mutableStateOf(true) }
+
     // Entrance Animation States
     var showLogo by remember { mutableStateOf(false) }
     var showSubtitle by remember { mutableStateOf(false) }
@@ -98,15 +102,27 @@ fun AuthScreen(
     var showLegal by remember { mutableStateOf(false) }
     var showPrivacyOverview by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        delay(150)
-        showLogo = true
-        delay(200)
-        showSubtitle = true
-        delay(150)
-        showButtons = true
-        delay(200)
-        showLegal = true
+    LaunchedEffect(showManifesto) {
+        if (!showManifesto) {
+            delay(100)
+            showLogo = true
+            delay(150)
+            showSubtitle = true
+            delay(150)
+            showButtons = true
+            delay(150)
+            showLegal = true
+        }
+    }
+
+    if (showManifesto) {
+        T1ManifestoScreen(
+            onDismiss = {
+                Haptics.playMedium(view)
+                showManifesto = false
+            }
+        )
+        return
     }
 
     OnboardingBackground(modifier = modifier) {
@@ -274,7 +290,7 @@ fun AuthScreen(
                     onDismiss = { showPrivacyOverview = false },
                     onOpenWebPolicy = {
                         try {
-                            uriHandler.openUri("https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy")
+                            uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/privacy")
                         } catch (e: Exception) {
                             Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                         }
@@ -504,5 +520,152 @@ fun GoogleIcon(modifier: Modifier = Modifier) {
             topLeft = Offset(width / 2f, height / 2f - strokeWidth / 2f),
             size = androidx.compose.ui.geometry.Size(width / 2f, strokeWidth)
         )
+    }
+}
+
+/**
+ * Cinematic Manifesto Screen (Audio 3 requirement):
+ * Tells the user what makes T1 different before they log in with Google.
+ */
+@Composable
+fun T1ManifestoScreen(
+    onDismiss: () -> Unit
+) {
+    val view = LocalView.current
+    var titleChars by remember { mutableIntStateOf(0) }
+    var bodyChars by remember { mutableIntStateOf(0) }
+    var isDone by remember { mutableStateOf(false) }
+
+    val fullTitle = "This is not an ordinary app."
+    val fullBody = "T1 was engineered for you to be consistent. It tracks your digital leak, reveals how much better you are from yesterday, and forges you into a top 1% community member."
+
+    LaunchedEffect(Unit) {
+        delay(200L)
+        for (i in 1..fullTitle.length) {
+            titleChars = i
+            if (Haptics.isEnabled && !fullTitle[i - 1].isWhitespace()) {
+                try { view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Exception) {}
+            }
+            delay(34L)
+        }
+        delay(150L)
+        for (i in 1..fullBody.length) {
+            bodyChars = i
+            delay(16L)
+        }
+        isDone = true
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF09090C))
+            .clickable(onClick = onDismiss)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 28.dp, vertical = 32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Ambient background aura
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .drawBehind {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF6366F1).copy(alpha = 0.12f),
+                                Color(0xFF0F172A).copy(alpha = 0.04f),
+                                Color.Transparent
+                            ),
+                            center = Offset(size.width * 0.5f, size.height * 0.45f),
+                            radius = size.width * 0.85f
+                        )
+                    )
+                }
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Badge tag
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF6366F1).copy(alpha = 0.25f))
+                    .border(1.dp, Color(0xFF818CF8).copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "✦  BUILT FOR THE COMMITTED",
+                    style = BodySmall.copy(
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFFA5B4FC),
+                        letterSpacing = 1.2.sp
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // Title
+            Text(
+                text = fullTitle.take(titleChars),
+                style = HeadlineMedium.copy(
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color.White, Color(0xFFE2E8F0), Color(0xFFCBD5E1))
+                    ),
+                    textAlign = TextAlign.Center
+                ),
+                lineHeight = 36.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Body
+            Text(
+                text = fullBody.take(bodyChars),
+                style = BodyMedium.copy(
+                    fontSize = 15.sp,
+                    lineHeight = 23.sp,
+                    color = Color(0xFF94A3B8),
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Enter Button
+            AnimatedVisibility(
+                visible = isDone,
+                enter = fadeIn(tween(400)) + slideInVertically(initialOffsetY = { 20 })
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(27.dp))
+                        .background(Color.White)
+                        .clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Enter T1 Ecosystem ➔",
+                        style = BodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontSize = 15.sp
+                        )
+                    )
+                }
+            }
+        }
     }
 }

@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
 enum class OnboardingStep {
-    AUTH, QUESTIONS, GOAL_SELECTION, APP_CLASSIFICATION, PERMISSIONS, ANALYSIS, RESULT, USERNAME
+    AUTH, QUESTIONS, GOAL_SELECTION, APP_CLASSIFICATION, ANALYSIS, RESULT, PERMISSIONS, USERNAME
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -28,13 +28,14 @@ fun OnboardingFlow(
     var topCategory by remember { mutableStateOf("Social") }
     var selectedGoal by remember { mutableStateOf("PRODUCTIVITY") }
     var customOverrides by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var questionAnswers by remember { mutableStateOf<List<Int>>(emptyList()) }
 
     LaunchedEffect(initialStep) {
         step = initialStep
     }
 
-    val handleQuestionsComplete: (List<Int>) -> Unit = { _ ->
-        // Question responses provide context but do NOT alter the behavior-based focus score
+    val handleQuestionsComplete: (List<Int>) -> Unit = { answers ->
+        questionAnswers = answers
         step = OnboardingStep.GOAL_SELECTION
     }
 
@@ -75,13 +76,8 @@ fun OnboardingFlow(
                 AppClassificationScreen(
                     onClassificationComplete = { overrides ->
                         customOverrides = overrides
-                        step = OnboardingStep.PERMISSIONS
+                        step = OnboardingStep.ANALYSIS
                     }
-                )
-            }
-            OnboardingStep.PERMISSIONS -> {
-                PermissionScreen(
-                    onContinue = { step = OnboardingStep.ANALYSIS }
                 )
             }
             OnboardingStep.ANALYSIS -> {
@@ -89,7 +85,8 @@ fun OnboardingFlow(
                     onAnalyze = {
                         viewModel.analyze7DaysUsage(
                             primaryGoal = selectedGoal,
-                            customOverrides = customOverrides
+                            customOverrides = customOverrides,
+                            questionAnswers = questionAnswers
                         )
                     },
                     onComplete = { calculatedScore, avgTime, topCat ->
@@ -105,6 +102,11 @@ fun OnboardingFlow(
                     score = focusScore,
                     avgDailyScreenTime = avgScreenTime,
                     topCategory = topCategory,
+                    onContinue = { step = OnboardingStep.PERMISSIONS }
+                )
+            }
+            OnboardingStep.PERMISSIONS -> {
+                PermissionScreen(
                     onContinue = { step = OnboardingStep.USERNAME }
                 )
             }

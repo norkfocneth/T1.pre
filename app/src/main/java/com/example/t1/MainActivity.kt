@@ -58,9 +58,11 @@ class MainActivity : ComponentActivity() {
     // Dismiss splash immediately — no keepOnScreen delay
     splashScreen.setKeepOnScreenCondition { false }
 
+    val previewScreen = intent?.getStringExtra("preview_screen") ?: if (intent?.getBooleanExtra("preview_onboarding", false) == true) "questions" else null
+
     enableEdgeToEdge()
     setContent {
-      T1Theme { Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) { MainNavigation() } }
+      T1Theme { Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) { MainNavigation(previewScreen = previewScreen) } }
     }
   }
 

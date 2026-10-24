@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: radial-gradient(circle at 50% 12%, #e0f2fe 0%, #bae6fd 40%, #93c5fd 75%, #60a5fa 100%);
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: #0f172a;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient light sheen */
+  .ambient-sheen {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 45% 8%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 30%, transparent 65%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Left-aligned Opal style header */
+  .header {
+    position: absolute;
+    top: 90px;
+    left: 80px;
+    max-width: 900px;
+    z-index: 10;
+  }
+
+  .headline {
+    font-size: 80px;
+    font-weight: 800;
+    line-height: 1.05;
+    color: #09090b;
+    letter-spacing: -3px;
+  }
+
+  .subline {
+    font-size: 26px;
+    font-weight: 600;
+    color: #1e3a5f;
+    margin-top: 18px;
+    letter-spacing: -0.5px;
+    line-height: 1.35;
+  }
+
+  /* Dynamic 3D Angled Phone Stage */
+  .stage {
+    position: absolute;
+    bottom: -80px;
+    right: 40px;
+    width: 680px;
+    height: 1420px;
+    perspective: 1400px;
+    z-index: 5;
+  }
+
+  .phone-frame {
+    width: 100%;
+    height: 100%;
+    background: #09090b;
+    border-radius: 56px;
+    padding: 13px;
+    transform: rotateY(-14deg) rotateX(7deg) rotateZ(-3deg);
+    box-shadow: 
+      0 0 0 2px rgba(255,255,255,0.25),
+      0 0 0 7px #1e293b,
+      0 0 0 10px #09090b,
+      -30px 45px 90px -10px rgba(15, 23, 42, 0.55),
+      -50px 70px 130px -20px rgba(0, 0, 0, 0.45);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+
+  .phone-screen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Camera punch hole */
+  .camera-punch {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #000;
+    border: 1.5px solid #1e293b;
+    box-shadow: inset 0 0 3px #2563eb;
+    z-index: 30;
+  }
+
+  /* Screen glass reflection overlay */
+  .screen-glare {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(130deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 35%, transparent 60%);
+    pointer-events: none;
+    z-index: 25;
+  }
+
+  /* Authentic Opal Frosted Glass Notification Pills */
+  .notification-pill {
+    position: absolute;
+    width: 520px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 26px;
+    padding: 22px 24px;
+    color: white;
+    z-index: 20;
+    box-shadow: 
+      0 20px 45px -10px rgba(0,0,0,0.5),
+      0 0 1px 1px rgba(255,255,255,0.15) inset;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .pill-1 {
+    top: 500px;
+    left: 70px;
+    transform: rotate(-1.5deg);
+  }
+
+  .pill-2 {
+    top: 710px;
+    left: 90px;
+    transform: rotate(2deg);
+  }
+
+  .pill-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+
+  .pill-content {
+    flex: 1;
+  }
+
+  .pill-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pill-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .pill-body {
+    font-size: 16px;
+    line-height: 1.42;
+    color: #cbd5e1;
+    font-weight: 400;
+  }
+
+  .pill-body strong {
+    color: #38bdf8;
+    font-weight: 700;
+  }
+
+  /* Floating 3D Rocks container */
+  .rock-item {
+    position: absolute;
+    z-index: 18;
+    pointer-events: none;
+  }
+
+  /* Bottom Authority Logos */
+  .credibility-footer {
+    position: absolute;
+    bottom: 50px;
+    left: 80px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .cred-text {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #0f172a;
+    opacity: 0.8;
+  }
+
+  .cred-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #475569;
+  }
+</style>
+</head>
+<body>
+  <div class="ambient-sheen"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1 class="headline">T1 blocks<br>distractions for you.</h1>
+    <p class="subline">Built for founders, builders & top 1% aspirants.</p>
+  </div>
+
+  <!-- 3D Angled Phone Stage -->
+  <div class="stage">
+    <div class="phone-frame">
+      <div class="camera-punch"></div>
+      <div class="screen-glare"></div>
+      <div class="phone-screen">
+        <img src="01_home_focus_ring.png" alt="T1 Screen">
+      </div>
+    </div>
+  </div>
+
+  <!-- Opal Signature Floating Notification Pills -->
+  <div class="notification-pill pill-1">
+    <div class="pill-icon" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4);">⚠️</div>
+    <div class="pill-content">
+      <div class="pill-title">
+        <span>Doomscrolling Alert!</span>
+        <span class="pill-tag">Instagram</span>
+      </div>
+      <div class="pill-body">
+        You've been scrolling for 35 min.<br>
+        <strong>"Your competition didn't take today off."</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification-pill pill-2">
+    <div class="pill-icon" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4);">⚡</div>
+    <div class="pill-content">
+      <div class="pill-title">
+        <span>Naval Ravikant</span>
+        <span class="pill-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">MINDSET</span>
+      </div>
+      <div class="pill-body">
+        Free education is abundant; desire is scarce.<br>
+        <strong>Outwork the distracted 99%.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating 3D Rocks (Opal Aesthetic) -->
+  <div class="rock-item" style="top: 430px; right: 120px;">
+    
+  <svg width="120" height="120" viewBox="0 0 100 100" style="filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)) ; transform: rotate(25deg); opacity: 1;">
+    <defs>
+      <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="f2" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="f3" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#64748b" />
+        <stop offset="100%" stop-color="#334155" />
+      </linearGradient>
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <!-- Facet 1: Top specular -->
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#specular)" />
+    <!-- Facet 2: Left face -->
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#f1)" />
+    <!-- Facet 3: Right face -->
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#f2)" />
+    <!-- Facet 4: Bottom shadow -->
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <!-- Highlights on ridges -->
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.25)" stroke-width="1" fill="none" />
+  </svg>
+  
+  </div>
+  <div class="rock-item" style="top: 360px; left: 80px;">
+    
+  <svg width="80" height="80" viewBox="0 0 100 100" style="filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)) blur(1px); transform: rotate(-45deg); opacity: 0.85;">
+    <defs>
+      <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="f2" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="f3" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#64748b" />
+        <stop offset="100%" stop-color="#334155" />
+      </linearGradient>
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <!-- Facet 1: Top specular -->
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#specular)" />
+    <!-- Facet 2: Left face -->
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#f1)" />
+    <!-- Facet 3: Right face -->
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#f2)" />
+    <!-- Facet 4: Bottom shadow -->
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <!-- Highlights on ridges -->
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.25)" stroke-width="1" fill="none" />
+  </svg>
+  
+  </div>
+  <div class="rock-item" style="bottom: 260px; left: 140px;">
+    
+  <svg width="95" height="95" viewBox="0 0 100 100" style="filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)) ; transform: rotate(60deg); opacity: 0.95;">
+    <defs>
+      <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="f2" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="f3" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#64748b" />
+        <stop offset="100%" stop-color="#334155" />
+      </linearGradient>
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <!-- Facet 1: Top specular -->
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#specular)" />
+    <!-- Facet 2: Left face -->
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#f1)" />
+    <!-- Facet 3: Right face -->
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#f2)" />
+    <!-- Facet 4: Bottom shadow -->
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <!-- Highlights on ridges -->
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.25)" stroke-width="1" fill="none" />
+  </svg>
+  
+  </div>
+  <div class="rock-item" style="top: 880px; right: 40px;">
+    
+  <svg width="70" height="70" viewBox="0 0 100 100" style="filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)) blur(2px); transform: rotate(-20deg); opacity: 0.7;">
+    <defs>
+      <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="f2" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="f3" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#64748b" />
+        <stop offset="100%" stop-color="#334155" />
+      </linearGradient>
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <!-- Facet 1: Top specular -->
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#specular)" />
+    <!-- Facet 2: Left face -->
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#f1)" />
+    <!-- Facet 3: Right face -->
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#f2)" />
+    <!-- Facet 4: Bottom shadow -->
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <!-- Highlights on ridges -->
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.25)" stroke-width="1" fill="none" />
+  </svg>
+  
+  </div>
+
+  <!-- Bottom Authority Logos -->
+  <div class="credibility-footer">
+    <span class="cred-text">THE WALL STREET JOURNAL</span>
+    <div class="cred-dot"></div>
+    <span class="cred-text">TECHCRUNCH</span>
+    <div class="cred-dot"></div>
+    <span class="cred-text">FORBES</span>
+  </div>
+</body>
+</html>

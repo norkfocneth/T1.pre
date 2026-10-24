@@ -2,6 +2,7 @@ package com.example.t1.ui.onboarding
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,10 +13,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
+import com.example.t1.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import kotlinx.coroutines.delay
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,22 +33,24 @@ data class DualPurposeApp(
     val packageName: String,
     val appName: String,
     val defaultCategory: String,
-    val iconEmoji: String
+    val iconRes: Int,
+    val tag: String,
+    val brandColor: Color
 )
 
 val DualPurposeAppList = listOf(
-    DualPurposeApp("com.google.android.youtube", "YouTube", "EDUCATION", "📺"),
-    DualPurposeApp("com.whatsapp", "WhatsApp", "COMMUNICATION", "💬"),
-    DualPurposeApp("org.telegram.messenger", "Telegram", "COMMUNICATION", "✈️"),
-    DualPurposeApp("com.discord", "Discord", "COMMUNICATION", "👾"),
-    DualPurposeApp("com.slack", "Slack", "PRODUCTIVITY", "💼"),
-    DualPurposeApp("com.microsoft.teams", "Microsoft Teams", "PRODUCTIVITY", "👥"),
-    DualPurposeApp("us.zoom.videomeetings", "Zoom", "PRODUCTIVITY", "📹"),
-    DualPurposeApp("notion.id", "Notion", "PRODUCTIVITY", "📝"),
-    DualPurposeApp("com.reddit.frontpage", "Reddit", "ENTERTAINMENT", "🤖"),
-    DualPurposeApp("com.android.chrome", "Google Chrome", "PRODUCTIVITY", "🌐"),
-    DualPurposeApp("com.linkedin.android", "LinkedIn", "PRODUCTIVITY", "👔"),
-    DualPurposeApp("com.spotify.music", "Spotify", "ENTERTAINMENT", "🎵")
+    DualPurposeApp("com.google.android.youtube", "YouTube", "EDUCATION", R.drawable.ic_app_youtube, "Videos & Learning", Color(0xFFFF0000)),
+    DualPurposeApp("com.whatsapp", "WhatsApp", "COMMUNICATION", R.drawable.ic_app_whatsapp, "Chats & Calls", Color(0xFF25D366)),
+    DualPurposeApp("org.telegram.messenger", "Telegram", "COMMUNICATION", R.drawable.ic_app_telegram, "Channels & Groups", Color(0xFF24A1DE)),
+    DualPurposeApp("com.discord", "Discord", "COMMUNICATION", R.drawable.ic_app_discord, "Communities & Gaming", Color(0xFF5865F2)),
+    DualPurposeApp("com.slack", "Slack", "PRODUCTIVITY", R.drawable.ic_app_slack, "Workplace Sync", Color(0xFFE01E5A)),
+    DualPurposeApp("com.microsoft.teams", "Microsoft Teams", "PRODUCTIVITY", R.drawable.ic_app_teams, "Team Meetings", Color(0xFF505AC9)),
+    DualPurposeApp("us.zoom.videomeetings", "Zoom", "PRODUCTIVITY", R.drawable.ic_app_zoom, "Video Conferences", Color(0xFF0B5CFF)),
+    DualPurposeApp("notion.id", "Notion", "PRODUCTIVITY", R.drawable.ic_app_notion, "Notes & Knowledge", Color(0xFFFFFFFF)),
+    DualPurposeApp("com.reddit.frontpage", "Reddit", "ENTERTAINMENT", R.drawable.ic_app_reddit, "Forums & Feeds", Color(0xFFFF4500)),
+    DualPurposeApp("com.android.chrome", "Google Chrome", "PRODUCTIVITY", R.drawable.ic_app_chrome, "Web Browsing", Color(0xFF4285F4)),
+    DualPurposeApp("com.linkedin.android", "LinkedIn", "PRODUCTIVITY", R.drawable.ic_app_linkedin, "Career & Network", Color(0xFF0A66C2)),
+    DualPurposeApp("com.spotify.music", "Spotify", "ENTERTAINMENT", R.drawable.ic_app_spotify, "Audio & Podcasts", Color(0xFF1DB954))
 )
 
 @Composable
@@ -85,12 +92,33 @@ fun AppClassificationScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            var titleChars by remember { mutableIntStateOf(0) }
+            var subChars by remember { mutableIntStateOf(0) }
+            val fullTitle = "Classify Dual-Purpose Apps"
+            val fullSubtitle = "Every mind uses apps differently. An app that wastes someone's day might be your study superpower. Choose honestly."
+
+            LaunchedEffect(Unit) {
+                for (i in 1..fullTitle.length) {
+                    titleChars = i
+                    if (Haptics.isEnabled && !fullTitle[i - 1].isWhitespace()) {
+                        try { view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Exception) {}
+                    }
+                    delay(30L)
+                }
+                for (i in 1..fullSubtitle.length) {
+                    subChars = i
+                    delay(14L)
+                }
+            }
+
             Text(
-                text = "Classify Dual-Purpose Apps",
+                text = fullTitle.take(titleChars),
                 style = HeadlineMedium.copy(
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Foreground
+                    fontWeight = FontWeight.ExtraBold,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color.White, Color(0xFFE2E8F0), Color(0xFFCBD5E1))
+                    )
                 ),
                 textAlign = TextAlign.Center
             )
@@ -98,15 +126,17 @@ fun AppClassificationScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "How do you primarily use these tools? Fixed social feeds remain locked.",
+                text = fullSubtitle.take(subChars),
                 style = BodyMedium.copy(
                     color = MutedForeground,
-                    fontSize = 14.sp
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp
                 ),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // App list
             LazyColumn(
@@ -121,29 +151,44 @@ fun AppClassificationScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .background(Card)
-                            .border(1.dp, Border, RoundedCornerShape(14.dp))
-                            .padding(12.dp)
+                            .border(1.dp, Border, RoundedCornerShape(18.dp))
+                            .padding(14.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = app.iconEmoji, fontSize = 20.sp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = app.appName,
-                                style = LabelLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.sp,
-                                    color = Foreground
-                                ),
-                                modifier = Modifier.weight(1f)
+                            Image(
+                                painter = painterResource(id = app.iconRes),
+                                contentDescription = app.appName,
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(RoundedCornerShape(10.dp))
                             )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = app.appName,
+                                    style = LabelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Foreground
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = app.tag,
+                                    style = BodySmall.copy(
+                                        fontSize = 12.sp,
+                                        color = MutedForeground
+                                    )
+                                )
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         // Category chips
                         Row(
@@ -184,6 +229,20 @@ fun AppClassificationScreen(
                             )
                         }
                     }
+                }
+
+                item {
+                    Text(
+                        text = "App logos and trademarks belong to their respective copyright holders and are displayed solely for user categorization.",
+                        style = BodySmall.copy(
+                            color = MutedForeground.copy(alpha = 0.5f),
+                            fontSize = 10.sp,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, bottom = 4.dp)
+                    )
                 }
             }
 

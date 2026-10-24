@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: radial-gradient(circle at 45% 10%, #fff1f2 0%, #ffe4e6 38%, #fecdd3 72%, #fb7185 100%);
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: #0f172a;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ambient-sheen {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 45% 8%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 35%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .header {
+    position: absolute; top: 80px; left: 80px; max-width: 900px; text-align: left;
+    z-index: 10;
+  }
+
+  .headline {
+    font-size: 78px;
+    font-weight: 800;
+    line-height: 1.06;
+    color: #09090b;
+    letter-spacing: -2.8px;
+  }
+
+  .subline {
+    font-size: 26px;
+    font-weight: 600;
+    color: #334155;
+    margin-top: 16px;
+    letter-spacing: -0.4px;
+    line-height: 1.35;
+  }
+
+  .stage {
+    position: absolute;
+    perspective: 1400px; bottom: -80px; right: 40px; width: 680px; height: 1420px;
+    z-index: 5;
+  }
+
+  .phone-frame {
+    width: 100%;
+    height: 100%;
+    background: #09090b;
+    border-radius: 56px;
+    padding: 13px;
+    transform: rotateY(-14deg) rotateX(7deg) rotateZ(-3deg);
+    box-shadow: 
+      0 0 0 2px rgba(255,255,255,0.25),
+      0 0 0 7px #1e293b,
+      0 0 0 10px #09090b,
+      0 40px 95px -15px rgba(15, 23, 42, 0.55),
+      0 65px 130px -25px rgba(0, 0, 0, 0.45);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    background: #09090b;
+    position: relative;
+  }
+
+  .phone-screen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .camera-punch {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #000;
+    border: 1.5px solid #1e293b;
+    box-shadow: inset 0 0 3px #3b82f6;
+    z-index: 30;
+  }
+
+  .screen-glare {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(130deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 35%, transparent 60%);
+    pointer-events: none;
+    z-index: 25;
+  }
+
+  .notification-pill {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.90);
+    backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 26px;
+    padding: 20px 24px;
+    color: white;
+    z-index: 20;
+    box-shadow: 
+      0 20px 45px -10px rgba(0,0,0,0.55),
+      0 0 1px 1px rgba(255,255,255,0.15) inset;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .pill-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+
+  .pill-content {
+    flex: 1;
+  }
+
+  .pill-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pill-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  .pill-body {
+    font-size: 16px;
+    line-height: 1.42;
+    color: #cbd5e1;
+    font-weight: 400;
+  }
+
+  .credibility-footer {
+    position: absolute;
+    bottom: 35px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    z-index: 20;
+  }
+
+  .cred-text {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #0f172a;
+    opacity: 0.85;
+  }
+
+  .cred-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #334155;
+  }
+</style>
+</head>
+<body>
+  <div class="ambient-sheen"></div>
+
+  <div class="header">
+    <h1 class="headline">Audits your day<br>with brutal honesty.</h1>
+    <p class="subline">Every wasted minute logged. No sugar-coating. No excuses.</p>
+  </div>
+
+  <div class="stage">
+    <div class="phone-frame">
+      <div class="camera-punch"></div>
+      <div class="screen-glare"></div>
+      <div class="phone-screen">
+        
+    <div style="width:100%; height:100%; background:#09090b; display:flex; flex-direction:column; padding:36px 24px; text-align:left;">
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <div>
+          <span style="font-size:12px; font-weight:800; letter-spacing:1.5px; color:#f43f5e; text-transform:uppercase;">DAILY BEHAVIOUR AUDIT</span>
+          <h2 style="font-size:32px; font-weight:800; color:#fff; font-family:'Space Grotesk', monospace; margin-top:2px;">3h 16m <span style="font-size:16px; color:#94a3b8; font-family:'Plus Jakarta Sans', sans-serif; font-weight:600;">Total Active</span></h2>
+        </div>
+        <div style="padding:6px 14px; border-radius:16px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#fb7185; font-size:12px; font-weight:700;">
+          -1h 45m vs AVG
+        </div>
+      </div>
+
+      <!-- Category Breakdown Bars -->
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:24px; padding:22px; margin-bottom:18px;">
+        <span style="font-size:12px; font-weight:800; letter-spacing:1.5px; color:#71717a; text-transform:uppercase;">CATEGORY BREAKDOWN</span>
+        
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+          <!-- Productivity -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:#fff; margin-bottom:6px;">
+              <span>Productivity & Code</span>
+              <span style="color:#22c55e;">2h 15m (69%)</span>
+            </div>
+            <div style="width:100%; height:8px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:69%; height:100%; background:#22c55e;"></div>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:#fff; margin-bottom:6px;">
+              <span>Education & Reading</span>
+              <span style="color:#38bdf8;">45m (23%)</span>
+            </div>
+            <div style="width:100%; height:8px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:23%; height:100%; background:#38bdf8;"></div>
+            </div>
+          </div>
+
+          <!-- Communication -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:#fff; margin-bottom:6px;">
+              <span>Communication</span>
+              <span style="color:#94a3b8;">16m (8%)</span>
+            </div>
+            <div style="width:100%; height:8px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:8%; height:100%; background:#94a3b8;"></div>
+            </div>
+          </div>
+
+          <!-- Social Reels -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:#fff; margin-bottom:6px;">
+              <span>Social Media (Reels / Shorts)</span>
+              <span style="color:#f43f5e; font-weight:800;">0m (BLOCKED)</span>
+            </div>
+            <div style="width:100%; height:8px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:0%; height:100%; background:#f43f5e;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brutal Audit Insight Box -->
+      <div style="background:linear-gradient(145deg, #18181b, #09090b); border:1px solid rgba(244,63,94,0.3); border-radius:22px; padding:20px; box-shadow:0 15px 30px rgba(0,0,0,0.5);">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <span style="font-size:18px;">⚖️</span>
+          <span style="font-size:14px; font-weight:800; color:#fff; letter-spacing:0.5px;">COGNITIVE AUDIT REPORT</span>
+        </div>
+        <p style="font-size:14.5px; line-height:1.45; color:#cbd5e1;">
+          Zero minutes leaked into algorithmic dopamine loops today. <strong style="color:#fff;">You are outworking 94% of builders in your peer cohort.</strong>
+        </p>
+      </div>
+    </div>
+  
+      </div>
+    </div>
+  </div>
+
+  
+    <div class="notification-pill" style="top: 470px; left: 70px; width: 530px; transform: rotate(-1.5deg);">
+      <div class="pill-icon" style="background: rgba(244, 63, 94, 0.15); border: 1.5px solid rgba(244, 63, 94, 0.4);">⚖️</div>
+      <div class="pill-content">
+        <div class="pill-title">
+          <span>Marcus Aurelius</span>
+          <span class="pill-tag" style="background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4);">AURELIUS</span>
+        </div>
+        <div class="pill-body">
+          "You could be good today. But instead you choose tomorrow."
+        </div>
+      </div>
+    </div>
+    
+    <div class="notification-pill" style="top: 680px; left: 90px; width: 530px; transform: rotate(2deg);">
+      <div class="pill-icon" style="background: rgba(251, 113, 133, 0.15); border: 1.5px solid rgba(251, 113, 133, 0.4);">📊</div>
+      <div class="pill-content">
+        <div class="pill-title">
+          <span>Screen Time Audit: 3h 16m</span>
+          <span class="pill-tag" style="background: rgba(251, 113, 133, 0.2); color: #fda4af; border: 1px solid rgba(251, 113, 133, 0.4);">AUDIT DELTA</span>
+        </div>
+        <div class="pill-body">
+          Social scrolling: -1h 45m today.<br><strong style="color:#ffffff;">Discipline won back 105 productive minutes.</strong>
+        </div>
+      </div>
+    </div>
+    
+
+  
+    <div style="position: absolute; top: 420px; right: 120px; z-index: 18; pointer-events: none;">
+      
+  <svg width="120" height="120" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.45)) ; transform: rotate(-25deg); opacity: 1;">
+    <defs>
+      <linearGradient id="rf1_120_-25" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_120_-25" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_120_-25" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_120_-25)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_120_-25)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_120_-25)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+    <div style="position: absolute; top: 350px; left: 70px; z-index: 18; pointer-events: none;">
+      
+  <svg width="80" height="80" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.45)) blur(1px); transform: rotate(45deg); opacity: 0.85;">
+    <defs>
+      <linearGradient id="rf1_80_45" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_80_45" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_80_45" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_80_45)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_80_45)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_80_45)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+    <div style="position: absolute; bottom: 250px; left: 120px; z-index: 18; pointer-events: none;">
+      
+  <svg width="95" height="95" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.45)) ; transform: rotate(-60deg); opacity: 0.95;">
+    <defs>
+      <linearGradient id="rf1_95_-60" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_95_-60" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_95_-60" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_95_-60)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_95_-60)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_95_-60)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+
+  
+
+  <div class="credibility-footer">
+    
+      <span class="cred-text">BLOOMBERG</span>
+      <div class="cred-dot"></div>
+    
+      <span class="cred-text">WIRED</span>
+      <div class="cred-dot"></div>
+    
+      <span class="cred-text">FINANCIAL TIMES</span>
+      
+    
+  </div>
+</body>
+</html>

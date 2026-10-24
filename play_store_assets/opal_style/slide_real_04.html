@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @font-face {
+      font-family: 'Space Grotesk';
+      src: url('space_grotesk.ttf') format('truetype');
+      font-weight: 300 900;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 10%, #ffe4e6 0%, #fecdd3 35%, #fda4af 70%, #fb7185 100%);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      position: relative;
+      color: #000;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient noise overlay */
+    .noise-scrim {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 80%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Top Brand & Category Tag */
+    .top-badge {
+      position: absolute;
+      top: 55px;
+      left: 60px;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #e11d48;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Main Typography Header */
+    .header-block {
+      position: absolute;
+      top: 100px;
+      left: 60px;
+      right: 60px;
+      z-index: 30;
+    }
+
+    .main-headline {
+      font-size: 54px;
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -2px;
+      color: #09090b;
+      font-feature-settings: "ss01", "cv02";
+    }
+
+    .sub-headline {
+      font-size: 21px;
+      font-weight: 600;
+      color: rgba(9, 9, 11, 0.72);
+      margin-top: 10px;
+      letter-spacing: -0.3px;
+      max-width: 880px;
+    }
+
+    /* Trust markers strip directly under header */
+    .trust-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .trust-item {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      color: rgba(9, 9, 11, 0.55);
+      text-transform: uppercase;
+    }
+
+    .trust-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(9, 9, 11, 0.35);
+    }
+
+    /* Frosted Glass Quote / Metric Pills */
+    .pill {
+      position: absolute;
+      z-index: 25;
+      background: rgba(18, 18, 24, 0.85);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      border-radius: 24px;
+      padding: 15px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0,0,0,0.2);
+    }
+
+    .pill-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+
+    .pill-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pill-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+    }
+
+    .pill-tag {
+      font-size: 9.5px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      text-transform: uppercase;
+    }
+
+    .pill-body {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #cbd5e1;
+    }
+
+    /* Smartphone Device Frame */
+    .phone-container {
+      position: absolute;
+      top: 520px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 650px;
+      height: 1400px;
+      z-index: 15;
+    }
+
+    .phone-body {
+      width: 100%;
+      height: 100%;
+      border-radius: 54px;
+      background: #09090b;
+      border: 13px solid #18181b;
+      box-shadow: 
+        0 45px 90px rgba(0, 0, 0, 0.5), 
+        0 0 0 1.5px rgba(255, 255, 255, 0.15) inset, 
+        0 15px 30px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Phone Speaker & Dynamic Island Camera */
+    .status-bar {
+      height: 44px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 26px 0 26px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .punch-hole {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #000;
+      border: 2px solid #27272a;
+    }
+
+    .screen-viewport {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #09090b;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="noise-scrim"></div>
+
+  <!-- Top Badge -->
+  <div class="top-badge">
+    <span>★</span>
+    <span>BRUTAL HONESTY</span>
+  </div>
+
+  <!-- Header -->
+  <div class="header-block">
+    <h1 class="main-headline">Audits your day<br>with brutal honesty.</h1>
+    <p class="sub-headline">Every wasted minute logged. No sugar-coating. No excuses.</p>
+    <div class="trust-strip">
+      
+        <span class="trust-item">CATEGORY BREAKDOWN</span>
+        <div class="trust-dot"></div>
+      
+        <span class="trust-item">DOOMSCROLL AUDIT</span>
+        <div class="trust-dot"></div>
+      
+        <span class="trust-item">PRODUCTIVITY DELTA</span>
+        
+      
+    </div>
+  </div>
+
+  <!-- Floating Frosted Glass Pills -->
+  
+    <div class="pill" style="top: 270px; left: 60px; transform: rotate(-1.5deg); width: 500px;">
+      <div class="pill-icon" style="background: rgba(244, 63, 94, 0.15); border: 1.5px solid rgba(244, 63, 94, 0.4);">⚖️</div>
+      <div class="pill-content">
+        <div class="pill-title">
+          <span>Marcus Aurelius</span>
+          <span class="pill-tag" style="background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4);">AURELIUS</span>
+        </div>
+        <div class="pill-body">
+          "You could be good today.<br><strong style="color:#fda4af;">But instead you choose tomorrow.</strong>"
+        </div>
+      </div>
+    </div>
+    
+    <div class="pill" style="top: 395px; right: 60px; transform: rotate(1deg); width: 490px;">
+      <div class="pill-icon" style="background: rgba(225, 29, 72, 0.15); border: 1.5px solid rgba(225, 29, 72, 0.4);">📊</div>
+      <div class="pill-content">
+        <div class="pill-title">
+          <span>Screen Time Audit: 3h 16m</span>
+          <span class="pill-tag" style="background: rgba(225, 29, 72, 0.2); color: #f43f5e; border: 1px solid rgba(225, 29, 72, 0.4);">AUDIT DELTA</span>
+        </div>
+        <div class="pill-body">
+          Reels: -1h 45m reduced.<br><strong style="color:#fda4af;">Discipline won back 105 productive minutes.</strong>
+        </div>
+      </div>
+    </div>
+    
+
+  <!-- Phone Mockup -->
+  <div class="phone-container">
+    <div class="phone-body">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="punch-hole"></div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>5G</span>
+          <span>100%</span>
+        </div>
+      </div>
+      <div class="screen-viewport">
+        
+    <div style="padding:14px 22px; display:flex; flex-direction:column; gap:12px; flex:1; text-align:left;">
+      <!-- Topbar Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#f43f5e; text-transform:uppercase;">DAILY BEHAVIOR AUDIT</span>
+          <div style="font-size:26px; font-weight:900; color:#fff; font-family:'Space Grotesk', monospace;">3h 16m <span style="font-size:13px; color:#94a3b8; font-family:sans-serif; font-weight:600;">Active</span></div>
+        </div>
+        <div style="padding:4px 10px; border-radius:12px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#fb7185; font-size:11px; font-weight:800;">
+          -1h 45m vs AVG
+        </div>
+      </div>
+
+      <!-- Category Breakdown Card -->
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:18px; padding:16px;">
+        <span style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#71717a; text-transform:uppercase;">CATEGORY BREAKDOWN</span>
+        
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+          <!-- Productivity -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#fff; margin-bottom:4px;">
+              <span>Productivity & Dev</span>
+              <span style="color:#22c55e;">2h 15m (69%)</span>
+            </div>
+            <div style="width:100%; height:7px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:69%; height:100%; background:#22c55e;"></div>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#fff; margin-bottom:4px;">
+              <span>Reading & Audiobooks</span>
+              <span style="color:#38bdf8;">45m (23%)</span>
+            </div>
+            <div style="width:100%; height:7px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:23%; height:100%; background:#38bdf8;"></div>
+            </div>
+          </div>
+
+          <!-- Communication -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#fff; margin-bottom:4px;">
+              <span>Communication</span>
+              <span style="color:#94a3b8;">16m (8%)</span>
+            </div>
+            <div style="width:100%; height:7px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:8%; height:100%; background:#94a3b8;"></div>
+            </div>
+          </div>
+
+          <!-- Social Media -->
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#fff; margin-bottom:4px;">
+              <span>Social Media & Reels</span>
+              <span style="color:#f43f5e; font-weight:800;">0m (ELIMINATED)</span>
+            </div>
+            <div style="width:100%; height:7px; border-radius:4px; background:#27272a; overflow:hidden;">
+              <div style="width:0%; height:100%; background:#f43f5e;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Used Productive Apps -->
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:18px; padding:14px;">
+        <span style="font-size:10px; font-weight:800; letter-spacing:1px; color:#71717a; text-transform:uppercase;">VERIFIED PRODUCTIVE APPS</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:26px; height:26px; border-radius:6px; background:#2563eb; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:900;">VS</div>
+            <span style="font-size:13px; font-weight:700; color:#fff;">VS Code Remote</span>
+          </div>
+          <span style="font-size:12px; font-weight:800; color:#22c55e;">1h 40m</span>
+        </div>
+      </div>
+
+      <!-- Brutal Insight Box -->
+      <div style="background:linear-gradient(145deg, #18181b, #09090b); border:1px solid rgba(244,63,94,0.3); border-radius:16px; padding:14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="font-size:14px;">⚖️</span>
+          <span style="font-size:11px; font-weight:800; color:#fff; letter-spacing:0.5px;">UNFILTERED AUDIT</span>
+        </div>
+        <p style="font-size:12.5px; line-height:1.4; color:#cbd5e1; margin:0;">
+          Zero minutes leaked into algorithmic loops today. <strong style="color:#fff;">You reclaimed 105 minutes</strong> compared to typical phone usage.
+        </p>
+      </div>
+    </div>
+    
+    <div style="height:62px; width:100%; background:#101014; border-top:1px solid #27272a; display:flex; justify-content:space-around; align-items:center; padding:0 8px; margin-top:auto; flex-shrink:0;">
+      
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#38bdf8;">
+            <span style="font-size:17px; line-height:1; filter:drop-shadow(0 0 8px #38bdf8);">◎</span>
+            <span style="font-size:10px; font-weight:800; letter-spacing:0.3px;">Focus</span>
+          </div>
+        
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#71717a;">
+            <span style="font-size:17px; line-height:1; ">⏱</span>
+            <span style="font-size:10px; font-weight:600; letter-spacing:0.3px;">Timer</span>
+          </div>
+        
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#71717a;">
+            <span style="font-size:17px; line-height:1; ">👑</span>
+            <span style="font-size:10px; font-weight:600; letter-spacing:0.3px;">Apex</span>
+          </div>
+        
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#71717a;">
+            <span style="font-size:17px; line-height:1; ">🤖</span>
+            <span style="font-size:10px; font-weight:600; letter-spacing:0.3px;">Coach</span>
+          </div>
+        
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#71717a;">
+            <span style="font-size:17px; line-height:1; ">🪙</span>
+            <span style="font-size:10px; font-weight:600; letter-spacing:0.3px;">Vault</span>
+          </div>
+        
+    </div>
+  
+  
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating 3D Obsidian Rocks -->
+  
+    <div style="position: absolute; top: 215px; right: 75px; z-index: 18; pointer-events: none;">
+      
+  <svg width="90" height="90" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.4)) ; transform: rotate(undefineddeg); opacity: 0.95;">
+    <defs>
+      <linearGradient id="rf1_90_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_90_undefined" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_90_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_90_undefined)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_90_undefined)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_90_undefined)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+    <div style="position: absolute; top: 235px; left: 45px; z-index: 18; pointer-events: none;">
+      
+  <svg width="65" height="65" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.4)) blur(1px); transform: rotate(undefineddeg); opacity: 0.7;">
+    <defs>
+      <linearGradient id="rf1_65_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_65_undefined" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_65_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_65_undefined)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_65_undefined)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_65_undefined)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+    <div style="position: absolute; bottom: 140px; left: 55px; z-index: 18; pointer-events: none;">
+      
+  <svg width="105" height="105" viewBox="0 0 100 100" style="filter: drop-shadow(0 18px 28px rgba(0,0,0,0.4)) ; transform: rotate(undefineddeg); opacity: 0.9;">
+    <defs>
+      <linearGradient id="rf1_105_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#475569" />
+        <stop offset="100%" stop-color="#1e293b" />
+      </linearGradient>
+      <linearGradient id="rf2_105_undefined" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+      <linearGradient id="rspec_105_undefined" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <polygon points="50,10 78,28 55,48 24,32" fill="url(#rspec_105_undefined)" />
+    <polygon points="24,32 55,48 42,88 12,65" fill="url(#rf1_105_undefined)" />
+    <polygon points="55,48 78,28 92,60 68,92 42,88" fill="url(#rf2_105_undefined)" />
+    <polygon points="42,88 68,92 50,96 22,82" fill="#09090b" opacity="0.8" />
+    <polyline points="50,10 55,48 42,88" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none" />
+    <polyline points="24,32 55,48 78,28" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none" />
+  </svg>
+  
+    </div>
+  
+
+  
+</body>
+</html>

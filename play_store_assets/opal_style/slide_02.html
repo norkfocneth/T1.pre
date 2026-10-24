@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: radial-gradient(circle at 50% 16%, #ede9fe 0%, #ddd6fe 35%, #c4b5fd 65%, #a78bfa 100%);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient light overlay */
+  .bg-ambient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 5%, rgba(255,255,255,0.85) 0%, transparent 45%),
+                linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.15) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Header Section (Opal Style) */
+  .header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-top: 100px;
+    padding: 0 60px;
+  }
+
+  .headline {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1.06;
+    color: #09090b;
+    letter-spacing: -2.5px;
+  }
+
+  .subline {
+    font-size: 26px;
+    font-weight: 500;
+    color: #334155;
+    margin-top: 16px;
+    letter-spacing: -0.5px;
+    line-height: 1.35;
+  }
+
+  /* Phone Stage */
+  .stage {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    height: 1380px;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+  }
+
+  /* 3D Smartphone Frame */
+  .phone-frame {
+    width: 670px;
+    height: 1400px;
+    background: #09090b;
+    border-radius: 56px;
+    padding: 14px;
+    box-shadow: 
+      0 0 0 3px #3f3f46,
+      0 0 0 8px #09090b,
+      0 40px 90px -15px rgba(15, 23, 42, 0.45),
+      0 60px 120px -25px rgba(0, 0, 0, 0.35);
+    position: relative;
+    transform: rotate(0deg) translateY(50px);
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+
+  /* Floating Notification Cards (Opal signature look) */
+  .floating-card {
+    position: absolute;
+    width: 480px;
+    background: rgba(15, 23, 42, 0.90);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 26px;
+    padding: 22px 24px;
+    color: white;
+    z-index: 20;
+    box-shadow: 0 30px 60px -12px rgba(0,0,0,0.55);
+  }
+
+  .card-1 {
+    top: 470px;
+    left: 70px;
+    transform: rotate(-2.5deg);
+  }
+
+  .card-2 {
+    top: 670px;
+    right: 70px;
+    transform: rotate(2deg);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .card-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(139,92,246,0.2);
+    border: 1.5px solid #8b5cf6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .card-2 .card-icon {
+    background: rgba(16,185,129,0.2);
+    border-color: #10b981;
+  }
+
+  .card-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.3px;
+  }
+
+  .card-body {
+    font-size: 16.5px;
+    line-height: 1.4;
+    color: #cbd5e1;
+    font-weight: 400;
+  }
+
+  .card-body strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* Floating 3D Shards (Opal signature stones) */
+  .shard {
+    position: absolute;
+    background: linear-gradient(135deg, #475569 0%, #0f172a 100%);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+    z-index: 15;
+  }
+
+  .shard-1 {
+    width: 45px;
+    height: 55px;
+    top: 420px;
+    left: 70px;
+    clip-path: polygon(30% 0%, 90% 20%, 100% 70%, 60% 100%, 0% 70%);
+    transform: rotate(25deg);
+  }
+
+  .shard-2 {
+    width: 35px;
+    height: 42px;
+    top: 610px;
+    right: 110px;
+    clip-path: polygon(50% 0%, 100% 50%, 70% 100%, 0% 80%);
+    transform: rotate(-35deg);
+  }
+
+  .shard-3 {
+    width: 55px;
+    height: 65px;
+    bottom: 280px;
+    right: 70px;
+    clip-path: polygon(20% 0%, 100% 30%, 80% 100%, 10% 90%);
+    transform: rotate(15deg);
+  }
+
+  /* Bottom Credibility / Press Bar */
+  .footer-bar {
+    position: absolute;
+    bottom: 45px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .footer-divider {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #475569;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-ambient"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1 class="headline">Measure your focus.<br>Not just screen time.</h1>
+    <p class="subline">Your real-time cognitive score from 0 to 100.</p>
+  </div>
+
+  <!-- Phone Stage -->
+  <div class="stage">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        
+    <img src="01_home_focus_ring.png" style="width:100%; height:100%; object-fit:cover;" alt="T1 Screen">
+  
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Cards (Opal signature style) -->
+  <div class="floating-card card-1">
+    <div class="card-header">
+      <div class="card-icon">📈</div>
+      <div class="card-title">Focus Score: 85/100</div>
+    </div>
+    <div class="card-body">
+      Ahead of 85% of users today.<br><strong>High-agency cognitive execution active.</strong>
+    </div>
+  </div>
+
+  <div class="floating-card card-2">
+    <div class="card-header">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Time Saved vs Yesterday</div>
+    </div>
+    <div class="card-body">
+      +8h 16m won back from distraction.<br><strong>Discipline is the rarest commodity.</strong>
+    </div>
+  </div>
+
+  <!-- Floating 3D Elements -->
+  <div style="position:absolute; top:360px; right:80px; width:130px; height:130px; border-radius:50%; border:4px solid #8b5cf6; box-shadow:0 0 40px #8b5cf6, inset 0 0 30px #8b5cf6; z-index:25; display:flex; align-items:center; justify-content:center; color:#fff; font-size:42px; font-weight:800; background:rgba(15,23,42,0.6); backdrop-filter:blur(10px);">85</div>
+
+  <!-- Floating Shards -->
+  <div class="shard shard-1"></div>
+  <div class="shard shard-2"></div>
+  <div class="shard shard-3"></div>
+
+  <!-- Bottom Credibility Bar -->
+  <div class="footer-bar">
+    
+      <span>BEHAVIOUR SCORE</span>
+      <div class="footer-divider"></div>
+    
+      <span>CONFIDENCE</span>
+      <div class="footer-divider"></div>
+    
+      <span>DAILY TREND</span>
+      <div class="footer-divider"></div>
+    
+      <span>TOP PERFORMER</span>
+      
+    
+  </div>
+</body>
+</html>

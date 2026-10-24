@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -154,24 +155,51 @@ fun UsernameScreen(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
+            var titleChars by remember { mutableIntStateOf(0) }
+            var subtitleChars by remember { mutableIntStateOf(0) }
+            val fullTitle = "Pick your username."
+            val fullSubtitle = "This will identify you in the T1 Global Ecosystem. Build your consistency — people will know your name by your discipline."
+
+            LaunchedEffect(Unit) {
+                for (i in 1..fullTitle.length) {
+                    titleChars = i
+                    if (Haptics.isEnabled && !fullTitle[i - 1].isWhitespace()) {
+                        try { view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Exception) {}
+                    }
+                    delay(32L)
+                }
+                delay(120L)
+                for (i in 1..fullSubtitle.length) {
+                    subtitleChars = i
+                    delay(16L)
+                }
+            }
+
             // Screen title
             Text(
-                text = "Pick a username",
+                text = fullTitle.take(titleChars),
                 style = HeadlineLarge.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 28.sp,
                     brush = Brush.linearGradient(
-                        colors = listOf(GradientTextStart, GradientTextEnd)
+                        colors = listOf(Color.White, Color(0xFFE2E8F0), Color(0xFFCBD5E1))
                     )
                 ),
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 10.dp)
             )
 
             // Subtitle
             Text(
-                text = "This is how others will see you on the leaderboard",
-                style = BodyMedium.copy(color = MutedForeground),
+                text = fullSubtitle.take(subtitleChars),
+                style = BodyMedium.copy(
+                    color = MutedForeground,
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp
+                ),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 40.dp)
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 36.dp)
             )
 
             // Input Container Card

@@ -4,9 +4,9 @@
 **App Name:** T1 — Focus & Digital Behaviour Tracker (`com.focneth.t1`)  
 **Developer / Organization:** Focneth (Focneth Innovations)  
 **Contact Email:** support.t1.help@gmail.com  
-**Website URL:** https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home  
-**Privacy Policy URL:** https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy  
-**Terms of Service URL:** https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms  
+**Website URL:** https://t1premainweb-nine.vercel.app/home  
+**Privacy Policy URL:** https://t1premainweb-nine.vercel.app/home/privacy  
+**Terms of Service URL:** https://t1premainweb-nine.vercel.app/home/terms  
 
 ---
 
@@ -166,7 +166,7 @@ If you have any questions, concerns, feedback, or privacy-related requests regar
 
 - **Entity:** Focneth (Focneth Innovations)
 - **Email:** support.t1.help@gmail.com
-- **Website:** [https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home](https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home)
-- **Privacy Center:** [https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy](https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy)
-- **Terms of Service:** [https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms](https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms)
+- **Website:** [https://t1premainweb-nine.vercel.app/home](https://t1premainweb-nine.vercel.app/home)
+- **Privacy Center:** [https://t1premainweb-nine.vercel.app/home/privacy](https://t1premainweb-nine.vercel.app/home/privacy)
+- **Terms of Service:** [https://t1premainweb-nine.vercel.app/home/terms](https://t1premainweb-nine.vercel.app/home/terms)
 

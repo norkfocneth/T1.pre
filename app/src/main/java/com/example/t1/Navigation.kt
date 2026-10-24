@@ -60,8 +60,36 @@ object SplashStateManager {
 @Composable
 fun MainNavigation(
     authViewModel: AuthViewModel = hiltViewModel(),
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    previewScreen: String? = null
 ) {
+    when (previewScreen) {
+        "questions" -> {
+            com.example.t1.ui.onboarding.QuestionScreen(onComplete = {})
+            return
+        }
+        "goals" -> {
+            com.example.t1.ui.onboarding.GoalSelectionScreen(onGoalSelected = {})
+            return
+        }
+        "apps" -> {
+            com.example.t1.ui.onboarding.AppClassificationScreen(onClassificationComplete = {})
+            return
+        }
+        "permission" -> {
+            com.example.t1.ui.onboarding.PermissionScreen(onContinue = {})
+            return
+        }
+        "username" -> {
+            com.example.t1.ui.onboarding.UsernameScreen(onComplete = { _, _ -> })
+            return
+        }
+        "manifesto" -> {
+            com.example.t1.ui.onboarding.T1ManifestoScreen(onDismiss = {})
+            return
+        }
+    }
+
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     var isCinematicSplashDone by rememberSaveable { mutableStateOf(SplashStateManager.hasCompletedSplash) }
 

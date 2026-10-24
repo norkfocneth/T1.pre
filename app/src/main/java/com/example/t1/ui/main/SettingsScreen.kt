@@ -274,7 +274,7 @@ fun SettingsScreen(
                     onClick = {
                         Haptics.playLight(view)
                         try {
-                            uriHandler.openUri("https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/about")
+                            uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/about")
                         } catch (e: Exception) {
                             Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                         }
@@ -298,7 +298,7 @@ fun SettingsScreen(
                     onClick = {
                         Haptics.playLight(view)
                         try {
-                            uriHandler.openUri("https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/terms")
+                            uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/terms")
                         } catch (e: Exception) {
                             Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                         }
@@ -312,9 +312,13 @@ fun SettingsScreen(
                     onClick = {
                         Haptics.playLight(view)
                         try {
-                            uriHandler.openUri("mailto:support.t1.help@gmail.com")
+                            uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/contact")
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Could not open email client", Toast.LENGTH_SHORT).show()
+                            try {
+                                uriHandler.openUri("mailto:support.t1.help@gmail.com")
+                            } catch (e2: Exception) {
+                                Toast.makeText(context, "Contact: support.t1.help@gmail.com", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 )
@@ -380,7 +384,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Version 1.0.0",
+                        text = "Version ${com.example.t1.BuildConfig.VERSION_NAME}",
                         style = BodySmall.copy(
                             color = MutedForeground,
                             fontSize = 10.sp
@@ -707,7 +711,7 @@ fun SettingsScreen(
                 onDismiss = { showPrivacyOverview = false },
                 onOpenWebPolicy = {
                     try {
-                        uriHandler.openUri("https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home/privacy")
+                        uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/privacy")
                     } catch (e: Exception) {
                         Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
                     }

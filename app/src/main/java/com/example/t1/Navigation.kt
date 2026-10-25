@@ -88,6 +88,11 @@ fun MainNavigation(
             com.example.t1.ui.onboarding.T1ManifestoScreen(onDismiss = {})
             return
         }
+        "battle" -> {
+            val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
+            com.example.t1.ui.battle.FocusBattleScreen(viewModel = battleViewModel, onBackToHome = {})
+            return
+        }
     }
 
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
@@ -234,6 +239,11 @@ fun DashboardShell(
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
 
+    val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
+    val battleState by battleViewModel.uiState.collectAsStateWithLifecycle()
+    val isBattleImmersive = activeTab == T1Tab.BATTLE && battleState.currentStep != com.example.t1.domain.model.battle.BattleStep.DISCOVERY
+    val shouldShowBottomNav = !showSettings && !isBattleImmersive
+
     val liveProfile by mainViewModel.userProfile.collectAsStateWithLifecycle()
     val activeProfile = liveProfile ?: profile
     val nameToShow = activeProfile.displayName ?: activeProfile.username
@@ -307,6 +317,15 @@ fun DashboardShell(
                                 username = activeProfile.username
                             )
                         }
+                        T1Tab.BATTLE -> {
+                            com.example.t1.ui.battle.FocusBattleScreen(
+                                viewModel = battleViewModel,
+                                onBackToHome = {
+                                    battleViewModel.resetToDiscovery()
+                                    activeTab = T1Tab.HOME
+                                }
+                            )
+                        }
                         T1Tab.USER -> {
                             val focusRemindersEnabled by mainViewModel.focusRemindersEnabled.collectAsStateWithLifecycle()
                             val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
@@ -357,12 +376,18 @@ fun DashboardShell(
                     }
                 }
 
-                // Fixed bottom navigation bar
-                BottomNav(
-                    active = activeTab,
-                    onNavigate = { newTab -> activeTab = newTab },
+                // Animated bottom navigation bar (automatically hides during immersive battle arena/result)
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = shouldShowBottomNav,
+                    enter = androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(250)),
+                    exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200)),
                     modifier = Modifier.align(Alignment.BottomCenter)
-                )
+                ) {
+                    BottomNav(
+                        active = activeTab,
+                        onNavigate = { newTab -> activeTab = newTab }
+                    )
+                }
             }
         }
 

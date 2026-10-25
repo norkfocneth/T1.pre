@@ -13,6 +13,7 @@ import javax.inject.Singleton
 
 import com.example.t1.data.remote.model.TokenWalletDto
 import com.example.t1.data.remote.model.TokenTransactionDto
+import com.example.t1.data.remote.model.FocusFightDto
 
 @Singleton
 class SupabaseService @Inject constructor(
@@ -214,6 +215,127 @@ class SupabaseService @Inject constructor(
         } catch (e: Exception) {
             android.util.Log.e("SupabaseService", "Error inserting batch token transactions: ${e.message}", e)
             false
+        }
+    }
+
+    suspend fun recordFocusFight(fight: FocusFightDto): Boolean {
+        return try {
+            postgrest.from("focus_fights").insert(fight)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error recording focus fight: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun createFocusFight(fight: FocusFightDto): FocusFightDto? {
+        return try {
+            val response = postgrest.from("focus_fights").insert(fight) {
+                select()
+            }
+            response.decodeSingle<FocusFightDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error creating focus fight: ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun getFightById(fightId: String): FocusFightDto? {
+        return try {
+            val response = postgrest.from("focus_fights").select(columns = Columns.ALL) {
+                filter {
+                    eq("id", fightId)
+                }
+            }
+            response.decodeList<FocusFightDto>().firstOrNull()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching fight by id: ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun getPendingFightForUser(userId: String): FocusFightDto? {
+        return try {
+            val response = postgrest.from("focus_fights").select(columns = Columns.ALL) {
+                filter {
+                    eq("opponent_id", userId)
+                    eq("status", "PENDING")
+                }
+            }
+            response.decodeList<FocusFightDto>().lastOrNull()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching pending fights: ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun updateFightStatus(
+        fightId: String,
+        status: String,
+        winnerId: String? = null,
+        challengerSeconds: Int? = null,
+        opponentSeconds: Int? = null
+    ): Boolean {
+        return try {
+            postgrest.from("focus_fights").update({
+                set("status", status)
+                if (winnerId != null) set("winner_id", winnerId)
+                if (challengerSeconds != null) set("challenger_seconds", challengerSeconds)
+                if (opponentSeconds != null) set("opponent_seconds", opponentSeconds)
+            }) {
+                filter {
+                    eq("id", fightId)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error updating fight status: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun updateFightProgress(fightId: String, isChallenger: Boolean, secondsElapsed: Int): Boolean {
+        return try {
+            val column = if (isChallenger) "challenger_seconds" else "opponent_seconds"
+            postgrest.from("focus_fights").update({
+                set(column, secondsElapsed)
+            }) {
+                filter {
+                    eq("id", fightId)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error updating fight progress: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun getUserFocusFights(userId: String): List<FocusFightDto> {
+        return try {
+            val response = postgrest.from("focus_fights")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        or {
+                            eq("challenger_id", userId)
+                            eq("opponent_id", userId)
+                        }
+                    }
+                }
+            response.decodeList<FocusFightDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching focus fights: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    suspend fun getAllFocusFights(): List<FocusFightDto> {
+        return try {
+            val response = postgrest.from("focus_fights").select(columns = Columns.ALL)
+            response.decodeList<FocusFightDto>()
+        } catch (e: Exception) {
+            android.util.Log.e("SupabaseService", "Error fetching all focus fights: ${e.message}", e)
+            emptyList()
         }
     }
 }

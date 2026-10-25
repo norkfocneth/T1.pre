@@ -39,19 +39,21 @@ import com.example.t1.theme.*
 import com.example.t1.util.Haptics
 
 enum class T1Tab {
-    HOME, RANK, USER
+    HOME, RANK, BATTLE, USER
 }
 
 data class T1TabItem(
     val tab: T1Tab,
-    val icon: ImageVector,
+    val icon: ImageVector? = null,
+    val iconRes: Int? = null,
     val label: String
 )
 
 val tabItems = listOf(
-    T1TabItem(T1Tab.HOME, Icons.Default.Home, "HOME"),
-    T1TabItem(T1Tab.RANK, Icons.Default.BarChart, "RANK"),
-    T1TabItem(T1Tab.USER, Icons.Default.Person, "USER")
+    T1TabItem(T1Tab.HOME, icon = Icons.Default.Home, label = "HOME"),
+    T1TabItem(T1Tab.RANK, icon = Icons.Default.BarChart, label = "RANK"),
+    T1TabItem(T1Tab.BATTLE, iconRes = com.example.t1.R.drawable.ic_nav_battle, label = "FIGHT"),
+    T1TabItem(T1Tab.USER, icon = Icons.Default.Person, label = "USER")
 )
 
 @Composable
@@ -89,19 +91,19 @@ fun BottomNav(
                         size = size
                     )
                 }
-                .padding(vertical = 12.dp, horizontal = 16.dp),
+                .padding(vertical = 12.dp, horizontal = 12.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             tabItems.forEach { item ->
                 val isActive = active == item.tab
                 val tint = if (isActive) Color.White else NavInactive
-                val iconStroke = if (isActive) 2.5f else 1.5f // Stroke weight equivalent
 
                 val interactionSource = remember { MutableInteractionSource() }
 
                 Column(
                     modifier = Modifier
+                        .weight(1f)
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null
@@ -109,16 +111,25 @@ fun BottomNav(
                             Haptics.playLight(view)
                             onNavigate(item.tab)
                         }
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                        .padding(vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = tint,
-                        modifier = Modifier.size(22.dp)
-                    )
+                    if (item.icon != null) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = tint,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    } else if (item.iconRes != null) {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(id = item.iconRes),
+                            contentDescription = item.label,
+                            tint = tint,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = item.label,
@@ -133,3 +144,4 @@ fun BottomNav(
         }
     }
 }
+

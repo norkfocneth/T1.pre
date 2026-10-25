@@ -46,3 +46,44 @@ CREATE POLICY "Allow users to manage their own profile" ON public.profiles
     TO authenticated
     USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
+
+-- =========================================================================
+-- FOCUS FIGHTS TABLE (Multiplayer Real Focus Duel Arena)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS public.focus_fights (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    challenger_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    opponent_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    duration_minutes INTEGER NOT NULL DEFAULT 25,
+    wager_tokens INTEGER NOT NULL DEFAULT 25,
+    status TEXT NOT NULL DEFAULT 'COMPLETED', -- 'PENDING', 'ACCEPTED', 'DECLINED', 'IN_PROGRESS', 'COMPLETED', 'SURRENDERED'
+    winner_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    challenger_seconds INTEGER NOT NULL DEFAULT 0,
+    opponent_seconds INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.focus_fights ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access to focus fights
+DROP POLICY IF EXISTS "Allow public read focus_fights" ON public.focus_fights;
+CREATE POLICY "Allow public read focus_fights" ON public.focus_fights
+    FOR SELECT
+    USING (true);
+
+-- Allow authenticated participants to insert fights
+DROP POLICY IF EXISTS "Allow authenticated users to insert fights" ON public.focus_fights;
+CREATE POLICY "Allow authenticated users to insert fights" ON public.focus_fights
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = challenger_id OR auth.uid() = opponent_id);
+
+-- Allow participants to update fights
+DROP POLICY IF EXISTS "Allow participants to update fights" ON public.focus_fights;
+CREATE POLICY "Allow participants to update fights" ON public.focus_fights
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = challenger_id OR auth.uid() = opponent_id)
+    WITH CHECK (auth.uid() = challenger_id OR auth.uid() = opponent_id);

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T1: Top 1% — The Proof-of-Focus Engine (Institutional Pitch Deck)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #060709;
+            --bg-surface: #0c0e14;
+            --card-glass: rgba(18, 22, 34, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-hover: rgba(56, 189, 248, 0.25);
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --accent-cyan: #38BDF8;
+            --accent-cyan-bright: #00F0FF;
+            --accent-amber: #F59E0B;
+            --accent-emerald: #10B981;
+            --accent-indigo: #6366F1;
+            --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-numbers: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Slide Frame for Fullscreen & Print */
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            break-after: page;
+            position: relative;
+            background: var(--bg-void);
+            padding: 70px 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        /* Ambient Micro-Grid */
+        .grid-backdrop {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Subtle Radial Glows (Institutional, not gamer neon) */
+        .glow-cyan {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(6, 7, 9, 0) 70%);
+            top: -250px;
+            right: -150px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .glow-amber {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, rgba(6, 7, 9, 0) 70%);
+            bottom: -200px;
+            left: -150px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Header Bar */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .brand-monogram {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-numbers);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #FFFFFF;
+        }
+
+        .brand-title span {
+            color: var(--accent-cyan);
+        }
+
+        .slide-tracker {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pill-category {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 18px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .slide-page-num {
+            font-family: var(--font-numbers);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Slide Content Container */
+        .slide-content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        /* Typography */
+        .kicker {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kicker::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .title-hero {
+            font-family: var(--font-display);
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            color: #FFFFFF;
+            margin-bottom: 20px;
+            max-width: 1400px;
+        }
+
+        .title-hero span.highlight {
+            background: linear-gradient(135deg, #FFFFFF 30%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle-hero {
+            font-family: var(--font-body);
+            font-size: 24px;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            max-width: 1200px;
+            margin-bottom: 40px;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
+
+        .glass-card.highlight {
+            border-color: rgba(56, 189, 248, 0.3);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(18, 22, 34, 0.8) 100%);
+        }
+
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; }
+
+        /* Metric Blocks */
+        .metric-value {
+            font-family: var(--font-numbers);
+            font-size: 56px;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .metric-value.cyan { color: var(--accent-cyan); }
+        .metric-value.amber { color: var(--accent-amber); }
+        .metric-value.emerald { color: var(--accent-emerald); }
+
+        .metric-label {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .metric-sub {
+            font-size: 15px;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+
+        /* Device Mockup Container */
+        .device-showcase {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .device-frame {
+            width: 250px;
+            height: 520px;
+            border-radius: 36px;
+            border: 4px solid #1e293b;
+            background: #000;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(56, 189, 248, 0.1);
+            position: relative;
+        }
+
+        .device-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Comparison Table */
+        .venture-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .venture-table th {
+            text-align: left;
+            padding: 16px 20px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        .venture-table td {
+            padding: 20px;
+            font-size: 17px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+        }
+
+        .venture-table tr.highlight-row {
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .venture-table tr.highlight-row td {
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
+        /* Footer Bar */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+            position: relative;
+            z-index: 10;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .slide-footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 1: COVER & INSTITUTIONAL VISION -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+        <div class="glow-amber"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">INSTITUTIONAL PITCH DECK • SEED ROUND</span>
+                <span class="slide-page-num">01 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content" style="align-items: center; text-align: center; justify-content: center;">
+            <div class="kicker">THE COGNITIVE PROOF-OF-WORK STANDARD</div>
+            <h1 class="title-hero" style="font-size: 76px; max-width: 1500px; margin-bottom: 24px;">
+                Unbroken Human Deep Focus<br>
+                <span class="highlight">Turned into a Verifiable Economy.</span>
+            </h1>
+            <p class="subtitle-hero" style="font-size: 26px; max-width: 1100px;">
+                The world’s first <strong>Proof-of-Focus Engine</strong>. Built for solo founders, engineers, and competitive aspirants who reject toddler app blockers and demand authentic behavioral progress tracking.
+            </p>
+
+            <div class="grid-4" style="max-width: 1400px; width: 100%; margin-top: 20px;">
+                <div class="glass-card">
+                    <div class="metric-value cyan">7-Day</div>
+                    <div class="metric-label">Rolling Baseline</div>
+                    <div class="metric-sub">Dynamic relative progress, not arbitrary 2-hr limits.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value emerald">100%</div>
+                    <div class="metric-label">Local-First Telemetry</div>
+                    <div class="metric-sub">Zero-cloud usage tracking. &lt;1.2% daily battery drain.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value amber">12:00 AM</div>
+                    <div class="metric-label">Midnight Reflection</div>
+                    <div class="metric-sub">Unfiltered behavioral audit replacing annoying blocks.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value">Nov 4</div>
+                    <div class="metric-label">Play Store Launch</div>
+                    <div class="metric-sub">Android 16 / Target SDK 36 production certified.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Team ZYNETH • Founder: Arnav Rajesh • Confidential</div>
+            <div>Production Web: <a href="https://t1premainweb-nine.vercel.app/home">https://t1premainweb-nine.vercel.app/home</a></div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 2: THE MACRO CRISIS (THE PROBLEM) -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">THE CRISIS</span>
+                <span class="slide-page-num">02 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">THE TRILLION-DOLLAR ATTENTION PARADOX</div>
+            <h2 class="title-hero">Knowledge output demands deep focus.<br>Modern platforms are engineered to shatter it.</h2>
+            <p class="subtitle-hero">The world’s most ambitious individuals unlock their phones out of pure compulsion, losing up to 4 hours daily to algorithmic dopamine loops with zero proof-of-work for their discipline.</p>
+
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="metric-value cyan">96+</div>
+                    <div class="metric-label">Daily Phone Unlocks</div>
+                    <div class="metric-sub">The average high-agency knowledge worker unlocks their phone every 9.3 minutes, fracturing neuro-cognitive momentum before flow state ever initiates.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value amber">23m 15s</div>
+                    <div class="metric-label">Cognitive Recovery Penalty</div>
+                    <div class="metric-sub">Academic research (Gloria Mark, UC Irvine) proves a single notification switch requires 23+ minutes to regain deep focus, costing 40% in lost problem-solving throughput.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value emerald">$450B</div>
+                    <div class="metric-label">Annual Lost Productivity</div>
+                    <div class="metric-sub">Global knowledge work loss due to fragmented attention spans. Ambitious solo founders and competitive exam candidates experience severe digital guilt and burn out.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Source: UC Irvine Attention Studies & Gloria Mark Behavioral Labs</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 3: WHY INCUMBENTS FAIL (THE BLOCKER FALLACY) -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-amber"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">MARKET FAILURE</span>
+                <span class="slide-page-num">03 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">THE TODDLER PARADOX</div>
+            <h2 class="title-hero">Existing screen-time apps treat adults like toddlers.<br>Self-discipline cannot be outsourced to a password.</h2>
+            <p class="subtitle-hero">Traditional blockers (Opal, Forest, Freedom) create artificial friction walls. Inevitably, human psychology wins and the app gets destroyed.</p>
+
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="metric-value" style="color: #F87171;">87%</div>
+                    <div class="metric-label">48-Hour Uninstall Rate</div>
+                    <div class="metric-sub">When an ambitious adult urgently needs WhatsApp or email and faces a rigid lockout screen, <strong>Psychological Reactance</strong> triggers rage. The blocker is uninstalled within 48 hours.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value amber">0%</div>
+                    <div class="metric-label">Zero Relative Context</div>
+                    <div class="metric-sub">Existing apps use static 2-hour limits. If someone goes from 8 hours of distraction to 4 hours, static blockers call them a failure. T1 recognizes it as a massive 4-hour victory.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value cyan">Zero</div>
+                    <div class="metric-label">Verifiable Proof-of-Work</div>
+                    <div class="metric-sub">You hit the gym and gain visible muscle; you commit code and build a GitHub streak. But when you engage in 6 hours of deep cognitive focus, there is zero verifiable status or currency.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Psychological Reactance in Well-Being Tools (APA PsycNet Study)</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 4: THE PARADIGM SHIFT (THE SOLUTION) -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">THE PARADIGM SHIFT</span>
+                <span class="slide-page-num">04 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">NOT BLOCKING — RELATIVE UPGRADING</div>
+            <h2 class="title-hero">An Unfiltered Mirror of Reality.<br>Are you upgrading compared to yesterday?</h2>
+            <p class="subtitle-hero">T1 never blocks your phone. Instead, it provides quiet, relentless accountability and turns discipline into a verifiable competitive asset.</p>
+
+            <div class="grid-2">
+                <div class="glass-card">
+                    <h3 style="font-family: var(--font-display); font-size: 26px; color: #F87171; margin-bottom: 16px;">❌ The Flawed Incumbent Model (Opal / Forest)</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 16px; font-size: 17px; color: var(--text-secondary);">
+                        <li>• <strong>Arbitrary Locks:</strong> Pins, timer locks, and VPNs that user eventually bypasses.</li>
+                        <li>• <strong>Intrusive Popups:</strong> Mid-day interruptions that cause user annoyance and frustration.</li>
+                        <li>• <strong>Punitive Guilt:</strong> "You killed a digital tree" — infantilizing high-agency builders.</li>
+                        <li>• <strong>Invasive Cloud Telemetry:</strong> Third-party tracking profiles that compromise personal privacy.</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card highlight">
+                    <h3 style="font-family: var(--font-display); font-size: 26px; color: var(--accent-cyan); margin-bottom: 16px;">✅ The T1 Relative Engine Model</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 16px; font-size: 17px; color: #FFFFFF;">
+                        <li>• <strong>Zero Lockout Friction:</strong> User always retains 100% agency. No childish PIN barriers.</li>
+                        <li>• <strong>12:00 AM Midnight Reflection:</strong> A quiet, peaceful audit showing exact wins, lags, and percentile score.</li>
+                        <li>• <strong>Dynamic 7-Day Baseline:</strong> Anchors progress to real personal habits, celebrating daily relative gains.</li>
+                        <li>• <strong>100% On-Device Privacy:</strong> Zero cloud logs, zero keystroke sniffing. &lt;1.2% battery drain.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Relative Behavioral Economics Architecture</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 5: CORE PRODUCT ARCHITECTURE -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">SYSTEM ARCHITECTURE</span>
+                <span class="slide-page-num">05 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">THE 4-STAGE PROOF-OF-FOCUS ENGINE</div>
+            <h2 class="title-hero">How Telemetry Becomes Verifiable Reputation.</h2>
+            <p class="subtitle-hero">A mathematically idempotent pipeline running on-device with zero server compute overhead.</p>
+
+            <div class="grid-4">
+                <div class="glass-card">
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">STAGE 01</div>
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Local Ingestion</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5;">Android `UsageStatsManager` deltas polled locally via WorkManager. Private chats and titles never leave device storage.</p>
+                </div>
+                <div class="glass-card">
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">STAGE 02</div>
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Rolling Baseline</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5;">Calculates weighted 7-day intraday usage moving average, automatically normalizing weekends, holidays, and high-demand days.</p>
+                </div>
+                <div class="glass-card">
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">STAGE 03</div>
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Focus Score (0-99)</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5;">Translates saved hours into a normalized 0–99 Focus Score and dynamic Percentile Rank benchmarked against active peers.</p>
+                </div>
+                <div class="glass-card">
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">STAGE 04</div>
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Token Mining</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5;">Outperforming the 7-day baseline mints non-inflatable T1 Tokens. Unlocks rank frames, custom neon rings, and league entries.</p>
+                </div>
+            </div>
+
+            <div class="glass-card highlight" style="margin-top: 24px; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 16px; color: #FFFFFF; font-weight: 600;">Mathematical Invariance Guarantee:</div>
+                <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan);">Δ Focus = (Baseline_7D - Distraction_Today) • Multiplier &rarr; Token_Mint (Idempotent)</div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Clean Architecture • Dagger Hilt • Room SQLite • Supabase Postgres</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 6: LIVE PRODUCT SHOWCASE (ACTUAL SCREENS) -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">PRODUCT EXPERIENCE</span>
+                <span class="slide-page-num">06 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">THE LIVE ANDROID PRODUCT</div>
+            <h2 class="title-hero">Obsidian Aesthetics & Tactile Pacing.</h2>
+            <p class="subtitle-hero">Designed to feel as serious as a Bloomberg Terminal, as sleek as Linear, and as rewarding as Whoop.</p>
+
+            <div class="grid-4" style="align-items: center;">
+                <div class="glass-card" style="text-align: center;">
+                    <div style="font-family: var(--font-numbers); font-size: 36px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px;">01. Focus Ring</div>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Dynamic animated canvas arc tracking your 0–99 score in real time.</p>
+                    <div style="height: 280px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="../play_store_assets/real_app_screenshots/01_home_focus_ring.png" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+
+                <div class="glass-card" style="text-align: center;">
+                    <div style="font-family: var(--font-numbers); font-size: 36px; font-weight: 700; color: var(--accent-emerald); margin-bottom: 8px;">02. 12-App Intake</div>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Official brand badges with instant Productive vs Distraction toggling.</p>
+                    <div style="height: 280px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="../play_store_assets/real_app_screenshots/02_home_screen_time_breakdown.png" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+
+                <div class="glass-card" style="text-align: center;">
+                    <div style="font-family: var(--font-numbers); font-size: 36px; font-weight: 700; color: var(--accent-amber); margin-bottom: 8px;">03. Timer Arena</div>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Anti-tamper Pomodoro sessions that mint Proof-of-Focus tokens.</p>
+                    <div style="height: 280px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="../play_store_assets/real_app_screenshots/03_focus_timer_screen.png" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+
+                <div class="glass-card" style="text-align: center;">
+                    <div style="font-family: var(--font-numbers); font-size: 36px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">04. Leaderboard</div>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Real peer percentiles with Ghost Mode privacy options.</p>
+                    <div style="height: 280px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="../play_store_assets/real_app_screenshots/05_leaderboard_screen.png" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Production Screenshots • Pixel 9 Pro Hardware Render</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 7: TARGET AUDIENCE & ICP -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">TARGET AUDIENCE</span>
+                <span class="slide-page-num">07 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">IDEAL CUSTOMER PROFILE (ICP)</div>
+            <h2 class="title-hero">Built for High-Agency Builders Who Cannot Afford Distraction.</h2>
+            <p class="subtitle-hero">We do not target casual smartphone users. We focus on people whose financial and career outcomes depend on daily deep work.</p>
+
+            <div class="grid-3">
+                <div class="glass-card highlight">
+                    <div class="pill-category" style="color: var(--accent-cyan); border-color: rgba(56, 189, 248, 0.4); margin-bottom: 16px;">PRIMARY ICP 01</div>
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">Competitive Exam Aspirants</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;"><strong>40M+ Students</strong> preparing for hyper-competitive exams (IIT-JEE, UPSC, NEET, GATE, CAT). Studying 8–12 hrs/day where a 1-hour lapse feels catastrophic. They crave authentic peer benchmarking.</p>
+                    <div style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-cyan);">Pain Point: Extreme guilt + Blocker rage uninstalls.</div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="pill-category" style="color: var(--accent-emerald); border-color: rgba(16, 185, 129, 0.4); margin-bottom: 16px;">PRIMARY ICP 02</div>
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">Solo Tech Founders & Builders</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">Indie hackers, software engineers, and founders managing their own schedules. They track their sleep with Oura/Whoop and their runs with Strava, but have zero metrics for cognitive work.</p>
+                    <div style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-emerald);">Pain Point: No proof-of-work for 6-hr coding sprints.</div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="pill-category" style="color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.4); margin-bottom: 16px;">EXPANSION ICP 03</div>
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">Remote Knowledge Workers</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">High-income remote professionals battling constant Slack, email, and social tab interruptions while working from home without supervision.</p>
+                    <div style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-amber);">Pain Point: Fragmented attention destroys flow state.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Beachhead: India & Southeast Asia High-Stakes Knowledge Markets</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 8: THE PROOF-OF-FOCUS TOKEN ECONOMY -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-amber"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">TOKENOMICS & INCENTIVES</span>
+                <span class="slide-page-num">08 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">PROOF-OF-FOCUS (PoF)</div>
+            <h2 class="title-hero">T1 Tokens Cannot Be Bought With Money.<br>They Must Be Mined With Cognitive Sweat.</h2>
+            <p class="subtitle-hero">A closed-loop behavioral reward engine turning discipline into an authentic social currency.</p>
+
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="metric-value cyan">Phase 1</div>
+                    <div class="metric-label">In-App Cosmetic Status</div>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-top: 12px;">Users redeem tokens for high-contrast neon profile rings, rare leaderboard badges, and streak freeze insurance. Creates viral screenshot sharing on X and WhatsApp study groups.</p>
+                </div>
+
+                <div class="glass-card highlight">
+                    <div class="metric-value amber">Phase 2</div>
+                    <div class="metric-label">High-Stakes Wagering Pools</div>
+                    <p style="font-size: 15px; color: #FFFFFF; line-height: 1.5; margin-top: 12px;">Users stake 500 tokens in 30-day cohort sprint pools with peers. The top 20% disciplined performers split the prize pool. Massive organic retention with real skin-in-the-game.</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="metric-value emerald">Phase 3</div>
+                    <div class="metric-label">Software & Hardware Perks</div>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-top: 12px;">Partner brand perks (Notion, Cursor, Audible, physical hoodies) redeemable exclusively through verified focus tokens. Proof of 500+ deep focus hours as a verified builder badge.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Closed-Loop Behavioral Utility • Non-Inflatable Algorithmic Minting</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 9: DEFENSIBILITY & COMPETITIVE MOAT -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">COMPETITIVE MATRIX</span>
+                <span class="slide-page-num">09 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">SUSTAINABLE DEFENSIBILITY</div>
+            <h2 class="title-hero">Why OS Giants & Blocker Apps Cannot Easily Copy T1.</h2>
+            
+            <div class="glass-card" style="padding: 16px; margin-top: 16px;">
+                <table class="venture-table">
+                    <thead>
+                        <tr>
+                            <th>DIMENSION</th>
+                            <th>APPLE / GOOGLE SCREEN TIME</th>
+                            <th>OPAL / FREEDOM</th>
+                            <th>FOREST</th>
+                            <th style="color: var(--accent-cyan);">T1: TOP 1%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Behavioral Model</strong></td>
+                            <td>Passive, boring charts</td>
+                            <td>Punitive VPN locks</td>
+                            <td>Infantile timer (tree dies)</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">Relative 7D Baseline + 12 AM Audit</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Psychological Reactance</strong></td>
+                            <td>Ignored</td>
+                            <td>Severe (87% uninstall)</td>
+                            <td>Moderate (cheated easily)</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">Zero (100% agency preserved)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Privacy & Battery</strong></td>
+                            <td>OS-level</td>
+                            <td>Heavy battery VPN drain</td>
+                            <td>Lightweight</td>
+                            <td style="color: var(--accent-emerald); font-weight: 700;">&lt;1.2% battery, 100% On-Device</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>Proof-of-Focus Economy</strong></td>
+                            <td>None</td>
+                            <td>None</td>
+                            <td>Simple coins</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">Token Mining + Peer Leagues</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Target SDK & Compliance</strong></td>
+                            <td>Native</td>
+                            <td>VPN profile risks</td>
+                            <td>Legacy APIs</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">Target SDK 36 (Android 16 certified)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Competitor Analysis Matrix • Q4 2026</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 10: MARKET OPPORTUNITY & TRACTION -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-amber"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">MARKET SIZING</span>
+                <span class="slide-page-num">10 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">MARKET OPPORTUNITY & TIMING</div>
+            <h2 class="title-hero">A $4.8 Billion Market Expanding With Every AI Algorithm.</h2>
+            <p class="subtitle-hero">As generative AI produces infinite content, unbroken human focus becomes the single rarest asset on Earth.</p>
+
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="metric-value cyan">$4.8B</div>
+                    <div class="metric-label">TAM (Global Well-Being)</div>
+                    <div class="metric-sub">Total global digital well-being and productivity app market growing at 14.2% CAGR through 2028.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value emerald">65M+</div>
+                    <div class="metric-label">SAM (High-Agency Builders)</div>
+                    <div class="metric-sub">English/Hindi-speaking competitive exam aspirants, software engineers, and founders in India & SEA.</div>
+                </div>
+                <div class="glass-card">
+                    <div class="metric-value amber">350,000</div>
+                    <div class="metric-label">SOM (18-Month Beachhead)</div>
+                    <div class="metric-sub">Active community builders and students across elite coaching centers and tech campuses.</div>
+                </div>
+            </div>
+
+            <div class="glass-card highlight" style="margin-top: 32px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 20px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">Milestone Status: Google Play Launch Scheduled</h3>
+                    <p style="font-size: 15px; color: var(--text-secondary);">Target SDK 36 certified, prominent disclosures approved. Public rollout begins <strong>November 4, 2026</strong>.</p>
+                </div>
+                <div class="pill-category" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border-color: rgba(16, 185, 129, 0.4);">READY FOR DISTRIBUTION</div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Market Projections: Statista & Grand View Research Digital Health Reports</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 11: BUSINESS & REVENUE MODEL -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">MONETIZATION & SCALE</span>
+                <span class="slide-page-num">11 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kicker">SCALABLE $100M+ UNIT ECONOMICS</div>
+            <h2 class="title-hero">High-Margin, Multi-Tiered Monetization.</h2>
+            <p class="subtitle-hero">Monetizing across consumer subscription, cohort-based B2B institutional licensing, and platform take-rates.</p>
+
+            <div class="grid-3">
+                <div class="glass-card">
+                    <div class="metric-value cyan">$9.99<span style="font-size: 24px; color: var(--text-muted);">/mo</span></div>
+                    <div class="metric-label">B2C: T1 Pro Tier</div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--text-secondary); margin-top: 14px;">
+                        <li>• Deep 90-day cognitive telemetry analysis</li>
+                        <li>• Custom private friend wagering arenas</li>
+                        <li>• 2x Token mining multiplier on focus blocks</li>
+                        <li>• 78% Projected gross margins</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card highlight">
+                    <div class="metric-value emerald">$5.00<span style="font-size: 24px; color: var(--text-muted);">/seat</span></div>
+                    <div class="metric-label">B2B: Cohorts & Coaching</div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: #FFFFFF; margin-top: 14px;">
+                        <li>• Enterprise coaching institute leaderboards (IIT-JEE, UPSC)</li>
+                        <li>• Engineering team focus analytics for remote startups</li>
+                        <li>• Anonymous team burn-out indicators</li>
+                        <li>• High-retention annual contracts ($60/seat/yr)</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card">
+                    <div class="metric-value amber">5% - 10%</div>
+                    <div class="metric-label">Platform Take-Rates</div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--text-secondary); margin-top: 14px;">
+                        <li>• Platform rake on peer-to-peer wagering prize pools</li>
+                        <li>• Sponsored brand reward perk placements</li>
+                        <li>• Exclusive hardware merchandise partnerships</li>
+                        <li>• Zero-marginal-cost scaling</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Unit Economics & Financial Projections</div>
+            <div>T1: Top 1% Institutional Pitch Deck</div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 12: THE VISION & LEADERSHIP -->
+    <!-- ============================================================== -->
+    <div class="slide">
+        <div class="grid-backdrop"></div>
+        <div class="glow-cyan"></div>
+        <div class="glow-amber"></div>
+
+        <div class="slide-header">
+            <div class="brand-monogram">
+                <div class="logo-box">T1</div>
+                <div class="brand-title">T1<span>: TOP 1%</span></div>
+            </div>
+            <div class="slide-tracker">
+                <span class="pill-category">THE VISION</span>
+                <span class="slide-page-num">12 / 12</span>
+            </div>
+        </div>
+
+        <div class="slide-content" style="align-items: center; text-align: center; justify-content: center;">
+            <div class="kicker">TEAM ZYNETH • FOUNDED 2026</div>
+            <h1 class="title-hero" style="font-size: 68px; max-width: 1400px; margin-bottom: 24px;">
+                "Our vision is simple: To become the universal proof-of-work standard for human focus."
+            </h1>
+            <p class="subtitle-hero" style="font-size: 24px; max-width: 1000px; margin-bottom: 48px;">
+                We have built a production-grade, policy-audited native Android app. We are scaling a community of relentless builders who refuse to let algorithms dictate their destiny.
+            </p>
+
+            <div class="glass-card highlight" style="max-width: 900px; width: 100%; display: flex; justify-content: space-around; align-items: center; padding: 32px 48px;">
+                <div>
+                    <div style="font-family: var(--font-display); font-size: 24px; font-weight: 800; color: #FFFFFF;">Arnav Rajesh</div>
+                    <div style="font-size: 15px; color: var(--accent-cyan); font-weight: 600;">Lead Architect & Builder • Team ZYNETH</div>
+                </div>
+                <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.1);"></div>
+                <div>
+                    <div style="font-size: 15px; color: var(--text-muted); margin-bottom: 4px;">Direct Contact</div>
+                    <div style="font-family: var(--font-mono); font-size: 16px; color: #FFFFFF;">support.t1.help@gmail.com</div>
+                </div>
+                <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.1);"></div>
+                <div>
+                    <div style="font-size: 15px; color: var(--text-muted); margin-bottom: 4px;">Live Deployment</div>
+                    <div style="font-size: 15px; color: var(--accent-cyan);"><a href="https://t1premainweb-nine.vercel.app/home" style="color: var(--accent-cyan);">t1premainweb-nine.vercel.app</a></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <div>Team ZYNETH • Open Innovation Track • All Rights Reserved 2026</div>
+            <div>Thank You. Questions & Discussion.</div>
+        </div>
+    </div>
+
+</body>
+</html>

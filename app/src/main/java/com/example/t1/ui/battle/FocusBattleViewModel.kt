@@ -31,6 +31,8 @@ import javax.inject.Inject
 data class BattleUiState(
     val currentStep: BattleStep = BattleStep.DISCOVERY,
     val searchQuery: String = "",
+    val isBatteryWhitelisted: Boolean = true,
+    val oemManufacturer: String = "",
     val currentUser: BattleUser = BattleUser(
         id = "current_user",
         username = "you",
@@ -42,6 +44,7 @@ data class BattleUiState(
         totalTokensWon = 0,
         bio = ""
     ),
+    val allCommunityUsers: List<BattleUser> = emptyList(),
     val recentUsers: List<BattleUser> = emptyList(),
     val suggestedUsers: List<BattleUser> = emptyList(),
     val selectedUser: BattleUser? = null,
@@ -73,7 +76,9 @@ class FocusBattleViewModel @Inject constructor(
     private val supabaseService: SupabaseService,
     private val focusSessionDao: FocusSessionDao,
     private val tokenRepository: TokenRepository,
-    private val t1NotificationManager: T1NotificationManager
+    private val t1NotificationManager: T1NotificationManager,
+    private val batteryOptimizationDetector: com.example.t1.data.compat.BatteryOptimizationDetector,
+    private val oemCompatibilityLayer: com.example.t1.data.compat.OemCompatibilityLayer
 ) : ViewModel() {
 
     private var currentProfile: UserProfile? = null
@@ -92,6 +97,7 @@ class FocusBattleViewModel @Inject constructor(
         observeCurrentUserProfile()
         loadRealCommunityProfilesAndFights()
         startPendingChallengesPoller()
+        refreshBatteryOptimizationStatus()
     }
 
     private fun observeCurrentUserProfile() {
@@ -169,6 +175,7 @@ class FocusBattleViewModel @Inject constructor(
 
             _uiState.update {
                 it.copy(
+                    allCommunityUsers = mapped,
                     suggestedUsers = suggested,
                     recentUsers = recent
                 )
@@ -324,8 +331,18 @@ class FocusBattleViewModel @Inject constructor(
     private fun startWaitingAcceptancePoller(fightId: String) {
         waitingAcceptanceJob?.cancel()
         waitingAcceptanceJob = viewModelScope.launch {
+            var waitSeconds = 0
             while (_uiState.value.currentStep == BattleStep.WAITING_ACCEPTANCE) {
                 delay(2000)
+                waitSeconds += 2
+                if (waitSeconds >= 180) { // 3 minutes timeout
+                    T1Logger.i("Challenge waiting acceptance timed out after 3 minutes. Expiring challenge.")
+                    try {
+                        supabaseService.updateFightStatus(fightId, "EXPIRED")
+                    } catch (_: Exception) {}
+                    _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY, activeFightId = null) }
+                    break
+                }
                 try {
                     val remoteFight = supabaseService.getFightById(fightId)
                     if (remoteFight != null) {
@@ -335,13 +352,9 @@ class FocusBattleViewModel @Inject constructor(
                                 startCountdown()
                                 break
                             }
-                            "DECLINED" -> {
-                                T1Logger.i("Opponent DECLINED the focus fight.")
-                                _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY) }
-                                break
-                            }
-                            "CANCELLED" -> {
-                                _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY) }
+                            "DECLINED", "CANCELLED", "EXPIRED" -> {
+                                T1Logger.i("Opponent ${remoteFight.status} the focus fight.")
+                                _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY, activeFightId = null) }
                                 break
                             }
                         }
@@ -358,7 +371,11 @@ class FocusBattleViewModel @Inject constructor(
         waitingAcceptanceJob?.cancel()
         if (fightId != null) {
             viewModelScope.launch {
-                supabaseService.updateFightStatus(fightId, "CANCELLED")
+                try {
+                    supabaseService.updateFightStatus(fightId, "CANCELLED")
+                } catch (e: Exception) {
+                    T1Logger.w("Failed to cancel fight: ${e.message}")
+                }
             }
         }
         _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY, activeFightId = null) }
@@ -373,29 +390,50 @@ class FocusBattleViewModel @Inject constructor(
                 if (_uiState.value.currentStep == BattleStep.DISCOVERY) {
                     try {
                         val pendingFight = supabaseService.getPendingFightForUser(currentUserId)
-                        if (pendingFight != null && pendingFight.id != _uiState.value.incomingFight?.id) {
-                            val challengerProfile = allRemoteProfiles.firstOrNull { it.id == pendingFight.challengerId }
-                            val challengerUser = challengerProfile?.toBattleUser(allRemoteFights) ?: BattleUser(
-                                id = pendingFight.challengerId,
-                                username = "focus_mate",
-                                displayName = "Focus Challenger"
-                            )
-
-                            _uiState.update {
-                                it.copy(
-                                    incomingFight = pendingFight,
-                                    incomingChallenger = challengerUser
-                                )
+                        if (pendingFight != null && pendingFight.id != null) {
+                            val fightId = pendingFight.id
+                            // Check expiration
+                            if (supabaseService.isFightExpired(pendingFight.createdAt, maxAgeMinutes = 3)) {
+                                try {
+                                    supabaseService.updateFightStatus(fightId, "EXPIRED")
+                                } catch (_: Exception) {}
+                                continue
                             }
 
-                            // Post real high-priority system notification
-                            t1NotificationManager.postNotification(
-                                id = (pendingFight.id ?: "").hashCode(),
-                                title = "⚔️ Focus Fight Challenge!",
-                                text = "@${challengerUser.username} challenged you to a ${pendingFight.durationMinutes}m focus duel!",
-                                channelId = T1NotificationManager.CHANNEL_CRITICAL,
-                                type = "focus_fight_challenge"
-                            )
+                            // Check if dismissed
+                            if (t1NotificationManager.isFightDismissed(fightId)) {
+                                continue
+                            }
+
+                            if (fightId != _uiState.value.incomingFight?.id) {
+                                val challengerProfile = allRemoteProfiles.firstOrNull { it.id == pendingFight.challengerId }
+                                val challengerUser = challengerProfile?.toBattleUser(allRemoteFights) ?: BattleUser(
+                                    id = pendingFight.challengerId,
+                                    username = "focus_mate",
+                                    displayName = "Focus Challenger"
+                                )
+
+                                _uiState.update {
+                                    it.copy(
+                                        incomingFight = pendingFight,
+                                        incomingChallenger = challengerUser
+                                    )
+                                }
+
+                                // Post real high-priority system notification with fightId and direct navigation
+                                t1NotificationManager.postNotification(
+                                    id = fightId.hashCode(),
+                                    title = "⚔️ Focus Fight Challenge!",
+                                    text = "@${challengerUser.username} challenged you to a ${pendingFight.durationMinutes}m focus duel!",
+                                    channelId = T1NotificationManager.CHANNEL_BATTLE_CHALLENGES,
+                                    type = "focus_fight_challenge",
+                                    navigateTab = "BATTLE",
+                                    fightId = fightId
+                                )
+                            }
+                        } else if (_uiState.value.incomingFight != null) {
+                            // Challenger cancelled or fight expired: auto-dismiss prompt
+                            _uiState.update { it.copy(incomingFight = null, incomingChallenger = null) }
                         }
                     } catch (e: Exception) {
                         T1Logger.w("Error checking pending challenges: ${e.message}")
@@ -424,30 +462,107 @@ class FocusBattleViewModel @Inject constructor(
         val fight = _uiState.value.incomingFight
         if (fight?.id != null) {
             val fightId = fight.id
-            _uiState.update {
-                it.copy(
-                    activeFightId = fightId,
-                    isChallenger = false,
-                    selectedDurationMinutes = fight.durationMinutes,
-                    selectedWagerTokens = fight.wagerTokens,
-                    selectedUser = _uiState.value.incomingChallenger,
-                    incomingFight = null
-                )
-            }
             viewModelScope.launch {
-                supabaseService.updateFightStatus(fightId, "ACCEPTED")
+                try {
+                    // Check remote fight status and expiry to avoid ghost battles
+                    val remote = supabaseService.getFightById(fightId)
+                    if (remote == null || remote.status != "PENDING" || supabaseService.isFightExpired(remote.createdAt, maxAgeMinutes = 3)) {
+                        T1Logger.w("Challenge no longer pending or has expired. Cannot accept.")
+                        if (remote != null && remote.status == "PENDING") {
+                            supabaseService.updateFightStatus(fightId, "EXPIRED")
+                        }
+                        _uiState.update {
+                            it.copy(
+                                incomingFight = null,
+                                incomingChallenger = null,
+                                currentStep = BattleStep.DISCOVERY
+                            )
+                        }
+                        return@launch
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            activeFightId = fightId,
+                            isChallenger = false,
+                            selectedDurationMinutes = fight.durationMinutes,
+                            selectedWagerTokens = fight.wagerTokens,
+                            selectedUser = _uiState.value.incomingChallenger,
+                            incomingFight = null
+                        )
+                    }
+                    supabaseService.updateFightStatus(fightId, "ACCEPTED")
+                    startCountdown()
+                } catch (e: Exception) {
+                    T1Logger.e("Error accepting fight: ${e.message}", e)
+                    _uiState.update { it.copy(incomingFight = null, currentStep = BattleStep.DISCOVERY) }
+                }
             }
-            startCountdown()
         } else {
             startCountdown()
+        }
+    }
+
+
+    fun refreshBatteryOptimizationStatus() {
+        val isWhitelisted = batteryOptimizationDetector.isIgnoringBatteryOptimizations()
+        val oem = oemCompatibilityLayer.getOemProfile().manufacturer
+        _uiState.update {
+            it.copy(
+                isBatteryWhitelisted = isWhitelisted,
+                oemManufacturer = oem
+            )
+        }
+    }
+
+    fun openBatterySettings(context: android.content.Context) {
+        oemCompatibilityLayer.openOemBackgroundSettings(context)
+        refreshBatteryOptimizationStatus()
+    }
+
+    fun autoAcceptFight(fightId: String) {
+        T1Logger.i("FocusBattleViewModel: autoAcceptFight called for fightId: $fightId")
+        viewModelScope.launch {
+            try {
+                val remote = supabaseService.getFightById(fightId)
+                if (remote != null && remote.status == "PENDING" && !supabaseService.isFightExpired(remote.createdAt, maxAgeMinutes = 3)) {
+                    val allProfiles = supabaseService.getAllProfiles()
+                    val challenger = allProfiles.firstOrNull { it.id == remote.challengerId }?.toBattleUser(allRemoteFights)
+                    _uiState.update {
+                        it.copy(
+                            activeFightId = fightId,
+                            isChallenger = false,
+                            selectedDurationMinutes = remote.durationMinutes,
+                            selectedWagerTokens = remote.wagerTokens,
+                            selectedUser = challenger,
+                            incomingFight = null,
+                            incomingChallenger = null
+                        )
+                    }
+                    supabaseService.updateFightStatus(fightId, "ACCEPTED")
+                    startCountdown()
+                } else {
+                    T1Logger.w("Auto-accept failed: fight $fightId expired or no longer pending.")
+                    _uiState.update { it.copy(currentStep = BattleStep.DISCOVERY) }
+                }
+            } catch (e: Exception) {
+                T1Logger.e("Error auto-accepting fight $fightId: ${e.message}", e)
+            }
         }
     }
 
     fun declineChallenge() {
         val fight = _uiState.value.incomingFight
         if (fight?.id != null) {
+            val fightId = fight.id
+            t1NotificationManager.markFightDismissed(fightId)
+            t1NotificationManager.cancelNotification(fightId.hashCode())
             viewModelScope.launch {
-                supabaseService.updateFightStatus(fight.id, "DECLINED")
+                try {
+                    supabaseService.updateFightStatus(fightId, "DECLINED")
+                } catch (e: Exception) {
+                    T1Logger.w("Failed to decline fight: ${e.message}")
+                }
             }
         }
         _uiState.update {
@@ -478,16 +593,38 @@ class FocusBattleViewModel @Inject constructor(
     }
 
     fun onAppMinimized() {
-        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA) {
-            T1Logger.i("Focus Battle: App minimized. Pausing user focus timer.")
+        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA && _uiState.value.myStatus != ParticipantStatus.PAUSED) {
+            T1Logger.i("Focus Battle: App minimized. Pausing user focus timer immediately.")
             _uiState.update { it.copy(myStatus = ParticipantStatus.PAUSED) }
+            val activeId = _uiState.value.activeFightId
+            val isChallenger = _uiState.value.isChallenger
+            if (activeId != null) {
+                viewModelScope.launch {
+                    try {
+                        val pauseStatus = if (isChallenger) "PAUSED_CHALLENGER" else "PAUSED_OPPONENT"
+                        supabaseService.updateFightStatus(activeId, pauseStatus)
+                    } catch (e: Exception) {
+                        T1Logger.w("Failed to notify Supabase of app pause: ${e.message}")
+                    }
+                }
+            }
         }
     }
 
     fun onAppResumed() {
-        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA) {
+        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA && _uiState.value.myStatus != ParticipantStatus.FOCUSED) {
             T1Logger.i("Focus Battle: App foregrounded. Resuming user focus timer.")
             _uiState.update { it.copy(myStatus = ParticipantStatus.FOCUSED) }
+            val activeId = _uiState.value.activeFightId
+            if (activeId != null) {
+                viewModelScope.launch {
+                    try {
+                        supabaseService.updateFightStatus(activeId, "IN_PROGRESS")
+                    } catch (e: Exception) {
+                        T1Logger.w("Failed to notify Supabase of app resume: ${e.message}")
+                    }
+                }
+            }
         }
     }
 
@@ -505,9 +642,19 @@ class FocusBattleViewModel @Inject constructor(
             )
         }
 
+        val activeFightId = _uiState.value.activeFightId
+        if (activeFightId != null) {
+            viewModelScope.launch {
+                try {
+                    supabaseService.updateFightStatus(activeFightId, "IN_PROGRESS")
+                } catch (_: Exception) {}
+            }
+        }
+
         battleTimerJob?.cancel()
         battleTimerJob = viewModelScope.launch {
             var mySecs = totalSecs
+            var oppSecs = totalSecs
             val activeId = _uiState.value.activeFightId
             val isChallenger = _uiState.value.isChallenger
             var syncTick = 0
@@ -516,29 +663,66 @@ class FocusBattleViewModel @Inject constructor(
                 delay(1000)
                 syncTick++
 
-                // Decrement only if user is actively focused (not minimized/paused)
+                // 1. Smoothly decrement local player's timer if actively focused
                 if (_uiState.value.myStatus == ParticipantStatus.FOCUSED) {
                     mySecs -= 1
                     _uiState.update { it.copy(myRemainingSeconds = mySecs) }
                 }
 
-                // Sync with Supabase every 3 seconds if real fight
-                if (activeId != null && syncTick % 3 == 0) {
-                    val elapsed = totalSecs - mySecs
-                    supabaseService.updateFightProgress(activeId, isChallenger, elapsed)
+                // 2. Smoothly decrement opponent's timer second-by-second in realtime (client-side prediction)
+                if (_uiState.value.opponentStatus == ParticipantStatus.FOCUSED && oppSecs > 0) {
+                    oppSecs -= 1
+                    _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
+                }
 
-                    val remoteFight = supabaseService.getFightById(activeId)
-                    if (remoteFight != null) {
-                        if (remoteFight.status == "SURRENDERED") {
-                            T1Logger.i("Opponent surrendered! Winning battle.")
-                            endBattleWithVictory()
-                            break
+                // 3. Sync with Supabase every 2 seconds if real fight
+                if (activeId != null && syncTick % 2 == 0) {
+                    val myElapsed = totalSecs - mySecs
+                    try {
+                        supabaseService.updateFightProgress(activeId, isChallenger, myElapsed)
+
+                        val remoteFight = supabaseService.getFightById(activeId)
+                        if (remoteFight != null) {
+                            if (remoteFight.status == "SURRENDERED") {
+                                T1Logger.i("Opponent surrendered! Winning battle.")
+                                endBattleWithVictory()
+                                break
+                            }
+
+                            // Check remote status of opponent accurately
+                            val opponentIsPaused = if (isChallenger) {
+                                remoteFight.status == "PAUSED_OPPONENT"
+                            } else {
+                                remoteFight.status == "PAUSED_CHALLENGER"
+                            } || (remoteFight.status == "PAUSED" && _uiState.value.myStatus == ParticipantStatus.FOCUSED)
+
+                            if (opponentIsPaused) {
+                                if (_uiState.value.opponentStatus != ParticipantStatus.PAUSED) {
+                                    _uiState.update {
+                                        it.copy(
+                                            opponentStatus = ParticipantStatus.PAUSED,
+                                            opponentPausedReason = "App minimized • Timer paused"
+                                        )
+                                    }
+                                }
+                            } else if (remoteFight.status == "IN_PROGRESS" || remoteFight.status == "ACCEPTED") {
+                                if (_uiState.value.opponentStatus == ParticipantStatus.PAUSED) {
+                                    _uiState.update { it.copy(opponentStatus = ParticipantStatus.FOCUSED) }
+                                }
+                            }
+
+                            // Reconcile opponent elapsed seconds smoothly without 3-second jumping
+                            val oppElapsedRemote = if (isChallenger) remoteFight.opponentSeconds else remoteFight.challengerSeconds
+                            if (oppElapsedRemote > 0) {
+                                val expectedRemaining = (totalSecs - oppElapsedRemote).coerceAtLeast(0)
+                                if (Math.abs(oppSecs - expectedRemaining) > 5) {
+                                    oppSecs = expectedRemaining
+                                    _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
+                                }
+                            }
                         }
-
-                        // Check opponent elapsed progress
-                        val oppElapsed = if (isChallenger) remoteFight.opponentSeconds else remoteFight.challengerSeconds
-                        val oppRemaining = (totalSecs - oppElapsed).coerceAtLeast(0)
-                        _uiState.update { it.copy(opponentRemainingSeconds = oppRemaining) }
+                    } catch (e: Exception) {
+                        T1Logger.w("Battle sync error: ${e.message}")
                     }
                 }
 
@@ -556,7 +740,8 @@ class FocusBattleViewModel @Inject constructor(
             ?: _uiState.value.recentUsers.firstOrNull()
             ?: _uiState.value.currentUser
         val durationMins = _uiState.value.selectedDurationMinutes
-        val elapsedSeconds = (_uiState.value.myTotalSeconds - _uiState.value.myRemainingSeconds).toLong()
+        // EXACT FOCUS TIME SPENT BEFORE SURRENDER:
+        val actualElapsedSeconds = (_uiState.value.myTotalSeconds - _uiState.value.myRemainingSeconds).coerceAtLeast(0).toLong()
         val activeId = _uiState.value.activeFightId
 
         _uiState.update {
@@ -569,30 +754,37 @@ class FocusBattleViewModel @Inject constructor(
 
         if (activeId != null) {
             viewModelScope.launch {
-                supabaseService.updateFightStatus(
-                    fightId = activeId,
-                    status = "SURRENDERED",
-                    winnerId = opponent.id
-                )
+                val oppElapsed = (_uiState.value.opponentTotalSeconds - _uiState.value.opponentRemainingSeconds).coerceAtLeast(0)
+                try {
+                    supabaseService.updateFightStatus(
+                        fightId = activeId,
+                        status = "SURRENDERED",
+                        winnerId = opponent.id,
+                        challengerSeconds = actualElapsedSeconds.toInt(),
+                        opponentSeconds = oppElapsed
+                    )
+                } catch (e: Exception) {
+                    T1Logger.w("Failed to update fight status on surrender: ${e.message}")
+                }
             }
         }
 
-        // Even on surrender, if user focused for >= 30 seconds, credit the focus time!
-        if (elapsedSeconds >= 30) {
+        // Record the EXACT elapsed focus time in profile even on surrender (if >= 10s)
+        if (actualElapsedSeconds >= 10) {
             viewModelScope.launch {
                 val user = currentProfile ?: return@launch
                 try {
                     val session = FocusSessionEntity(
                         id = UUID.randomUUID().toString(),
                         userId = user.id,
-                        durationSeconds = elapsedSeconds,
+                        durationSeconds = actualElapsedSeconds, // EXACT ELAPSED TIME!
                         timestamp = System.currentTimeMillis(),
                         synced = false
                     )
                     focusSessionDao.insertSession(session)
                     val updatedCount = focusSessionDao.getTotalFocusSessionCount(user.id)
                     userRepository.saveProfile(user.copy(totalFocusSessions = updatedCount))
-                    T1Logger.i("Focus Battle surrender: recorded $elapsedSeconds focus seconds.")
+                    T1Logger.i("Focus Battle surrender: recorded $actualElapsedSeconds exact focus seconds.")
                 } catch (e: Exception) {
                     T1Logger.e("Error recording partial focus session on surrender: ${e.message}", e)
                 }
@@ -608,7 +800,8 @@ class FocusBattleViewModel @Inject constructor(
             ?: _uiState.value.recentUsers.firstOrNull()
             ?: _uiState.value.currentUser
         val durationMins = _uiState.value.selectedDurationMinutes
-        val durationSeconds = (durationMins * 60).toLong()
+        // EXACT FOCUS TIME SPENT BY THE USER:
+        val actualElapsedSeconds = (_uiState.value.myTotalSeconds - _uiState.value.myRemainingSeconds).coerceAtLeast(0).toLong()
         val activeId = _uiState.value.activeFightId
 
         val newRecord = BattleHistoryRecord(
@@ -631,22 +824,25 @@ class FocusBattleViewModel @Inject constructor(
 
         viewModelScope.launch {
             val user = currentProfile ?: return@launch
-            try {
-                val session = FocusSessionEntity(
-                    id = UUID.randomUUID().toString(),
-                    userId = user.id,
-                    durationSeconds = durationSeconds,
-                    timestamp = System.currentTimeMillis(),
-                    synced = false
-                )
-                focusSessionDao.insertSession(session)
+            // Record the EXACT elapsed focus duration (e.g. 1m 23s = 83 seconds, or full 1500s)
+            if (actualElapsedSeconds >= 10) {
+                try {
+                    val session = FocusSessionEntity(
+                        id = UUID.randomUUID().toString(),
+                        userId = user.id,
+                        durationSeconds = actualElapsedSeconds, // EXACT ELAPSED TIME!
+                        timestamp = System.currentTimeMillis(),
+                        synced = false
+                    )
+                    focusSessionDao.insertSession(session)
 
-                val updatedCount = focusSessionDao.getTotalFocusSessionCount(user.id)
-                val updatedProfile = user.copy(totalFocusSessions = updatedCount)
-                userRepository.saveProfile(updatedProfile)
-                T1Logger.i("Focus Battle session recorded: $durationSeconds seconds. Total sessions: $updatedCount")
-            } catch (e: Exception) {
-                T1Logger.e("Error recording Focus Battle session: ${e.message}", e)
+                    val updatedCount = focusSessionDao.getTotalFocusSessionCount(user.id)
+                    val updatedProfile = user.copy(totalFocusSessions = updatedCount)
+                    userRepository.saveProfile(updatedProfile)
+                    T1Logger.i("Focus Battle session recorded: $actualElapsedSeconds seconds (Actual elapsed). Total sessions: $updatedCount")
+                } catch (e: Exception) {
+                    T1Logger.e("Error recording Focus Battle session: ${e.message}", e)
+                }
             }
 
             try {
@@ -661,15 +857,16 @@ class FocusBattleViewModel @Inject constructor(
                 T1Logger.e("Error crediting tokens for battle: ${e.message}", e)
             }
 
-            // Update Supabase focus_fights
+            // Update Supabase focus_fights with exact elapsed seconds
             try {
+                val oppElapsed = (_uiState.value.opponentTotalSeconds - _uiState.value.opponentRemainingSeconds).coerceAtLeast(0)
                 if (activeId != null) {
                     supabaseService.updateFightStatus(
                         fightId = activeId,
                         status = "COMPLETED",
                         winnerId = user.id,
-                        challengerSeconds = durationMins * 60,
-                        opponentSeconds = (durationMins * 60) - 10
+                        challengerSeconds = actualElapsedSeconds.toInt(),
+                        opponentSeconds = oppElapsed
                     )
                 } else if (opponent.id.isNotBlank() && opponent.id != "current_user") {
                     supabaseService.recordFocusFight(
@@ -680,8 +877,8 @@ class FocusBattleViewModel @Inject constructor(
                             wagerTokens = wagerTokens,
                             status = "COMPLETED",
                             winnerId = user.id,
-                            challengerSeconds = durationMins * 60,
-                            opponentSeconds = (durationMins * 60) - 10
+                            challengerSeconds = actualElapsedSeconds.toInt(),
+                            opponentSeconds = oppElapsed
                         )
                     )
                 }

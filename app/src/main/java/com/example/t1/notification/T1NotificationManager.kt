@@ -7,6 +7,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -27,6 +29,7 @@ class T1NotificationManager @Inject constructor(
 ) {
     companion object {
         const val CHANNEL_CRITICAL = "t1_critical"
+        const val CHANNEL_BATTLE_CHALLENGES = "t1_battle_challenges_v2"
         const val CHANNEL_IMPORTANT = "t1_important"
         const val CHANNEL_NORMAL = "t1_normal"
         const val CHANNEL_SILENT = "t1_silent"
@@ -52,6 +55,26 @@ class T1NotificationManager @Inject constructor(
                 description = "Urgent alerts such as streak breaks and focus score warnings."
                 enableLights(true)
                 enableVibration(true)
+            }
+
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST)
+                .build()
+
+            val battleChannel = NotificationChannel(
+                CHANNEL_BATTLE_CHALLENGES,
+                "Focus Fight Challenges",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "High-priority alerts for incoming Focus Fight challenges from friends."
+                enableLights(true)
+                lightColor = android.graphics.Color.RED
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                setSound(soundUri, audioAttributes)
             }
 
             val importantChannel = NotificationChannel(
@@ -81,6 +104,7 @@ class T1NotificationManager @Inject constructor(
             }
 
             manager.createNotificationChannel(criticalChannel)
+            manager.createNotificationChannel(battleChannel)
             manager.createNotificationChannel(importantChannel)
             manager.createNotificationChannel(normalChannel)
             manager.createNotificationChannel(silentChannel)
@@ -92,7 +116,9 @@ class T1NotificationManager @Inject constructor(
         title: String,
         text: String,
         channelId: String,
-        type: String
+        type: String,
+        navigateTab: String? = null,
+        fightId: String? = null
     ) {
         // Check global setting in UserPreferences first
         val isEnabled = userPreferences.notificationsEnabledFlow.firstOrNull() ?: true
@@ -106,24 +132,36 @@ class T1NotificationManager @Inject constructor(
             return
         }
 
-        // Apply anti-spam filtering rules (skip critical security alerts from restrictions if needed)
-        if (channelId != CHANNEL_CRITICAL && !canPostNotification(type, text)) {
+        // Apply anti-spam filtering rules (skip critical/battle alerts from restrictions)
+        if (channelId != CHANNEL_CRITICAL && channelId != CHANNEL_BATTLE_CHALLENGES && !canPostNotification(type, text)) {
             android.util.Log.d("T1Notification", "Notification blocked by Anti-Spam filters: $title ($type)")
             return
+        }
+
+        val launchIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (navigateTab != null) {
+                putExtra("navigate_tab", navigateTab)
+                putExtra("preview_screen", "focus_fight")
+            }
+            if (fightId != null) {
+                putExtra("fight_id", fightId)
+            }
         }
 
         val contentIntent = PendingIntent.getActivity(
             context,
             id,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            },
+            launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // Dismiss receiver setup
         val dismissIntent = Intent(context, NotificationDismissedReceiver::class.java).apply {
             putExtra("type", type)
+            if (fightId != null) {
+                putExtra("fight_id", fightId)
+            }
         }
         val pendingDismissIntent = PendingIntent.getBroadcast(
             context,
@@ -144,26 +182,80 @@ class T1NotificationManager @Inject constructor(
             .setDeleteIntent(pendingDismissIntent)
             .setPriority(
                 when (channelId) {
-                    CHANNEL_CRITICAL -> NotificationCompat.PRIORITY_HIGH
+                    CHANNEL_BATTLE_CHALLENGES, CHANNEL_CRITICAL -> NotificationCompat.PRIORITY_MAX
                     CHANNEL_IMPORTANT -> NotificationCompat.PRIORITY_DEFAULT
                     CHANNEL_SILENT -> NotificationCompat.PRIORITY_LOW
                     else -> NotificationCompat.PRIORITY_DEFAULT
                 }
             )
 
-        with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notify(id, builder.build())
-                recordNotificationSent(text)
+        // Enhance Focus Fight Challenges for ALL Android devices (Heads-up banner & lockscreen popup)
+        if (type == "focus_fight_challenge" && fightId != null) {
+            builder.setCategory(NotificationCompat.CATEGORY_EVENT)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500))
+
+            // Action 1: Direct ACCEPT button on notification
+            val acceptIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("navigate_tab", "BATTLE")
+                putExtra("preview_screen", "focus_fight")
+                putExtra("auto_accept_fight_id", fightId)
             }
+            val acceptPendingIntent = PendingIntent.getActivity(
+                context,
+                (fightId + "_accept").hashCode(),
+                acceptIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(
+                android.R.drawable.ic_media_play,
+                "⚔️ ACCEPT",
+                acceptPendingIntent
+            )
+
+            // Action 2: Direct DECLINE button on notification
+            val declineIntent = Intent(context, NotificationDismissedReceiver::class.java).apply {
+                action = "com.example.t1.DECLINE_FIGHT"
+                putExtra("type", type)
+                putExtra("fight_id", fightId)
+                putExtra("notification_id", id)
+            }
+            val declinePendingIntent = PendingIntent.getBroadcast(
+                context,
+                (fightId + "_decline").hashCode(),
+                declineIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                "DECLINE",
+                declinePendingIntent
+            )
+        }
+
+        // Works across ALL Android versions (Android 8 to Android 15+)
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (hasNotificationPermission() && notificationManager.areNotificationsEnabled()) {
+            try {
+                notificationManager.notify(id, builder.build())
+                recordNotificationSent(text)
+                android.util.Log.i("T1Notification", "Notification successfully posted: $id | $title")
+            } catch (e: Exception) {
+                android.util.Log.e("T1Notification", "Failed to post notification: ${e.message}", e)
+            }
+        } else {
+            android.util.Log.w("T1Notification", "Notifications blocked by system permissions or channel toggle.")
         }
     }
 
-    private fun hasNotificationPermission(): Boolean {
+    fun hasNotificationPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         } else {
-            true
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
     }
 
@@ -226,5 +318,17 @@ class T1NotificationManager @Inject constructor(
             .putLong(KEY_LAST_SENT_TIME, System.currentTimeMillis())
             .putStringSet(sentHashesKey, sentHashes)
             .apply()
+    }
+
+    fun cancelNotification(id: Int) {
+        NotificationManagerCompat.from(context).cancel(id)
+    }
+
+    fun markFightDismissed(fightId: String) {
+        sharedPrefs.edit().putBoolean("dismissed_fight_$fightId", true).apply()
+    }
+
+    fun isFightDismissed(fightId: String): Boolean {
+        return sharedPrefs.getBoolean("dismissed_fight_$fightId", false)
     }
 }

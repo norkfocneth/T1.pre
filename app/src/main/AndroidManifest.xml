@@ -9,6 +9,7 @@
         tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <queries>
         <intent>
@@ -53,9 +54,18 @@
         <receiver android:name=".notification.NotificationDismissedReceiver" android:exported="false" />
 
         <!-- TestNotificationReceiver -->
-        <receiver android:name=".notification.TestNotificationReceiver" android:exported="false">
+        <receiver android:name=".notification.TestNotificationReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="com.example.t1.TRIGGER_TEST_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Watchdog Receiver for reliable background fight notifications on aggressive OEM devices -->
+        <receiver
+            android:name=".notification.FocusChallengeWatchdogReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.t1.ACTION_FOCUS_WATCHDOG" />
             </intent-filter>
         </receiver>
 

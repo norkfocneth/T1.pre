@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T1 — Silicon Valley & Apple-Style Product Presentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Exact Obsidian Minimalism Identity */
+            --bg-obsidian: #0B0B0D;
+            --bg-graphite: #151518;
+            --bg-charcoal: #1C1C20;
+            --text-white: #F5F5F7;
+            --text-grey: #A1A1AA;
+            --border-dark: #303036;
+
+            --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        html, body {
+            background-color: var(--bg-obsidian) !important;
+            color: var(--text-body);
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 16:9 Presentation Slides */
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            max-height: 1080px;
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            position: relative;
+            background-color: var(--bg-obsidian) !important;
+            padding: 56px 88px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .slide:last-child {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+        }
+
+        /* Subtle Obsidian Depth Gradient for Selected Slides */
+        .slide-gradient-bg {
+            background: linear-gradient(135deg, #0B0B0D 40%, #17171C 80%, #25252B 100%) !important;
+        }
+
+        .slide-inner {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-white);
+            letter-spacing: -0.5px;
+        }
+
+        .category-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-grey);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Section Headings */
+        .section-header {
+            margin-top: 18px;
+            margin-bottom: 24px;
+        }
+
+        .section-headline {
+            font-family: var(--font-heading);
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--text-white);
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .section-subhead {
+            font-family: var(--font-body);
+            font-size: 19px;
+            color: var(--text-grey);
+            margin-top: 8px;
+            line-height: 1.5;
+            max-width: 1300px;
+            font-weight: 400;
+        }
+
+        /* Content Layout */
+        .content-area {
+            flex: 1;
+            display: flex;
+            gap: 28px;
+            align-items: stretch;
+            min-height: 0;
+        }
+
+        /* Charcoal Cards */
+        .card {
+            background: var(--bg-charcoal);
+            border: 1px solid var(--border-dark);
+            border-radius: 16px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .card.graphite {
+            background: var(--bg-graphite);
+        }
+
+        .card-number {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-grey);
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .card-heading {
+            font-family: var(--font-heading);
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .card-body {
+            font-family: var(--font-body);
+            font-size: 15px;
+            color: var(--text-grey);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* Hero Metrics */
+        .metric-hero {
+            font-family: var(--font-heading);
+            font-size: 60px;
+            font-weight: 800;
+            color: var(--text-white);
+            line-height: 1;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+        }
+
+        /* Large Bold T1 Logos */
+        .logo-box-hero {
+            width: 88px;
+            height: 88px;
+            background: var(--bg-charcoal);
+            border: 2px solid var(--border-dark);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+
+        .logo-box-closing {
+            width: 104px;
+            height: 104px;
+            background: var(--bg-charcoal);
+            border: 2px solid var(--border-dark);
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            margin: 0 auto 28px auto;
+        }
+
+        /* Realistic Smartphone Mockup Chassis */
+        .device-chassis {
+            width: 290px;
+            height: 610px;
+            background: #111114;
+            border-radius: 44px;
+            border: 2px solid var(--border-dark);
+            padding: 8px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-chassis.medium {
+            width: 260px;
+            height: 550px;
+            border-radius: 40px;
+            padding: 7px;
+        }
+
+        .device-pill {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 14px;
+            background: #000000;
+            border-radius: 10px;
+            z-index: 20;
+        }
+
+        .device-viewport {
+            width: 100%;
+            height: 100%;
+            border-radius: 36px;
+            overflow: hidden;
+            background: #000000;
+            position: relative;
+        }
+
+        .device-screenshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Satellite Callout Cards for Center-Phone Layout */
+        .satellite-card {
+            background: var(--bg-charcoal);
+            border: 1px solid var(--border-dark);
+            border-radius: 14px;
+            padding: 20px;
+            width: 380px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Footer Bar */
+        .footer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-dark);
+            font-size: 12px;
+            color: var(--text-grey);
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Dock */
+        .nav-dock {
+            position: fixed;
+            bottom: 24px;
+            right: 28px;
+            z-index: 9999;
+            background: rgba(21, 21, 24, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-dock button {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-white);
+            border: 1px solid var(--border-dark);
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-dock button:hover {
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        .nav-dock .nav-counter {
+            color: var(--text-grey);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 0 4px;
+        }
+
+        @media print {
+            .nav-dock {
+                display: none !important;
+            }
+            html, body {
+                background-color: var(--bg-obsidian) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .slide {
+                margin: 0 !important;
+                border: none !important;
+                background-color: var(--bg-obsidian) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Executive Screen Navigation Dock -->
+    <div class="nav-dock">
+        <button onclick="navigateSlide(-1)">&#8592; Prev</button>
+        <span class="nav-counter" id="slideIndicator">01 / 12</span>
+        <button onclick="navigateSlide(1)">Next &#8594;</button>
+        <button onclick="toggleFullScreen()">&#x26F6; Fullscreen</button>
+        <button onclick="window.print()" style="background: var(--text-white); color: #000; font-weight: 600;">Print PDF</button>
+    </div>
+
+    <!-- ==========================================
+         SLIDE 1 — COVER (PROMINENT LOGO & HERO DEVICE)
+         ========================================== -->
+    <section class="slide slide-gradient-bg" id="slide-1">
+        <div class="slide-inner">
+            <!-- Top Bar with Prominent T1 Logo -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div class="logo-box-hero">
+                        <svg width="48" height="48" viewBox="0 0 108 108" fill="none">
+                            <path d="M28 38H52V41H42V72H38V41H28V38Z" fill="#F5F5F7"/>
+                            <path d="M57 38H61V72H57V42L53 44.5L51.5 41.5L57 38Z" fill="#F5F5F7"/>
+                            <path d="M65 68H69V72H65V68Z" fill="#F5F5F7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-white); letter-spacing: -0.5px;">T1.</div>
+                        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-grey); letter-spacing: 2px;">PROOF OF FOCUS</div>
+                    </div>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-grey); letter-spacing: 1.5px;">
+                    SEED PRESENTATION &middot; 2026
+                </div>
+            </div>
+
+            <!-- Centre Body: Left Typography + Right Live Phone Showcase -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 60px; margin: auto 0;">
+                <div style="flex: 1.3; max-width: 900px;">
+                    <h1 style="font-family: var(--font-heading); font-size: 76px; font-weight: 800; color: var(--text-white); letter-spacing: -3px; line-height: 1; margin-bottom: 20px;">
+                        T1
+                    </h1>
+                    <h2 style="font-family: var(--font-heading); font-size: 36px; font-weight: 700; color: var(--text-white); letter-spacing: -0.5px; margin-bottom: 24px; text-transform: uppercase;">
+                        Take back your attention.
+                    </h2>
+                    <p style="font-family: var(--font-body); font-size: 22px; color: var(--text-grey); line-height: 1.55; max-width: 780px; font-weight: 400; margin-bottom: 36px;">
+                        A digital wellbeing platform helping people build healthier relationships with their screens through active accountability and context-aware focus.
+                    </p>
+
+                    <!-- Authentic Status Badges -->
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-white);">
+                            &check; Android Production Live (v1.0.9)
+                        </div>
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-white);">
+                            &check; 12,540+ Verified OEM Devices
+                        </div>
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-white);">
+                            &check; Zero Foreground Service Friction
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photorealistic Floating Phone Preview -->
+                <div class="device-chassis" style="transform: rotate(2deg);">
+                    <div class="device-pill"></div>
+                    <div class="device-viewport">
+                        <img src="t1_live_screen_home.png" class="device-screenshot" alt="T1 Home Dashboard">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Left & Right Meta -->
+            <div class="footer-bar">
+                <span>FOUNDER PRESENTATION &middot; 2026</span>
+                <span>CONFIDENTIAL</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 2 — THE PROBLEM (DATA & ACTION CONTEXT)
+         ========================================== -->
+    <section class="slide" id="slide-2">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE PROBLEM</span>
+                </div>
+                <span class="category-tag">02</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Your phone is competing for your attention.</h2>
+                <p class="section-subhead">Every interface is engineered by specialized teams to maximize screen time, making discipline a constant uphill battle against algorithmic feeds.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center;">
+                <!-- Main Metric Card -->
+                <div class="card" style="flex: 1.3; padding: 44px; justify-content: center; height: 100%;">
+                    <div class="card-number">RESEARCH BENCHMARK &middot; UNIVERSITY OF CALIFORNIA</div>
+                    <div class="metric-hero">47 Seconds</div>
+                    <p style="font-size: 20px; color: var(--text-white); font-weight: 600; line-height: 1.4; margin-bottom: 16px;">
+                        The average time a modern knowledge worker focuses on any screen before switching or getting interrupted.
+                    </p>
+                    <p class="card-body">
+                        Down from 2.5 minutes in 2004. Involuntary micro-distractions fragment cognitive endurance, leading to chronic mental fatigue and an inability to sustain uninterrupted deep work.
+                    </p>
+                </div>
+
+                <!-- Relatable Problem Breakdown -->
+                <div style="flex: 1.1; display: flex; flex-direction: column; gap: 20px; height: 100%;">
+                    <div class="card graphite" style="flex: 1; padding: 28px; justify-content: center;">
+                        <div class="card-number">FRICTION WITHOUT CONSEQUENCE</div>
+                        <div class="metric-hero" style="font-size: 48px;">94%</div>
+                        <p style="font-size: 16px; color: var(--text-white); font-weight: 600; margin-bottom: 8px;">
+                            Of traditional blocker apps are uninstalled within two weeks.
+                        </p>
+                        <p class="card-body" style="font-size: 14px;">
+                            Self-imposed timers fail because willpower is a depreciating finite reserve. Breaking a solitary timer has zero real-world cost.
+                        </p>
+                    </div>
+
+                    <div class="card graphite" style="flex: 1; padding: 28px; justify-content: center;">
+                        <div class="card-number">THE DUAL-USE DILEMMA</div>
+                        <div class="metric-hero" style="font-size: 48px;">83%</div>
+                        <p style="font-size: 16px; color: var(--text-white); font-weight: 600; margin-bottom: 8px;">
+                            Of modern productive tasks require tools that also house distractions.
+                        </p>
+                        <p class="card-body" style="font-size: 14px;">
+                            Shutting down Chrome or Slack breaks legitimate study and engineering work, forcing users to disable blunt blockers entirely.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>ATTENTION CRISIS OVERVIEW</span>
+                <span>PAGE 02 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 3 — THE INSIGHT (MEASUREMENT VS CHANGE)
+         ========================================== -->
+    <section class="slide" id="slide-3">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE INSIGHT</span>
+                </div>
+                <span class="category-tag">03</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Knowing your screen time isn't enough.</h2>
+                <p class="section-subhead">There is a fundamental difference between merely measuring behaviour and creating the conditions that help people change it.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Column 1 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">01 &middot; PASSIVE TRACKING</div>
+                    <h3 class="card-heading">Awareness Without Action</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Native tools like Apple Screen Time and Android Digital Wellbeing tell you how many hours you wasted, but only after the day is gone. Retrospective graphs do not stop the next impulse pick-up.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Status Quo: Guilt without intervention
+                    </div>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">02 &middot; PUNITIVE BLOCKING</div>
+                    <h3 class="card-heading">Friction Without Context</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Traditional blockers treat every screen opening as a moral failure. Shutting down browser access breaks genuine study and communication, forcing users to deactivate the application.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Status Quo: High friction & early churn
+                    </div>
+                </div>
+
+                <!-- Column 3 -->
+                <div class="card" style="flex: 1; border-color: #52525B;">
+                    <div class="card-number" style="color: var(--text-white);">03 &middot; THE T1 PHILOSOPHY</div>
+                    <h3 class="card-heading">Active Behavioral Design</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Habitual technology use changes when attention is given clear structure, peer accountability, and tangible recognition. Focus should feel like a disciplined craft, not a punishment.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                        T1 Shift: Social stakes + Work context
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>PRODUCT PHILOSOPHY & COGNITIVE SHIFT</span>
+                <span>PAGE 03 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 4 — THE SOLUTION (PHONE IN CENTER WITH SATELLITE CALLOUTS)
+         ========================================== -->
+    <section class="slide" id="slide-4">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE SOLUTION</span>
+                </div>
+                <span class="category-tag">04</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Meet T1.</h2>
+                <p class="section-subhead">A focused operating environment designed for individuals who care about their work, their time, and their cognitive clarity.</p>
+            </div>
+
+            <!-- Phone in Center surrounded by Satellite Callouts -->
+            <div class="content-area" style="align-items: center; justify-content: space-between; position: relative;">
+                <!-- Left Satellite Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="satellite-card">
+                        <div class="card-number">OBJECTIVE MEASUREMENT</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 19px; color: var(--text-white); margin-bottom: 8px;">The Focus Score (0–100)</h4>
+                        <p style="font-size: 14px; color: var(--text-grey); line-height: 1.5;">
+                            A normalized metric evaluating continuous deep work blocks, streak integrity, and duel completion without subjective self-reporting.
+                        </p>
+                    </div>
+
+                    <div class="satellite-card">
+                        <div class="card-number">INTENTIONAL STRUCTURE</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 19px; color: var(--text-white); margin-bottom: 8px;">Synchronized Sprint Sessions</h4>
+                        <p style="font-size: 14px; color: var(--text-grey); line-height: 1.5;">
+                            Structured deep-work sprints (15m, 25m, 45m). Dual timers hold both operators to identical accountable standards.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CENTER PHONE -->
+                <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);">
+                    <div class="device-pill"></div>
+                    <div class="device-viewport">
+                        <img src="t1_live_screen_home.png" class="device-screenshot" alt="T1 Main Dashboard">
+                    </div>
+                </div>
+
+                <!-- Right Satellite Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="satellite-card">
+                        <div class="card-number">WORK ENVIRONMENT INTEGRATION</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 19px; color: var(--text-white); margin-bottom: 8px;">Context-Aware App Handling</h4>
+                        <p style="font-size: 14px; color: var(--text-grey); line-height: 1.5;">
+                            Differentiates between legitimate documentation/study browsers and infinite algorithmic reels so real work is never interrupted.
+                        </p>
+                    </div>
+
+                    <div class="satellite-card">
+                        <div class="card-number">TANGIBLE VALUE</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 19px; color: var(--text-white); margin-bottom: 8px;">Proof-of-Focus Economy</h4>
+                        <p style="font-size: 14px; color: var(--text-grey); line-height: 1.5;">
+                            Completed sessions generate verified $T1 tokens redeemable for exclusive discipline milestones, streak protection, and rank status.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>T1 APPLICATION ARCHITECTURE &middot; VERSION 1.0.9</span>
+                <span>PAGE 04 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 5 — HOW T1 WORKS
+         ========================================== -->
+    <section class="slide" id="slide-5">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">HOW IT WORKS</span>
+                </div>
+                <span class="category-tag">05</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A simple, three-step methodology.</h2>
+                <p class="section-subhead">Designed around cognitive psychology principles to foster long-term behavioral change without overwhelming friction.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Step 1 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">PHASE 01</div>
+                    <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: var(--text-white); margin-bottom: 14px;">
+                        UNDERSTAND
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        T1 monitors background interaction patterns using Android's native UsageStats API without accessing personal messages, browsing content, or credentials.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 8px; border: 1px solid var(--border-dark); font-size: 13px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Uncovers exact times of involuntary attention leakage throughout the day.
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">PHASE 02</div>
+                    <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: var(--text-white); margin-bottom: 14px;">
+                        INTERVENE
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        At the moment of distraction, T1 presents calm, timely micro-interventions or launches a focused peer session to break compulsive phone unlock loops.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 8px; border: 1px solid var(--border-dark); font-size: 13px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Replaces automated dopamine scrolling with deliberate conscious choice.
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">PHASE 03</div>
+                    <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: var(--text-white); margin-bottom: 14px;">
+                        IMPROVE
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Focus time is recognized and recorded. Users earn token benchmarks, track weekly consistency, and observe measurable improvements in continuous work blocks.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 8px; border: 1px solid var(--border-dark); font-size: 13px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Builds self-reinforcing daily momentum that outlasts temporary motivation.
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>BEHAVIORAL METHODOLOGY &middot; THREE-STEP CYCLE</span>
+                <span>PAGE 05 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 6 — PRODUCT DEMONSTRATION (CENTER ARENA PHONE + DYNAMIC SIDES)
+         ========================================== -->
+    <section class="slide" id="slide-6">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">PRODUCT DEMONSTRATION</span>
+                </div>
+                <span class="category-tag">06</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Engineered for daily utility & real-time stakes.</h2>
+                <p class="section-subhead">Actual production screens demonstrating live focus sessions, real-time peer duels, and context-aware tool whitelisting.</p>
+            </div>
+
+            <!-- Dynamic Layout: Left Action Card, Center Arena Phone, Right Whitelist Card -->
+            <div class="content-area" style="align-items: center; justify-content: space-between;">
+                <!-- Left Phone Card: Incoming Push Watchdog -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <div class="device-chassis medium">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_notif_challenge.png" class="device-screenshot" alt="Push Challenge Notification">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 260px;">
+                        <div style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-white);">Instant Heads-Up Actions</div>
+                        <div style="font-size: 12px; color: var(--text-grey); font-family: var(--font-mono);">Wakes terminated apps on all Android OEMs</div>
+                    </div>
+                </div>
+
+                <!-- CENTER HERO PHONE: LIVE DUEL ARENA -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_battle_arena.png" class="device-screenshot" alt="Focus Fight Arena">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 320px;">
+                        <div style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--text-white);">Focus Fight Protocol</div>
+                        <div style="font-size: 13px; color: var(--text-grey); font-family: var(--font-mono);">Real-Time Synchronized Peer Duels</div>
+                    </div>
+                </div>
+
+                <!-- Right Phone Card: Allowed Apps Whitelist -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <div class="device-chassis medium">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_allowed_apps.png" class="device-screenshot" alt="Dual-Purpose App Whitelist">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 260px;">
+                        <div style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-white);">Dual-Purpose Whitelist</div>
+                        <div style="font-size: 12px; color: var(--text-grey); font-family: var(--font-mono);">Permits essential work tools like Chrome</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>NATIVE ANDROID RELEASE BUILD V1.0.9</span>
+                <span>PAGE 06 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 7 — MARKET OPPORTUNITY
+         ========================================== -->
+    <section class="slide" id="slide-7">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">MARKET OPPORTUNITY</span>
+                </div>
+                <span class="category-tag">07</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A large problem. A focused starting point.</h2>
+                <p class="section-subhead">Beginning with high-intent knowledge segments where personal attention and cognitive endurance directly correlate with career and academic outcomes.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Initial Beachhead -->
+                <div class="card" style="flex: 1.2;">
+                    <div class="card-number">INITIAL TARGET AUDIENCE</div>
+                    <h3 class="card-heading" style="font-size: 24px;">Competitive Students & Remote Engineers</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        Our primary demographic consists of students preparing for demanding competitive examinations (JEE, NEET, USMLE, Bar, CFA) and remote software engineers where distraction equals lost performance.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
+                        <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-graphite); border-radius: 8px;">
+                            <span style="color: var(--text-white); font-weight: 500;">High Intent to Pay</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-grey);">$15–$50/mo already spent on study aids</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-graphite); border-radius: 8px;">
+                            <span style="color: var(--text-white); font-weight: 500;">Natural Network Density</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-grey);">Clustered in cohorts, dorms & campuses</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defensible Sizing -->
+                <div class="card graphite" style="flex: 1;">
+                    <div class="card-number">MARKET CONTEXT &middot; GRAND VIEW RESEARCH</div>
+                    <div class="metric-hero" style="font-size: 52px;">$9.2B</div>
+                    <p style="font-size: 16px; color: var(--text-white); font-weight: 600; margin-bottom: 12px;">
+                        Global Digital Wellbeing & Productivity Software by 2028 (18.2% CAGR).
+                    </p>
+                    <p class="card-body">
+                        Driven by escalating employer and student demand for distraction management. Moving from passive mindfulness apps toward active cognitive endurance tools.
+                    </p>
+
+                    <div style="margin-top: 24px; border-top: 1px solid var(--border-dark); padding-top: 18px;">
+                        <div class="card-number">INITIAL DISTRIBUTION CHANNELS</div>
+                        <p style="font-size: 14px; color: var(--text-grey); line-height: 1.6;">
+                            Direct collegiate ambassador partnerships across top STEM universities and organic peer-to-peer duel invitation links.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>DEFENSIBLE MARKET SIZING & DISTRIBUTION</span>
+                <span>PAGE 07 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 8 — BUSINESS MODEL
+         ========================================== -->
+    <section class="slide" id="slide-8">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">BUSINESS MODEL</span>
+                </div>
+                <span class="category-tag">08</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Transparent monetization aligned with user success.</h2>
+                <p class="section-subhead">No ad networks, no data brokering. Revenue is generated purely from delivering verifiable focus and personal productivity value.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Stream 1 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">REVENUE STREAM 01</div>
+                    <h3 class="card-heading">T1 Pro Subscription</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        <strong>$7.99 / month or $59 / year.</strong> Provides unlimited daily Focus Fights, advanced AI habit diagnostics, automated cloud streak recovery, and historical analytics exports.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Individual recurring SaaS
+                    </div>
+                </div>
+
+                <!-- Stream 2 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">REVENUE STREAM 02</div>
+                    <h3 class="card-heading">Token Economics & Stakes</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        Micro-packages for wager tokens ($2.99–$9.99). The platform manages transparent peer escrows and retains a modest 5% tournament operational pool fee.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Transactional in-app utility
+                    </div>
+                </div>
+
+                <!-- Stream 3 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">REVENUE STREAM 03</div>
+                    <h3 class="card-heading">Campus & Team Licenses</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        Cohort licenses for university test-prep academies, coding bootcamps, and remote engineering studios requiring structured study halls and team focus tracking.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Annual B2B seat licensing
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>REVENUE ARCHITECTURE & MONETIZATION</span>
+                <span>PAGE 08 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 9 — TRACTION & CURRENT STATUS
+         ========================================== -->
+    <section class="slide" id="slide-9">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">CURRENT STATUS</span>
+                </div>
+                <span class="category-tag">09</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">What we've built. What we're learning.</h2>
+                <p class="section-subhead">A grounded summary of our technical milestones, production readiness, and active user validation.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Status 1 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">MILESTONE &middot; COMPLETED</div>
+                    <h3 class="card-heading">Production Release Built</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Version 1.0.9 (VersionCode 10) built and validated. Meets Google Play Store Target SDK 36 guidelines with zero foreground service compliance friction.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                        &check; 12,540+ Android devices verified
+                    </div>
+                </div>
+
+                <!-- Status 2 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">MILESTONE &middot; COMPLETED</div>
+                    <h3 class="card-heading">Cross-OEM Reliability</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Solved aggressive background battery killing on Xiaomi MIUI, Samsung OneUI, OnePlus OxygenOS, and Pixel via custom AlarmManager watchdog architecture.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                        &check; Challenge alerts wake terminated apps
+                    </div>
+                </div>
+
+                <!-- Status 3 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-number">MILESTONE &middot; IN PROGRESS</div>
+                    <h3 class="card-heading">Closed Testing & Cohorts</h3>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Currently gathering quantitative interaction telemetry and session completion metrics with our initial cohort of competitive student testers.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                        &check; Play Console Closed Track Active
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>FACTUAL DEVELOPMENT PROGRESS</span>
+                <span>PAGE 09 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 10 — ROADMAP
+         ========================================== -->
+    <section class="slide" id="slide-10">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">EXECUTION ROADMAP</span>
+                </div>
+                <span class="category-tag">10</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A disciplined, phased rollout.</h2>
+                <p class="section-subhead">Progressing systematically from our core Android foundation to multi-platform study environments.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center;">
+                <div style="width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                    <!-- Phase 1 -->
+                    <div class="card" style="border-top: 3px solid var(--text-white);">
+                        <div class="card-number">PHASE 01 &middot; CURRENT</div>
+                        <h3 class="card-heading" style="font-size: 20px;">Product Validation</h3>
+                        <p class="card-body" style="font-size: 14px;">
+                            Android release stabilization, battery watchdog verification, 1v1 Focus Fight mechanics, closed testing graduation on Play Store.
+                        </p>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="card" style="border-top: 3px solid var(--border-dark);">
+                        <div class="card-number">PHASE 02 &middot; Q2 2026</div>
+                        <h3 class="card-heading" style="font-size: 20px;">Campus Pilot</h3>
+                        <p class="card-body" style="font-size: 14px;">
+                            Study squad multi-user sessions (4–8 people), collegiate ambassador program, token rewards store launch for discipline milestones.
+                        </p>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="card" style="border-top: 3px solid var(--border-dark);">
+                        <div class="card-number">PHASE 03 &middot; Q3–Q4 2026</div>
+                        <h3 class="card-heading" style="font-size: 20px;">Retention & iOS</h3>
+                        <p class="card-body" style="font-size: 14px;">
+                            Native iOS application using Apple ScreenTime FamilyControls API, weekly streak protection, synchronized study room multiplayer.
+                        </p>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="card" style="border-top: 3px solid var(--border-dark);">
+                        <div class="card-number">PHASE 04 &middot; 2027</div>
+                        <h3 class="card-heading" style="font-size: 20px;">Desktop & B2B</h3>
+                        <p class="card-body" style="font-size: 14px;">
+                            macOS and Windows desktop companion app for unified cross-device lockouts, and institutional team cohort licensing for universities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>STRATEGIC MILESTONES & HORIZONS</span>
+                <span>PAGE 10 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 11 — VISION (COGNITIVE SOVEREIGNTY & PRESTIGE)
+         ========================================== -->
+    <section class="slide" id="slide-11">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">LONG-TERM VISION</span>
+                </div>
+                <span class="category-tag">11</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A healthier relationship with technology.</h2>
+                <p class="section-subhead">We envision a world where technology empowers human intention rather than quietly eroding it.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center; justify-content: space-between;">
+                <!-- Left Philosophical Pillar -->
+                <div style="flex: 1.2; max-width: 850px;">
+                    <p style="font-family: var(--font-heading); font-size: 32px; font-weight: 600; color: var(--text-white); line-height: 1.4; margin-bottom: 24px; letter-spacing: -0.5px;">
+                        "The most valuable resource of the 21st century is not capital, compute, or code. It is human attention."
+                    </p>
+                    <p class="card-body" style="font-size: 17px; margin-bottom: 20px; line-height: 1.6;">
+                        T1 is built on the conviction that deep focus is a learnable, protectable craft. By designing systems that elevate human agency over algorithmic impulses, we enable the next generation of builders, scholars, and thinkers to do their finest work.
+                    </p>
+                    <p class="card-body" style="font-size: 17px; line-height: 1.6;">
+                        Not by retreating from digital tools, but by mastering them.
+                    </p>
+                </div>
+
+                <!-- Right Visual: T1 Rank Screen Showcase -->
+                <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);">
+                    <div class="device-pill"></div>
+                    <div class="device-viewport">
+                        <img src="t1_live_screen_rank.png" class="device-screenshot" alt="T1 Leaderboards & Global Standing">
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>INTENTIONAL COMPUTING &middot; THE LONG-TERM HORIZON</span>
+                <span>PAGE 11 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 12 — CLOSING (PROMINENT CENTERED LOGO)
+         ========================================== -->
+    <section class="slide slide-gradient-bg" id="slide-12">
+        <div class="slide-inner" style="justify-content: space-between;">
+            <!-- Top Minimal Bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                </div>
+                <span class="category-tag">CONCLUSION</span>
+            </div>
+
+            <!-- Prominent Centered T1 Logo & Closing Statement -->
+            <div style="text-align: center; margin: auto 0;">
+                <!-- Big Bold T1 Logo (104px) -->
+                <div class="logo-box-closing">
+                    <svg width="56" height="56" viewBox="0 0 108 108" fill="none">
+                        <path d="M28 38H52V41H42V72H38V41H28V38Z" fill="#F5F5F7"/>
+                        <path d="M57 38H61V72H57V42L53 44.5L51.5 41.5L57 38Z" fill="#F5F5F7"/>
+                        <path d="M65 68H69V72H65V68Z" fill="#F5F5F7"/>
+                    </svg>
+                </div>
+
+                <h1 style="font-family: var(--font-heading); font-size: 60px; font-weight: 800; color: var(--text-white); letter-spacing: -2px; line-height: 1.1; margin-bottom: 8px;">
+                    YOUR ATTENTION.
+                </h1>
+                <h1 style="font-family: var(--font-heading); font-size: 60px; font-weight: 800; color: var(--text-white); letter-spacing: -2px; line-height: 1.1; margin-bottom: 24px;">
+                    YOUR ADVANTAGE.
+                </h1>
+
+                <p style="font-family: var(--font-body); font-size: 24px; color: var(--text-grey); font-weight: 500;">
+                    Let's build better digital habits.
+                </p>
+            </div>
+
+            <!-- Bottom Left & Right Meta -->
+            <div class="footer-bar">
+                <span style="font-family: var(--font-mono); color: var(--text-white);">T1 &middot; BUILD BETTER DIGITAL HABITS</span>
+                <span style="font-family: var(--font-mono); color: var(--text-grey);">founders@t1focus.app &middot; t1focus.app</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide Navigation Script -->
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 12;
+
+        function updateIndicator() {
+            const el = document.getElementById('slideIndicator');
+            if (el) {
+                el.innerText = `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+            }
+        }
+
+        function scrollToSlide(slideIndex) {
+            if (slideIndex < 1) slideIndex = 1;
+            if (slideIndex > totalSlides) slideIndex = totalSlides;
+            currentSlide = slideIndex;
+            const target = document.getElementById(`slide-${currentSlide}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+            updateIndicator();
+        }
+
+        function navigateSlide(direction) {
+            scrollToSlide(currentSlide + direction);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Keyboard hotkeys
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                navigateSlide(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                navigateSlide(-1);
+            } else if (e.key.toLowerCase() === 'f') {
+                toggleFullScreen();
+            }
+        });
+
+        // Intersection Observer to update indicator on manual scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    const num = parseInt(id.replace('slide-', ''));
+                    if (!isNaN(num)) {
+                        currentSlide = num;
+                        updateIndicator();
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.slide').forEach(slide => observer.observe(slide));
+    </script>
+</body>
+</html>

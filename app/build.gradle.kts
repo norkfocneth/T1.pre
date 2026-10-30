@@ -26,8 +26,8 @@ android {
         applicationId = "com.focneth.t1"
         minSdk = 24
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.0.6"
+        versionCode = 11
+        versionName = "1.0.10"
 
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
@@ -39,9 +39,9 @@ android {
             val keystoreFile = rootProject.file("release-upload.jks")
             if (keystoreFile.exists()) {
                 storeFile = keystoreFile
-                storePassword = localProperties.getProperty("release.store_password") ?: "T1FocusRelease2026!"
+                storePassword = localProperties.getProperty("release.store_password") ?: ""
                 keyAlias = localProperties.getProperty("release.key_alias") ?: "t1-upload-key"
-                keyPassword = localProperties.getProperty("release.key_password") ?: "T1FocusRelease2026!"
+                keyPassword = localProperties.getProperty("release.key_password") ?: ""
             }
         }
     }

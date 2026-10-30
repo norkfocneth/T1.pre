@@ -215,6 +215,17 @@ class TestNotificationReceiver : BroadcastReceiver() {
                         type = "milestone"
                     )
                 }
+                "focus_fight_challenge" -> {
+                    t1NotificationManager.postNotification(
+                        id = 9999,
+                        title = "⚔️ Focus Fight Challenge!",
+                        text = "@Rohan challenged you to a 25m duel!",
+                        channelId = T1NotificationManager.CHANNEL_BATTLE_CHALLENGES,
+                        type = "focus_fight_challenge",
+                        navigateTab = "BATTLE",
+                        fightId = "test_fight_9999"
+                    )
+                }
                 "token_reward" -> {
                     t1NotificationManager.postNotification(
                         id = 1022,

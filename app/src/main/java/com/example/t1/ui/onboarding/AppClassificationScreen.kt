@@ -39,6 +39,8 @@ data class DualPurposeApp(
 )
 
 val DualPurposeAppList = listOf(
+    DualPurposeApp("com.android.chrome", "Google Chrome", "PRODUCTIVITY", R.drawable.ic_app_chrome, "Web Browsing (Work or Distraction)", Color(0xFF4285F4)),
+    DualPurposeApp("com.brave.browser", "Brave Browser", "PRODUCTIVITY", R.drawable.ic_app_chrome, "Privacy Browser (Work or Distraction)", Color(0xFFFB542B)),
     DualPurposeApp("com.google.android.youtube", "YouTube", "EDUCATION", R.drawable.ic_app_youtube, "Videos & Learning", Color(0xFFFF0000)),
     DualPurposeApp("com.whatsapp", "WhatsApp", "COMMUNICATION", R.drawable.ic_app_whatsapp, "Chats & Calls", Color(0xFF25D366)),
     DualPurposeApp("org.telegram.messenger", "Telegram", "COMMUNICATION", R.drawable.ic_app_telegram, "Channels & Groups", Color(0xFF24A1DE)),
@@ -48,7 +50,6 @@ val DualPurposeAppList = listOf(
     DualPurposeApp("us.zoom.videomeetings", "Zoom", "PRODUCTIVITY", R.drawable.ic_app_zoom, "Video Conferences", Color(0xFF0B5CFF)),
     DualPurposeApp("notion.id", "Notion", "PRODUCTIVITY", R.drawable.ic_app_notion, "Notes & Knowledge", Color(0xFFFFFFFF)),
     DualPurposeApp("com.reddit.frontpage", "Reddit", "ENTERTAINMENT", R.drawable.ic_app_reddit, "Forums & Feeds", Color(0xFFFF4500)),
-    DualPurposeApp("com.android.chrome", "Google Chrome", "PRODUCTIVITY", R.drawable.ic_app_chrome, "Web Browsing", Color(0xFF4285F4)),
     DualPurposeApp("com.linkedin.android", "LinkedIn", "PRODUCTIVITY", R.drawable.ic_app_linkedin, "Career & Network", Color(0xFF0A66C2)),
     DualPurposeApp("com.spotify.music", "Spotify", "ENTERTAINMENT", R.drawable.ic_app_spotify, "Audio & Podcasts", Color(0xFF1DB954))
 )
@@ -196,8 +197,8 @@ fun AppClassificationScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             ClassificationChip(
-                                label = "Productive",
-                                isSelected = currentCategory == "PRODUCTIVITY",
+                                label = "Work / Utility",
+                                isSelected = currentCategory == "PRODUCTIVITY" || currentCategory == "UTILITY",
                                 activeColor = Color(0xFF60A5FA),
                                 onClick = {
                                     Haptics.playLight(view)
@@ -218,12 +219,12 @@ fun AppClassificationScreen(
                             )
 
                             ClassificationChip(
-                                label = "Distraction",
+                                label = "Social / Distraction",
                                 isSelected = currentCategory == "ENTERTAINMENT" || currentCategory == "SOCIAL",
                                 activeColor = Color(0xFFF87171),
                                 onClick = {
                                     Haptics.playLight(view)
-                                    selectedClassifications[app.packageName] = "ENTERTAINMENT"
+                                    selectedClassifications[app.packageName] = "SOCIAL"
                                 },
                                 modifier = Modifier.weight(1f)
                             )

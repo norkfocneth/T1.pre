@@ -27,11 +27,40 @@ class T1NotificationWorker @AssistedInject constructor(
     private val userRepository: UserRepository,
     private val focusSessionDao: FocusSessionDao,
     private val dailyBehaviourDao: DailyBehaviourDao,
+    private val supabaseService: com.example.t1.data.remote.SupabaseService,
     private val t1NotificationManager: T1NotificationManager
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val userId = authRepository.currentUserIdSync ?: return Result.success()
+        val cachedProfile = userRepository.cachedProfileFlow.firstOrNull()
+        val userId = authRepository.currentUserIdSync
+            ?: cachedProfile?.id
+            ?: return Result.success()
+
+        // 0. Focus Fight Incoming Challenge Check (even when app is completely closed!)
+        try {
+            val pendingFight = supabaseService.getPendingFightForUser(userId)
+            if (pendingFight?.id != null) {
+                val fightId = pendingFight.id
+                val isDismissed = t1NotificationManager.isFightDismissed(fightId)
+                val isExpired = supabaseService.isFightExpired(pendingFight.createdAt, maxAgeMinutes = 3)
+                if (!isDismissed && !isExpired) {
+                    val challengerProfile = supabaseService.getAllProfiles().firstOrNull { it.id == pendingFight.challengerId }
+                    val challengerName = challengerProfile?.displayName?.takeIf { it.isNotBlank() } ?: challengerProfile?.username ?: "Fighter"
+                    t1NotificationManager.postNotification(
+                        id = fightId.hashCode(),
+                        title = "⚔️ Focus Fight Challenge!",
+                        text = "@$challengerName challenged you to a ${pendingFight.durationMinutes}m focus duel!",
+                        channelId = T1NotificationManager.CHANNEL_BATTLE_CHALLENGES,
+                        type = "focus_fight_challenge",
+                        navigateTab = "BATTLE",
+                        fightId = fightId
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            // Non-critical background network error
+        }
 
         val today = LocalDate.now()
         val zoneId = ZoneId.systemDefault()

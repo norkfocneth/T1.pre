@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>T1 Reel 1: Stop Lying To Yourself — HyperFrames Composition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-obsidian: #07080B;
+      --bg-card: rgba(18, 20, 29, 0.75);
+      --border-glass: rgba(255, 255, 255, 0.1);
+      --cyan-neon: #00F5FF;
+      --gold-amber: #F59E0B;
+      --crimson-alert: #EF4444;
+      --emerald-up: #10B981;
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #030407;
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 20px 0;
+    }
+
+    /* Player Header Controls */
+    .studio-bar {
+      width: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 10px 16px;
+      background: rgba(15, 17, 26, 0.85);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .studio-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--cyan-neon);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--cyan-neon);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .controls-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ctrl-btn {
+      background: #181B26;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ctrl-btn:hover {
+      background: var(--cyan-neon);
+      color: #000;
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+    }
+
+    .time-badge {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 13px;
+      color: var(--cyan-neon);
+      font-weight: 700;
+    }
+
+    /* 9:16 Vertical Stage Container (Scaled for 1080x1920) */
+    .stage-wrapper {
+      position: relative;
+      width: 480px;
+      height: 853px; /* 1080x1920 scaled to 480x853 for crisp desktop review */
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 245, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      background: var(--bg-obsidian);
+    }
+
+    #stage {
+      position: absolute;
+      width: 1080px;
+      height: 1920px;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+      transform: scale(0.444444); /* 480 / 1080 */
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #111422 0%, #07080B 70%);
+    }
+
+    /* Scene Container */
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 60px;
+    }
+
+    .scene.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Background Ambient Gradients */
+    .ambient-glow {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-cyan {
+      background: var(--cyan-neon);
+      top: -100px;
+      right: -100px;
+    }
+
+    .glow-crimson {
+      background: var(--crimson-alert);
+      top: 30%;
+      left: -150px;
+    }
+
+    .glow-gold {
+      background: var(--gold-amber);
+      bottom: 10%;
+      right: -100px;
+    }
+
+    /* Hormozi High-Contrast Subtitle System */
+    .caption-box {
+      position: absolute;
+      bottom: 260px;
+      left: 60px;
+      right: 60px;
+      text-align: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .caption-word {
+      display: inline-block;
+      font-size: 64px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      line-height: 1.25;
+      color: #FFFFFF;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 4px 18px;
+      border-radius: 12px;
+      margin: 4px;
+    }
+
+    .caption-word.highlight {
+      color: #000;
+      background: var(--cyan-neon);
+      box-shadow: 0 0 35px var(--cyan-neon);
+    }
+
+    .caption-word.alert {
+      color: #fff;
+      background: var(--crimson-alert);
+      box-shadow: 0 0 35px var(--crimson-alert);
+    }
+
+    .caption-word.gold {
+      color: #000;
+      background: var(--gold-amber);
+      box-shadow: 0 0 35px var(--gold-amber);
+    }
+
+    /* Platform Safe Area Overlays */
+    .safe-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 168px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 60px 0 60px;
+      z-index: 100;
+    }
+
+    .safe-top-tag {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .t1-watermark {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .t1-watermark span {
+      color: var(--cyan-neon);
+    }
+
+    /* Scene 1: The Hook & Blocker Deletion */
+    .hook-card {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 36px;
+    }
+
+    .shock-badge {
+      background: rgba(239, 68, 68, 0.15);
+      border: 2px solid var(--crimson-alert);
+      color: var(--crimson-alert);
+      padding: 14px 36px;
+      border-radius: 100px;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+    }
+
+    .headline-mega {
+      font-size: 88px;
+      font-weight: 900;
+      line-height: 1.05;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+    }
+
+    .headline-mega span.red {
+      color: var(--crimson-alert);
+      text-shadow: 0 0 50px rgba(239, 68, 68, 0.6);
+    }
+
+    .headline-mega span.cyan {
+      color: var(--cyan-neon);
+      text-shadow: 0 0 50px rgba(0, 245, 255, 0.6);
+    }
+
+    .phone-mockup-wrapper {
+      position: relative;
+      width: 600px;
+      height: 980px;
+      border-radius: 64px;
+      background: #0D101A;
+      border: 8px solid #23283B;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 245, 255, 0.2);
+      overflow: hidden;
+      margin-top: 20px;
+      z-index: 10;
+    }
+
+    .phone-screen-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Scene 2: 7-Day Baseline & Focus Score */
+    .baseline-stat-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid var(--emerald-up);
+      color: var(--emerald-up);
+      padding: 12px 32px;
+      border-radius: 100px;
+      font-size: 30px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Scene 3: 1v1 Split Screen Live Arena */
+    .versus-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 24px;
+    }
+
+    .versus-badge {
+      background: var(--gold-amber);
+      color: #000;
+      font-size: 40px;
+      font-weight: 900;
+      padding: 8px 28px;
+      border-radius: 16px;
+      box-shadow: 0 0 40px var(--gold-amber);
+    }
+
+    .pause-alert-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10, 12, 18, 0.95);
+      border: 3px solid var(--gold-amber);
+      border-radius: 36px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(245, 158, 11, 0.4);
+      z-index: 40;
+    }
+
+    .pause-alert-title {
+      color: var(--gold-amber);
+      font-size: 44px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .pause-alert-sub {
+      color: #E2E8F0;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* Scene 5: High-Status CTA */
+    .cta-logo {
+      width: 220px;
+      height: 220px;
+      border-radius: 48px;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 80px rgba(0, 245, 255, 0.3);
+      margin-bottom: 30px;
+    }
+
+    .cta-btn-mega {
+      background: linear-gradient(135deg, var(--cyan-neon) 0%, #3B82F6 100%);
+      color: #000;
+      font-size: 42px;
+      font-weight: 900;
+      padding: 24px 70px;
+      border-radius: 100px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 15px 50px rgba(0, 245, 255, 0.5);
+      margin-top: 40px;
+    }
+
+    /* Progress Scrubber */
+    .scrubber-bar {
+      width: 480px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-top: 14px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .scrubber-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan-neon), var(--gold-amber));
+      border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Control Bar -->
+  <div class="studio-bar">
+    <div class="studio-brand">
+      <div class="brand-dot"></div>
+      <span>HYPERFRAMES // T1 REEL 1</span>
+    </div>
+    <div class="controls-cluster">
+      <span class="time-badge" id="timecode">00:00 / 00:55</span>
+      <button class="ctrl-btn" id="playBtn" onclick="togglePlay()">PLAY</button>
+      <button class="ctrl-btn" onclick="restart()">RESET</button>
+    </div>
+  </div>
+
+  <!-- Stage (9:16 Vertical Container) -->
+  <div class="stage-wrapper">
+    <div id="stage" data-composition-id="main" data-width="1080" data-height="1920" data-duration="55">
+      
+      <!-- Top Safe Action Header -->
+      <div class="safe-top-bar">
+        <div class="t1-watermark">T1 <span>PRO</span></div>
+        <div class="safe-top-tag">#PROOF_OF_FOCUS</div>
+      </div>
+
+      <!-- Ambient Glows -->
+      <div class="ambient-glow glow-cyan" id="ambientCyan"></div>
+      <div class="ambient-glow glow-crimson" id="ambientCrimson"></div>
+      <div class="ambient-glow glow-gold" id="ambientGold"></div>
+
+      <!-- ================= SCENE 1: THE REALITY CHECK (0s - 10s) ================= -->
+      <div class="scene active" id="scene1">
+        <div class="hook-card">
+          <div class="shock-badge">⚠️ HARSH REALITY</div>
+          <h1 class="headline-mega">
+            STOP LYING<br>
+            TO <span class="red">YOURSELF.</span>
+          </h1>
+          <p style="font-size: 34px; color: var(--text-muted); font-weight: 600; max-width: 800px;">
+            App blockers <b style="color:#fff;">DO NOT WORK</b>. You delete them the second an emergency message hits.
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= SCENE 2: THE 7-DAY BASELINE ENGINE (10s - 22s) ================= -->
+      <div class="scene" id="scene2">
+        <div class="hook-card" style="margin-bottom: 20px;">
+          <div class="baseline-stat-pill">⚡ THE UNFILTERED MIRROR</div>
+          <h1 class="headline-mega" style="font-size: 76px;">
+            DO NOT BLOCK.<br>
+            <span class="cyan">UPGRADE.</span>
+          </h1>
+        </div>
+        <div class="phone-mockup-wrapper" id="mockup1">
+          <img class="phone-screen-img" src="assets/screenshot_1_home_dashboard.png" alt="T1 Focus Dashboard">
+        </div>
+      </div>
+
+      <!-- ================= SCENE 3: 1V1 FOCUS FIGHT LIVE ARENA (22s - 36s) ================= -->
+      <div class="scene" id="scene3">
+        <div class="versus-banner">
+          <div class="versus-badge">1v1 FOCUS DUEL</div>
+        </div>
+        <h1 class="headline-mega" style="font-size: 72px; text-align: center; margin-bottom: 10px;">
+          STAKE TOKENS.<br>
+          <span style="color: var(--gold-amber);">BATTLE FRIENDS.</span>
+        </h1>
+        <div class="phone-mockup-wrapper" id="mockup2">
+          <img class="phone-screen-img" src="assets/t1_minimalist_screen_4_live_split_arena.png" alt="T1 Focus Fight Split Arena">
+          
+          <!-- Live Pause Alert Overlay -->
+          <div class="pause-alert-card" id="pauseAlert">
+            <div class="pause-alert-title">⚠️ OPPONENT MINIMIZED</div>
+            <div class="pause-alert-sub">Instagram Opened<br><b>Opponent's Timer Paused!</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SCENE 4: PROOF-OF-WORK PHYSICAL MERCH (36s - 47s) ================= -->
+      <div class="scene" id="scene4">
+        <div class="hook-card" style="margin-bottom: 20px;">
+          <div class="shock-badge" style="border-color: var(--gold-amber); color: var(--gold-amber); background: rgba(245, 158, 11, 0.15);">
+            💎 LUXURY STREETWEAR
+          </div>
+          <h1 class="headline-mega" style="font-size: 74px;">
+            CANNOT BUY WITH MONEY.<br>
+            <span style="color: #fff;">MINED WITH</span> <span class="cyan">FOCUS.</span>
+          </h1>
+        </div>
+        <div class="phone-mockup-wrapper" id="mockup3">
+          <img class="phone-screen-img" src="assets/07_merch_customizer_screen.png" alt="T1 Luxury Merch Customizer">
+        </div>
+      </div>
+
+      <!-- ================= SCENE 5: THE OBSIDIAN CTA (47s - 55s) ================= -->
+      <div class="scene" id="scene5">
+        <img class="cta-logo" src="assets/t1_app_icon_512x512.png" alt="T1 App Logo">
+        <div class="shock-badge" style="border-color: var(--cyan-neon); color: var(--cyan-neon); background: rgba(0, 245, 255, 0.15);">
+          WELCOME TO THE TOP 1%
+        </div>
+        <h1 class="headline-mega" style="font-size: 82px; text-align: center; margin-top: 15px;">
+          DISCIPLINE IS THE<br>
+          <span class="cyan">NEW CURRENCY.</span>
+        </h1>
+        <div class="cta-btn-mega">DOWNLOAD ON ANDROID</div>
+        <p style="font-size: 28px; color: var(--text-muted); font-weight: 700; margin-top: 24px; letter-spacing: 1px;">
+          100% PRIVATE • ZERO TELEMETRY • NO FAKE LOCKS
+        </p>
+      </div>
+
+      <!-- Dynamic Hormozi-Style Captions Box -->
+      <div class="caption-box" id="captionBox">
+        <span class="caption-word highlight" id="capWord1">STOP</span>
+        <span class="caption-word" id="capWord2">LYING</span>
+        <span class="caption-word alert" id="capWord3">TO YOURSELF</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Interactive Timeline Scrubber -->
+  <div class="scrubber-bar" onclick="seekByClick(event)">
+    <div class="scrubber-fill" id="scrubberFill"></div>
+  </div>
+
+  <!-- GSAP Master Animation Pipeline -->
+  <script>
+    const DURATION = 55; // 55-second reel
+    let isPlaying = false;
+    let masterTimeline;
+
+    // Timeline Subtitle Synced Script
+    const subtitleTracks = [
+      { start: 0.0, end: 3.5, words: ["STOP", "LYING", "TO YOURSELF"], styles: ["highlight", "", "alert"] },
+      { start: 3.5, end: 6.8, words: ["APP BLOCKERS", "DO NOT", "WORK"], styles: ["alert", "", "highlight"] },
+      { start: 6.8, end: 10.0, words: ["87% UNINSTALL", "WITHIN", "48 HOURS"], styles: ["highlight", "", ""] },
+      { start: 10.0, end: 14.0, words: ["DO NOT BLOCK.", "UPGRADE", "YOUR BRAIN"], styles: ["highlight", "alert", ""] },
+      { start: 14.0, end: 18.0, words: ["T1 TRACKS YOUR", "7-DAY", "BASELINE"], styles: ["", "highlight", ""] },
+      { start: 18.0, end: 22.0, words: ["BEAT BASELINE?", "MINT", "TOKENS"], styles: ["", "gold", "highlight"] },
+      { start: 22.0, end: 26.5, words: ["1v1 FOCUS FIGHT", "STAKE", "YOUR TOKENS"], styles: ["gold", "", "highlight"] },
+      { start: 26.5, end: 31.0, words: ["MINIMIZE APP?", "TIMER", "FREEZES!"], styles: ["alert", "alert", "highlight"] },
+      { start: 31.0, end: 36.0, words: ["WIN THE DUEL.", "TAKE", "THE POT!"], styles: ["gold", "", "highlight"] },
+      { start: 36.0, end: 41.5, words: ["UN-BUYABLE", "PHYSICAL", "LUXURY MERCH"], styles: ["highlight", "", "gold"] },
+      { start: 41.5, end: 47.0, words: ["MINED EXCLUSIVELY", "WITH DEEP", "WORK"], styles: ["gold", "", "highlight"] },
+      { start: 47.0, end: 51.5, words: ["STOP SCROLLING.", "JOIN", "THE TOP 1%"], styles: ["alert", "", "highlight"] },
+      { start: 51.5, end: 55.0, words: ["DOWNLOAD T1", "ON", "ANDROID"], styles: ["highlight", "", "gold"] }
+    ];
+
+    function setupMasterAnimation() {
+      masterTimeline = gsap.timeline({
+        paused: true,
+        onUpdate: onTimelineUpdate,
+        onComplete: () => {
+          document.getElementById('playBtn').innerText = 'REPLAY';
+          isPlaying = false;
+        }
+      });
+
+      // Ambient Glow Drifts
+      masterTimeline.to("#ambientCyan", { x: 50, y: 100, duration: 25, yoyo: true, repeat: -1, ease: "sine.inOut" }, 0);
+      masterTimeline.to("#ambientCrimson", { x: -80, y: 60, duration: 20, yoyo: true, repeat: -1, ease: "sine.inOut" }, 0);
+      masterTimeline.to("#ambientGold", { x: 100, y: -50, duration: 30, yoyo: true, repeat: -1, ease: "sine.inOut" }, 0);
+
+      // SCENE 1: 0s - 10s
+      masterTimeline.fromTo("#scene1", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 0);
+      masterTimeline.to("#scene1", { opacity: 0, scale: 1.05, duration: 0.6, ease: "power3.in" }, 9.4);
+
+      // SCENE 2: 10s - 22s
+      masterTimeline.fromTo("#scene2", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 10.0);
+      masterTimeline.fromTo("#mockup1", { y: 150, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "back.out(1.2)" }, 10.5);
+      masterTimeline.to("#scene2", { opacity: 0, scale: 1.05, duration: 0.6, ease: "power3.in" }, 21.4);
+
+      // SCENE 3: 22s - 36s
+      masterTimeline.fromTo("#scene3", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 22.0);
+      masterTimeline.fromTo("#mockup2", { y: 150, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "back.out(1.2)" }, 22.5);
+      
+      // Pause Alert Pop at 27.5s
+      masterTimeline.fromTo("#pauseAlert", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 27.5);
+      masterTimeline.to("#pauseAlert", { scale: 0.9, opacity: 0, duration: 0.4 }, 33.0);
+      masterTimeline.to("#scene3", { opacity: 0, scale: 1.05, duration: 0.6, ease: "power3.in" }, 35.4);
+
+      // SCENE 4: 36s - 47s
+      masterTimeline.fromTo("#scene4", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 36.0);
+      masterTimeline.fromTo("#mockup3", { y: 150, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "back.out(1.2)" }, 36.5);
+      masterTimeline.to("#scene4", { opacity: 0, scale: 1.05, duration: 0.6, ease: "power3.in" }, 46.4);
+
+      // SCENE 5: 47s - 55s
+      masterTimeline.fromTo("#scene5", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.9, ease: "power4.out" }, 47.0);
+      masterTimeline.fromTo(".cta-logo", { rotation: -10, scale: 0.7 }, { rotation: 0, scale: 1, duration: 1, ease: "elastic.out(1, 0.6)" }, 47.3);
+      masterTimeline.fromTo(".cta-btn-mega", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 48.0);
+    }
+
+    function onTimelineUpdate() {
+      const time = masterTimeline.time();
+      const progress = (time / DURATION) * 100;
+      
+      // Update Scrubber
+      document.getElementById('scrubberFill').style.width = progress + '%';
+
+      // Update Timecode
+      const mins = Math.floor(time / 60).toString().padStart(2, '0');
+      const secs = Math.floor(time % 60).toString().padStart(2, '0');
+      document.getElementById('timecode').innerText = `${mins}:${secs} / 00:55`;
+
+      // Update Subtitles Dynamically
+      updateSubtitles(time);
+
+      // Scene Visibility Toggling
+      document.getElementById('scene1').classList.toggle('active', time >= 0 && time < 9.8);
+      document.getElementById('scene2').classList.toggle('active', time >= 9.8 && time < 21.8);
+      document.getElementById('scene3').classList.toggle('active', time >= 21.8 && time < 35.8);
+      document.getElementById('scene4').classList.toggle('active', time >= 35.8 && time < 46.8);
+      document.getElementById('scene5').classList.toggle('active', time >= 46.8);
+    }
+
+    function updateSubtitles(currentTime) {
+      const activeTrack = subtitleTracks.find(t => currentTime >= t.start && currentTime < t.end);
+      const box = document.getElementById('captionBox');
+      
+      if (activeTrack) {
+        box.style.display = 'block';
+        box.innerHTML = activeTrack.words.map((w, idx) => {
+          const style = activeTrack.styles[idx] || '';
+          return `<span class="caption-word ${style}">${w}</span>`;
+        }).join(' ');
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function togglePlay() {
+      if (!masterTimeline) setupMasterAnimation();
+      if (isPlaying) {
+        masterTimeline.pause();
+        document.getElementById('playBtn').innerText = 'PLAY';
+      } else {
+        masterTimeline.play();
+        document.getElementById('playBtn').innerText = 'PAUSE';
+      }
+      isPlaying = !isPlaying;
+    }
+
+    function restart() {
+      if (!masterTimeline) setupMasterAnimation();
+      masterTimeline.restart();
+      isPlaying = true;
+      document.getElementById('playBtn').innerText = 'PAUSE';
+    }
+
+    function seekByClick(e) {
+      if (!masterTimeline) setupMasterAnimation();
+      const bar = e.currentTarget;
+      const rect = bar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const fraction = clickX / rect.width;
+      masterTimeline.seek(fraction * DURATION);
+    }
+
+    // Initialize on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      setupMasterAnimation();
+      // Auto-preview start
+      setTimeout(() => {
+        togglePlay();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

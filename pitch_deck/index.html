@@ -3,1036 +3,1304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T1: Top 1% — Investor & Startup Pitch Deck</title>
+    <title>T1 — Pitch Deck v5 (Action & Visual Story Edition)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #050508;
-            --bg-secondary: #0c0c12;
-            --card-bg: rgba(18, 18, 26, 0.7);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover: rgba(255, 255, 255, 0.12);
-            --text-main: #FFFFFF;
-            --text-muted: #94A3B8;
-            --text-dim: #64748B;
-            --accent-pink: #FF3B94;
-            --accent-pink-glow: rgba(255, 59, 148, 0.35);
-            --accent-cyan: #38BDF8;
-            --accent-cyan-glow: rgba(56, 189, 248, 0.35);
-            --accent-purple: #A855F7;
+            --bg-obsidian: #08090C;
+            --bg-graphite: #121318;
+            --bg-charcoal: #1A1B22;
+            --text-white: #FFFFFF;
+            --text-offwhite: #F4F4F6;
+            --text-grey: #A3A3AC;
+            --border-dark: #2E303A;
+            --accent-cyan: #00F2FE;
             --accent-emerald: #10B981;
             --accent-amber: #F59E0B;
-            --font-heading: 'Outfit', sans-serif;
-            --font-body: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --accent-rose: #EF4444;
+
+            --font-heading: 'Manrope', -apple-system, sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        html, body {
+            background-color: var(--bg-obsidian) !important;
+            color: var(--text-offwhite);
             font-family: var(--font-body);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 16:9 Fixed Presentation Canvas */
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            max-height: 1080px;
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            position: relative;
+            background-color: var(--bg-obsidian) !important;
+            padding: 50px 84px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
         }
 
-        /* Ambient Glow Backdrop */
-        .ambient-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--accent-pink-glow) 0%, rgba(5,5,8,0) 70%);
-            top: -150px;
-            right: -150px;
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        .slide:last-child {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
         }
 
-        .ambient-glow-2 {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--accent-cyan-glow) 0%, rgba(5,5,8,0) 70%);
-            bottom: -150px;
-            left: -150px;
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
+        .slide-gradient-bg {
+            background: linear-gradient(135deg, #08090C 40%, #13141B 80%, #1F212B 100%) !important;
         }
 
-        /* Header / Top Bar */
+        .slide-inner {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Top Bar */
         .top-bar {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            padding: 20px 48px;
-            z-index: 10;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(5, 5, 8, 0.6);
-            backdrop-filter: blur(12px);
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-dark);
         }
 
-        .brand {
+        .brand-cluster {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .brand-logo {
+        .brand-name {
             font-family: var(--font-heading);
-            font-size: 24px;
-            font-weight: 900;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-white);
             letter-spacing: -0.5px;
-            color: #FFFFFF;
-            display: flex;
-            align-items: center;
         }
 
-        .brand-logo span {
-            color: var(--accent-pink);
-        }
-
-        .brand-tag {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(255, 59, 148, 0.12);
-            color: var(--accent-pink);
-            border: 1px solid rgba(255, 59, 148, 0.25);
-        }
-
-        .deck-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .slide-counter {
+        .category-tag {
             font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
-
-        .btn-action {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-action:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-        }
-
-        /* Progress Bar */
-        .progress-bar-container {
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 10;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 8.33%;
-            background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple), var(--accent-cyan));
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 10px var(--accent-pink-glow);
-        }
-
-        /* Deck Stage Container */
-        .deck-stage {
-            position: relative;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 48px;
-            z-index: 5;
-            overflow: hidden;
-        }
-
-        /* Slide Styles */
-        .slide {
-            position: absolute;
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            max-height: 640px;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(20px) scale(0.98);
-            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-        }
-
-        .slide.active {
-            display: flex;
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            pointer-events: auto;
-        }
-
-        /* Slide Content Components */
-        .slide-header {
-            margin-bottom: 28px;
-        }
-
-        .slide-kicker {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 2px;
+            color: var(--text-grey);
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: var(--accent-pink);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .slide-kicker::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-pink);
-            box-shadow: 0 0 8px var(--accent-pink);
+        /* Section Headings */
+        .section-header {
+            margin-top: 14px;
+            margin-bottom: 22px;
         }
 
-        .slide-title {
+        .section-headline {
             font-family: var(--font-heading);
             font-size: 42px;
             font-weight: 800;
+            color: var(--text-white);
+            letter-spacing: -1.2px;
             line-height: 1.15;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #FFFFFF 20%, #CBD5E1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
         }
 
-        .slide-subtitle {
-            font-size: 18px;
-            color: var(--text-muted);
+        .section-subhead {
+            font-family: var(--font-body);
+            font-size: 20px;
+            color: var(--text-grey);
+            margin-top: 8px;
+            line-height: 1.5;
+            max-width: 1350px;
             font-weight: 400;
-            max-width: 820px;
-            line-height: 1.5;
         }
 
-        /* Layout Grids */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        /* Glass Cards */
-        .glass-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 24px;
-            backdrop-filter: blur(16px);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .glass-card:hover {
-            border-color: var(--card-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-icon {
-            font-size: 28px;
-            margin-bottom: 14px;
-            display: inline-block;
-        }
-
-        .card-title {
-            font-family: var(--font-heading);
-            font-size: 19px;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin-bottom: 8px;
-        }
-
-        .card-desc {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.55;
-        }
-
-        .card-tag {
-            display: inline-block;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-top: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        /* Hero Slide Specifics */
-        .hero-slide {
-            text-align: center;
-            align-items: center;
-        }
-
-        .hero-title {
-            font-family: var(--font-heading);
-            font-size: 68px;
-            font-weight: 900;
-            line-height: 1.05;
-            letter-spacing: -2px;
-            margin-bottom: 18px;
-            background: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 40%, var(--accent-pink) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-punchline {
-            font-size: 22px;
-            color: #94A3B8;
-            max-width: 780px;
-            margin: 0 auto 36px auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
+        /* Content Area Layout */
+        .content-area {
+            flex: 1;
             display: flex;
-            gap: 48px;
-            margin-top: 24px;
+            gap: 28px;
+            align-items: stretch;
+            min-height: 0;
         }
 
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-num {
-            font-family: var(--font-heading);
-            font-size: 38px;
-            font-weight: 800;
-            color: #FFFFFF;
-            letter-spacing: -1px;
-        }
-
-        .stat-num span {
-            color: var(--accent-pink);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-
-        /* Highlight Pill Badge */
-        .pill-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 20px;
-            border-radius: 999px;
-            background: rgba(255, 59, 148, 0.1);
-            border: 1px solid rgba(255, 59, 148, 0.3);
-            color: var(--accent-pink);
-            font-weight: 700;
-            font-size: 14px;
-            margin-bottom: 24px;
-            box-shadow: 0 0 20px rgba(255, 59, 148, 0.2);
-        }
-
-        /* Focus Ring Mockup */
-        .focus-score-circle {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 4px solid var(--accent-cyan);
+        /* Large Charcoal Cards */
+        .card {
+            background: var(--bg-charcoal);
+            border: 1px solid var(--border-dark);
+            border-radius: 18px;
+            padding: 28px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px auto;
-            box-shadow: 0 0 30px var(--accent-cyan-glow);
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, rgba(5,5,8,0) 70%);
+            justify-content: flex-start;
+            position: relative;
         }
 
-        .score-val {
-            font-family: var(--font-heading);
-            font-size: 48px;
-            font-weight: 800;
-            color: #FFFFFF;
-            line-height: 1;
+        .card.graphite {
+            background: var(--bg-graphite);
         }
 
-        .score-sub {
-            font-size: 11px;
-            color: var(--accent-cyan);
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-
-        /* Bottom Controls Bar */
-        .bottom-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 48px;
-            z-index: 10;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(5, 5, 8, 0.8);
-            backdrop-filter: blur(12px);
-        }
-
-        .nav-keys-hint {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .key-badge {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: var(--text-muted);
+        .card-number {
             font-family: var(--font-mono);
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-grey);
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
         }
 
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
+        .card-heading {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
         }
 
-        .btn-nav {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            font-size: 18px;
+        .card-body {
+            font-family: var(--font-body);
+            font-size: 17px;
+            color: var(--text-grey);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* Hero Metrics */
+        .metric-hero {
+            font-family: var(--font-heading);
+            font-size: 64px;
+            font-weight: 800;
+            color: var(--text-white);
+            line-height: 1;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+        }
+
+        /* Big Prominent T1 Logos */
+        .logo-box-hero {
+            width: 92px;
+            height: 92px;
+            background: var(--bg-charcoal);
+            border: 2px solid var(--border-dark);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-box-closing {
+            width: 110px;
+            height: 110px;
+            background: var(--bg-charcoal);
+            border: 2px solid var(--border-dark);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+            margin: 0 auto 24px auto;
+        }
+
+        /* Realistic Smartphone Mockup Chassis */
+        .device-chassis {
+            width: 290px;
+            height: 610px;
+            background: #101115;
+            border-radius: 44px;
+            border: 2px solid var(--border-dark);
+            padding: 8px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-chassis.medium {
+            width: 260px;
+            height: 550px;
+            border-radius: 40px;
+            padding: 7px;
+        }
+
+        .device-pill {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 14px;
+            background: #000000;
+            border-radius: 10px;
+            z-index: 20;
+        }
+
+        .device-viewport {
+            width: 100%;
+            height: 100%;
+            border-radius: 36px;
+            overflow: hidden;
+            background: #000000;
+            position: relative;
+        }
+
+        .device-screenshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Satellite Callout Cards for Center-Phone Layout */
+        .satellite-card {
+            background: var(--bg-charcoal);
+            border: 1px solid var(--border-dark);
+            border-radius: 16px;
+            padding: 22px;
+            width: 390px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Action Stickman SVG Styling */
+        .stickman-figure {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Footer Bar */
+        .footer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-dark);
+            font-size: 13px;
+            color: var(--text-grey);
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Dock */
+        .nav-dock {
+            position: fixed;
+            bottom: 24px;
+            right: 28px;
+            z-index: 9999;
+            background: rgba(18, 19, 24, 0.95);
+            backdrop-filter: blur(14px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-dock button {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-white);
+            border: 1px solid var(--border-dark);
+            padding: 6px 14px;
+            border-radius: 16px;
             cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 600;
             transition: all 0.2s ease;
         }
 
-        .btn-nav:hover:not(:disabled) {
-            background: var(--accent-pink);
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 16px var(--accent-pink-glow);
-            transform: translateY(-2px);
+        .nav-dock button:hover {
+            background: #FFFFFF;
+            color: #000000;
         }
 
-        .btn-nav:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* Token Architecture Flow Diagram */
-        .token-flow {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(18, 18, 26, 0.5);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 16px;
-        }
-
-        .flow-step {
-            text-align: center;
-            flex: 1;
-        }
-
-        .flow-icon {
-            font-size: 26px;
-            margin-bottom: 6px;
-        }
-
-        .flow-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #FFFFFF;
-        }
-
-        .flow-sub {
+        .nav-dock .nav-counter {
+            color: var(--text-grey);
+            font-family: var(--font-mono);
             font-size: 12px;
-            color: var(--text-muted);
+            padding: 0 4px;
         }
 
-        .flow-arrow {
-            color: var(--accent-pink);
-            font-size: 20px;
-            padding: 0 12px;
-        }
-
-        /* Table Comparison */
-        .comp-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-
-        .comp-table th {
-            text-align: left;
-            padding: 12px 16px;
-            color: var(--text-dim);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .comp-table td {
-            padding: 14px 16px;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--text-secondary);
-        }
-
-        .comp-table tr.highlight {
-            background: rgba(255, 59, 148, 0.06);
-        }
-
-        .comp-table tr.highlight td {
-            color: #FFFFFF;
-            font-weight: 600;
-        }
-
-        .check-green {
-            color: var(--accent-emerald);
-            font-weight: bold;
-        }
-
-        .cross-red {
-            color: #EF4444;
-            font-weight: bold;
+        @media print {
+            .nav-dock {
+                display: none !important;
+            }
+            html, body {
+                background-color: var(--bg-obsidian) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .slide {
+                margin: 0 !important;
+                border: none !important;
+                background-color: var(--bg-obsidian) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Ambient Glow Effects -->
-    <div class="ambient-glow" id="ambientGlow"></div>
-    <div class="ambient-glow-2"></div>
-
-    <!-- Top Bar Navigation -->
-    <header class="top-bar">
-        <div class="brand">
-            <div class="brand-logo">T1<span>.</span></div>
-            <div class="brand-tag">PITCH DECK 2026</div>
-        </div>
-        <div class="deck-controls">
-            <div class="slide-counter" id="slideCounter">SLIDE 01 / 11</div>
-            <a href="T1_Top_1_Percent_Pitch_Deck.pdf" download="T1_Top_1_Percent_Pitch_Deck.pdf" class="btn-action" style="text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 6px;">📥 Download PDF</a>
-            <button class="btn-action" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-        </div>
-    </header>
-
-    <!-- Progress Indicator -->
-    <div class="progress-bar-container">
-        <div class="progress-bar" id="progressBar"></div>
+    <!-- Executive Screen Navigation Dock -->
+    <div class="nav-dock">
+        <button onclick="navigateSlide(-1)">&#8592; Prev</button>
+        <span class="nav-counter" id="slideIndicator">01 / 12</span>
+        <button onclick="navigateSlide(1)">Next &#8594;</button>
+        <button onclick="toggleFullScreen()">&#x26F6; Fullscreen</button>
+        <button onclick="window.print()" style="background: var(--text-white); color: #000; font-weight: 700;">Print PDF</button>
     </div>
 
-    <!-- Main Presentation Deck Stage -->
-    <main class="deck-stage">
+    <!-- ==========================================
+         SLIDE 1 — COVER (PROMINENT LOGO & HERO ACTIONS)
+         ========================================== -->
+    <section class="slide slide-gradient-bg" id="slide-1">
+        <div class="slide-inner">
+            <!-- Top Bar with Prominent T1 Logo -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div class="logo-box-hero">
+                        <svg width="50" height="50" viewBox="0 0 108 108" fill="none">
+                            <path d="M28 38H52V41H42V72H38V41H28V38Z" fill="#FFFFFF"/>
+                            <path d="M57 38H61V72H57V42L53 44.5L51.5 41.5L57 38Z" fill="#FFFFFF"/>
+                            <path d="M65 68H69V72H65V68Z" fill="#00F2FE"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 800; color: var(--text-white); letter-spacing: -0.5px;">T1.</div>
+                        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-grey); letter-spacing: 2px;">THE PROOF-OF-FOCUS ENGINE</div>
+                    </div>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 13px; color: var(--text-grey); letter-spacing: 1.5px;">
+                    SEED PRESENTATION &middot; 2026
+                </div>
+            </div>
 
-        <!-- SLIDE 1: Title & Hook -->
-        <section class="slide active hero-slide" data-slide="1">
-            <div class="pill-badge">🚀 THE PROOF-OF-FOCUS ECOSYSTEM</div>
-            <h1 class="hero-title">T1: Master Your Attention.<br>Join the Top 1%.</h1>
-            <p class="hero-punchline">
-                The world’s first <strong>Proof-of-Focus Engine</strong> for students, founders, and high-performers — turning digital self-discipline into a verifiable, high-stakes token economy.
-            </p>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-num">7-Day</div>
-                    <div class="stat-label">Dynamic Relative Baseline</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">0<span>-Day</span></div>
-                    <div class="stat-label">Local-First Privacy Architecture</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">100<span>%</span></div>
-                    <div class="stat-label">Gamified Habit Accountability</div>
-                </div>
-            </div>
-        </section>
+            <!-- Centre Hero: Left Editorial + Right Phone with Deep Work Stickman -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 60px; margin: auto 0;">
+                <div style="flex: 1.3; max-width: 900px;">
+                    <h1 style="font-family: var(--font-heading); font-size: 78px; font-weight: 800; color: var(--text-white); letter-spacing: -3px; line-height: 1; margin-bottom: 20px;">
+                        T1
+                    </h1>
+                    <h2 style="font-family: var(--font-heading); font-size: 38px; font-weight: 800; color: var(--text-white); letter-spacing: -0.5px; margin-bottom: 22px; text-transform: uppercase;">
+                        Take back your attention.
+                    </h2>
+                    <p style="font-family: var(--font-body); font-size: 22px; color: var(--text-grey); line-height: 1.55; max-width: 780px; font-weight: 400; margin-bottom: 32px;">
+                        A digital wellbeing platform helping students and operators build unstoppable focus habits through real-time peer duels, streak escrow, and context-aware intelligence.
+                    </p>
 
-        <!-- SLIDE 2: The Problem -->
-        <section class="slide" data-slide="2">
-            <div class="slide-header">
-                <div class="slide-kicker">THE PROBLEM</div>
-                <h2 class="slide-title">The Trillion-Dollar Attention Trap</h2>
-                <p class="slide-subtitle">Algorithmic feeds are engineered for addiction. Existing screen time blockers fail because they treat humans like children.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <div class="card-icon">🧠</div>
-                    <div class="card-title">Cognitive Decay</div>
-                    <div class="card-desc">The average young adult unlocks their phone <strong>90+ times/day</strong>, fracturing deep focus and reducing sustained problem-solving capacity by over 40%.</div>
-                    <div class="card-tag">Attention Deficit</div>
+                    <!-- Real Engineering Telemetry Badges -->
+                    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                            &check; Android Production Build (v1.0.10)
+                        </div>
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                            &check; 12,540+ Verified Devices
+                        </div>
+                        <div style="padding: 10px 18px; background: var(--bg-charcoal); border: 1px solid var(--border-dark); border-radius: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--text-white);">
+                            &check; Zero Foreground Service Friction
+                        </div>
+                    </div>
                 </div>
-                <div class="glass-card">
-                    <div class="card-icon">🔓</div>
-                    <div class="card-title">Blockers Don't Work</div>
-                    <div class="card-desc">Restrictive app blockers rely on brute-force locking. <strong>87% of users disable them within 48 hours</strong> when friction causes frustration.</div>
-                    <div class="card-tag">Broken UX Model</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">📉</div>
-                    <div class="card-title">Zero Proof of Work</div>
-                    <div class="card-desc">There is zero social status or tangible reward for digital self-discipline. Real focus goes unmeasured, unrewarded, and invisible.</div>
-                    <div class="card-tag">Missing Incentive Loop</div>
-                </div>
-            </div>
-        </section>
 
-        <!-- SLIDE 3: The Philosophy -->
-        <section class="slide" data-slide="3">
-            <div class="slide-header">
-                <div class="slide-kicker">OUR PARADIGM SHIFT</div>
-                <h2 class="slide-title">An Unfiltered Mirror of Reality</h2>
-                <p class="slide-subtitle">T1 does not block your phone. It measures reality: <em>"Are you upgrading compared to yesterday?"</em></p>
-            </div>
-            <div class="grid-2">
-                <div class="glass-card" style="border-color: rgba(239, 68, 68, 0.3);">
-                    <div class="card-icon">❌</div>
-                    <div class="card-title" style="color: #F87171;">Old Blocker Model (Negative Friction)</div>
-                    <ul style="padding-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.8; margin-top: 10px;">
-                        <li>Arbitrary 2-hour hard limits that users immediately bypass.</li>
-                        <li>Shame-based popups with zero personalized context.</li>
-                        <li>Treats all screen time equally (Coding vs Doomscrolling).</li>
-                        <li>High churn rate (>80% uninstall within 1st week).</li>
-                    </ul>
-                </div>
-                <div class="glass-card" style="border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.04);">
-                    <div class="card-icon">⚡</div>
-                    <div class="card-title" style="color: var(--accent-cyan);">T1 Model (Relative Proof-of-Focus)</div>
-                    <ul style="padding-left: 20px; color: #E2E8F0; font-size: 14px; line-height: 1.8; margin-top: 10px;">
-                        <li><strong>7-Day Dynamic Behavioral Baseline:</strong> Compares you to your own authentic history.</li>
-                        <li><strong>Live Focus Score (0–99):</strong> Instant percentile benchmark against peer builders.</li>
-                        <li><strong>Contextual Categorization:</strong> Deep work rewarded, dopamine traps penalized.</li>
-                        <li><strong>Addictive Positive Habit Loop:</strong> Win tokens, build streaks, conquer leagues.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
+                <!-- Photorealistic Phone + Desk Flow Stickman -->
+                <div style="position: relative; display: flex; align-items: center; gap: 20px;">
+                    <!-- Stickman Seated at Work Desk SVG -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <svg width="120" height="150" viewBox="0 0 120 150" fill="none" class="stickman-figure">
+                            <!-- Head with Headphones -->
+                            <circle cx="50" cy="35" r="14" stroke="#FFFFFF" stroke-width="4" fill="#1A1B22"/>
+                            <path d="M34 35C34 22 66 22 66 35" stroke="#00F2FE" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="34" cy="35" r="4" fill="#00F2FE"/>
+                            <circle cx="66" cy="35" r="4" fill="#00F2FE"/>
+                            <!-- Torso & Arms typing on Laptop -->
+                            <line x1="50" y1="49" x2="50" y2="95" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M50 62L70 78L90 75" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                            <!-- Desk & Laptop -->
+                            <rect x="65" y="80" width="50" height="6" rx="3" fill="#2E303A"/>
+                            <line x1="105" y1="86" x2="105" y2="135" stroke="#2E303A" stroke-width="4"/>
+                            <path d="M85 80L98 62" stroke="#00F2FE" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="80" y1="80" x2="98" y2="80" stroke="#00F2FE" stroke-width="3"/>
+                            <!-- Legs on Chair -->
+                            <path d="M50 95L30 105L30 140" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M50 95L65 105L65 140" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan); letter-spacing: 1px; margin-top: 4px;">DEEP FLOW STATE</div>
+                    </div>
 
-        <!-- SLIDE 4: Core Engine Architecture -->
-        <section class="slide" data-slide="4">
-            <div class="slide-header">
-                <div class="slide-kicker">PATENTED INTELLIGENCE</div>
-                <h2 class="slide-title">The 7-Day Relative Baseline Engine</h2>
-                <p class="slide-subtitle">Proprietary on-device algorithmic scoring engine computing focus without violating user privacy.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <div class="card-icon">🛡️</div>
-                    <div class="card-title">1. Local Telemetry Ingestion</div>
-                    <div class="card-desc">Foreground application timestamps and unlock rates are ingested via Android UsageStats API. Raw data stays <strong>100% on-device</strong>.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🧮</div>
-                    <div class="card-title">2. Intra-Day Relative Decay</div>
-                    <div class="card-desc">Anchored to start-of-day baseline. Mathematical normalization prevents scoring runaway and creates stable, genuine intra-day feedback.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">📊</div>
-                    <div class="card-title">3. Percentile Rank Engine</div>
-                    <div class="card-desc">Translates behavioral discipline into a single Focus Score (0–99) mapped to global percentiles (Elite, Balanced, Grit Builder).</div>
+                    <!-- Live Phone Preview -->
+                    <div class="device-chassis" style="transform: rotate(1.5deg);">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_home.png" class="device-screenshot" alt="T1 Dashboard">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="token-flow">
-                <div class="flow-step">
-                    <div class="flow-icon">📱</div>
-                    <div class="flow-title">Device Telemetry</div>
-                    <div class="flow-sub">Screen Time & Unlocks</div>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <div class="flow-icon">🧠</div>
-                    <div class="flow-title">7-Day Baseline</div>
-                    <div class="flow-sub">Relative Delta Calculation</div>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <div class="flow-icon">🎯</div>
-                    <div class="flow-title">Focus Score (0-99)</div>
-                    <div class="flow-sub">Peer Percentile Standings</div>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <div class="flow-icon">🪙</div>
-                    <div class="flow-title">T1 Proof Tokens</div>
-                    <div class="flow-sub">Minted on Deep Focus</div>
-                </div>
-            </div>
-        </section>
 
-        <!-- SLIDE 5: Full Feature Ecosystem -->
-        <section class="slide" data-slide="5">
-            <div class="slide-header">
-                <div class="slide-kicker">PRODUCT SUITE</div>
-                <h2 class="slide-title">Engineered for Extreme Focus</h2>
-                <p class="slide-subtitle">A cohesive, beautifully designed ecosystem for daily high performance.</p>
+            <!-- Bottom Meta -->
+            <div class="footer-bar">
+                <span>FOUNDER PRESENTATION &middot; 2026</span>
+                <span>CONFIDENTIAL</span>
             </div>
-            <div class="grid-4">
-                <div class="glass-card">
-                    <div class="card-icon">🤖</div>
-                    <div class="card-title">3D AI Coach</div>
-                    <div class="card-desc">Local offline intelligent assistant providing attention insights, screen time audits, and focus prompts.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🏆</div>
-                    <div class="card-title">Goal Arenas</div>
-                    <div class="card-desc">Tailored competitive tracks: <strong>Founder Track</strong>, <strong>Aukaat Exam Track</strong>, and <strong>Social Control</strong>.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">⏱️</div>
-                    <div class="card-title">Deep Work Timer</div>
-                    <div class="card-desc">Haptic-driven Pomodoro focus sessions minting proof-of-focus tokens with anti-tamper tracking.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🕶️</div>
-                    <div class="card-title">Stealth Privacy</div>
-                    <div class="card-desc">1-Tap Ghost mode masking identities on public leaderboards for discreet ultra-high performers.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 6: Token Economy -->
-        <section class="slide" data-slide="6">
-            <div class="slide-header">
-                <div class="slide-kicker">PROOF-OF-FOCUS (PoF)</div>
-                <h2 class="slide-title">The T1 Token Economy</h2>
-                <p class="slide-subtitle">Turning cognitive sweat equity into verifiable, multi-utility digital reputation.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <div class="card-icon">🪙</div>
-                    <div class="card-title">1. Proof of Minting</div>
-                    <div class="card-desc">Tokens are <strong>never bought with money</strong> — they are mined exclusively through verified deep work sessions and daily baseline outperformance.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🎖️</div>
-                    <div class="card-title">2. In-App Utility Today</div>
-                    <div class="card-desc">Redeemable for cosmetic leaderboard badges, custom neon profile themes, streak freeze insurance, and VIP arena entry passes.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🌐</div>
-                    <div class="card-title">3. Verifiable Reputation</div>
-                    <div class="card-desc">Acts as an on-chain/cryptographic resume of cognitive stamina for founders raising capital, engineers interviewing, or students competing.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 7: Future of Tokens & Web3/Perks -->
-        <section class="slide" data-slide="7">
-            <div class="slide-header">
-                <div class="slide-kicker">TOKEN ROADMAP & VALUE CREATION</div>
-                <h2 class="slide-title">What We Will Do With Tokens in Future</h2>
-                <p class="slide-subtitle">Transforming T1 tokens into a multi-million dollar high-stakes accountability and real-world perk network.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <div class="card-icon">⚔️</div>
-                    <div class="card-title">High-Stakes Wagering Leagues</div>
-                    <div class="card-desc">Users pool tokens into 30-Day Sprint pools. The top 10% disciplined performers take the pot. <strong>Huge organic viral retention</strong>.</div>
-                    <div class="card-tag">Stakes & Skin-in-the-Game</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">🎁</div>
-                    <div class="card-title">Sponsored Merch & Partner Perks</div>
-                    <div class="card-desc">Partner with tech brands (Notion, Cursor, Whoop, Audible) offering exclusive software discounts and hardware merch redeemable only with earned T1 Tokens.</div>
-                    <div class="card-tag">Real-World Utility</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">📜</div>
-                    <div class="card-title">Decentralized Proof-of-Discipline</div>
-                    <div class="card-desc">Optional minting of Soulbound Focus Certificates (SBTs) validating 500+ hours of verified deep work for universities, venture studios, and employers.</div>
-                    <div class="card-tag">Career / Credential Moat</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 8: Revenue Model -->
-        <section class="slide" data-slide="8">
-            <div class="slide-header">
-                <div class="slide-kicker">BUSINESS MODEL</div>
-                <h2 class="slide-title">Diversified, High-Margin Monetization</h2>
-                <p class="slide-subtitle">Clear path to $10M+ ARR through B2C consumer subscriptions, B2B university/team licensing, and challenge take-rates.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card" style="border-color: rgba(255, 59, 148, 0.3);">
-                    <div class="card-icon">👑</div>
-                    <div class="card-title">T1 Pro ($9.99 / mo)</div>
-                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-top: 8px;">
-                        <li>Deep AI Coach cognitive analytics.</li>
-                        <li>Unlimited custom friend leagues.</li>
-                        <li>Extended 90-day focus history.</li>
-                        <li>2x Token mining multiplier.</li>
-                    </ul>
-                    <div class="card-tag" style="color: var(--accent-pink);">Core Consumer Engine</div>
-                </div>
-                <div class="glass-card" style="border-color: rgba(56, 189, 248, 0.3);">
-                    <div class="card-icon">🏢</div>
-                    <div class="card-title">T1 Enterprise & Campuses</div>
-                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-top: 8px;">
-                        <li>Private leaderboards for engineering teams, startups, and exam coaching institutes (IIT-JEE/CAT/UPSC).</li>
-                        <li>$5 / seat / month B2B SaaS licensing.</li>
-                    </ul>
-                    <div class="card-tag" style="color: var(--accent-cyan);">High-LTV B2B Contracts</div>
-                </div>
-                <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.3);">
-                    <div class="card-icon">🎯</div>
-                    <div class="card-title">Wager Pools & Marketplace</div>
-                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-top: 8px;">
-                        <li>5–10% platform take-rate on high-stakes competitive prize pools.</li>
-                        <li>Sponsored brand placement in Token Perks marketplace.</li>
-                    </ul>
-                    <div class="card-tag" style="color: var(--accent-emerald);">Platform Network Effect</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 9: Competitive Moat -->
-        <section class="slide" data-slide="9">
-            <div class="slide-header">
-                <div class="slide-kicker">DEFENSIBILITY</div>
-                <h2 class="slide-title">Why Competitors Cannot Replicate T1</h2>
-                <p class="slide-subtitle">Combining local-first mathematical scoring with high-stakes social accountability.</p>
-            </div>
-            <table class="comp-table">
-                <thead>
-                    <tr>
-                        <th>Feature / Metric</th>
-                        <th>Opal / Forest</th>
-                        <th>Screen Time (Apple/Android)</th>
-                        <th style="color: var(--accent-pink);">T1: Top 1%</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Approach</td>
-                        <td>Restrictive hard blocker</td>
-                        <td>Passive graph logging</td>
-                        <td class="check-green">Relative Baseline Upgrading</td>
-                    </tr>
-                    <tr class="highlight">
-                        <td>Gamified Proof Economy</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="check-green">✓ PoF Tokens + High-Stakes Leagues</td>
-                    </tr>
-                    <tr>
-                        <td>Local Privacy Architecture</td>
-                        <td class="cross-red">✗ Cloud VPN routing</td>
-                        <td class="check-green">✓ Local</td>
-                        <td class="check-green">✓ 100% On-Device Engine + 0-Day Erase</td>
-                    </tr>
-                    <tr>
-                        <td>Dynamic Peer Percentiles</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="check-green">✓ 0–99 Focus Score Standings</td>
-                    </tr>
-                    <tr>
-                        <td>AI Coach Integration</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="cross-red">✗ None</td>
-                        <td class="check-green">✓ Offline 3D AI Focus Companion</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-
-        <!-- SLIDE 10: Target Market -->
-        <section class="slide" data-slide="10">
-            <div class="slide-header">
-                <div class="slide-kicker">MARKET OPPORTUNITY</div>
-                <h2 class="slide-title">Capturing 100M+ High-Aspiration Builders</h2>
-                <p class="slide-subtitle">Focusing on the hyper-driven segments who are willing to pay for cognitive advantage.</p>
-            </div>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <div class="card-icon">🎓</div>
-                    <div class="card-title">1. Elite Exam Aspirants</div>
-                    <div class="card-desc">Over <strong>40M+ students</strong> preparing for hyper-competitive exams (IIT, Medical, Civil Services, SAT, MCAT) seeking raw study discipline and peer proof.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">💻</div>
-                    <div class="card-title">2. Tech Builders & Founders</div>
-                    <div class="card-desc">Software engineers, indie hackers, and founders who measure output in deep work blocks and need insulation from constant notifications.</div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-icon">⚡</div>
-                    <div class="card-title">3. High-Performance Executives</div>
-                    <div class="card-desc">Knowledge workers and managers striving for digital minimalism, optimized sleep, and peak productivity metrics.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 11: Vision & The Ask -->
-        <section class="slide hero-slide" data-slide="11">
-            <div class="pill-badge">🚀 THE FUTURE OF ATTENTION</div>
-            <h1 class="hero-title" style="font-size: 54px;">Join Us in Building the<br>Proof-of-Focus Standard</h1>
-            <p class="hero-punchline">
-                In an age where AI creates infinite content, human deep focus is the single rarest and most valuable asset on Earth. <strong>T1 is the infrastructure that measures, protects, and rewards it.</strong>
-            </p>
-            <div class="hero-stats" style="margin-top: 10px;">
-                <div class="stat-item">
-                    <div class="stat-num" style="font-size: 28px; color: var(--accent-pink);">Phase 1</div>
-                    <div class="stat-label">Android Launch & 100k Users</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num" style="font-size: 28px; color: var(--accent-cyan);">Phase 2</div>
-                    <div class="stat-label">iOS + B2B Campus Leagues</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num" style="font-size: 28px; color: var(--accent-emerald);">Phase 3</div>
-                    <div class="stat-label">Token Wagering & Perks Network</div>
-                </div>
-            </div>
-            <div style="margin-top: 36px;">
-                <div style="font-family: var(--font-mono); font-size: 16px; color: #FFFFFF; font-weight: 600;">
-                    Focneth • <span style="color: var(--accent-pink);">support.t1.help@gmail.com</span> • https://t1premainweb-j7kcxf2u2-norkfocneths-projects.vercel.app/home
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Controls & Key Hints -->
-    <footer class="bottom-bar">
-        <div class="nav-keys-hint">
-            <span>Use <span class="key-badge">←</span> <span class="key-badge">→</span> or <span class="key-badge">Space</span> to navigate</span>
-            <span><span class="key-badge">F</span> for Fullscreen</span>
         </div>
-        <div class="nav-buttons">
-            <button class="btn-nav" id="btnPrev" onclick="prevSlide()" title="Previous Slide">←</button>
-            <button class="btn-nav" id="btnNext" onclick="nextSlide()" title="Next Slide">→</button>
-        </div>
-    </footer>
+    </section>
 
+    <!-- ==========================================
+         SLIDE 2 — THE PROBLEM (ATTENTION TRAP & ACTION FIGURES)
+         ========================================== -->
+    <section class="slide" id="slide-2">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE ATTENTION TRAP</span>
+                </div>
+                <span class="category-tag">02</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Your phone is competing for your attention.</h2>
+                <p class="section-subhead">Every app interface is engineered by behavioral teams to harvest focus. Discipline collapses because willpower alone is hopelessly outmatched.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center;">
+                <!-- Left Problem Visual Card with Stickman Hypnotized by Reels -->
+                <div class="card" style="flex: 1.1; padding: 36px; justify-content: center; height: 100%; align-items: center; text-align: center;">
+                    <svg width="180" height="200" viewBox="0 0 180 200" fill="none">
+                        <!-- Floating Notification Feeds -->
+                        <rect x="110" y="25" width="55" height="24" rx="6" fill="#EF4444" opacity="0.85"/>
+                        <text x="137" y="41" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">+99 REELS</text>
+                        <rect x="15" y="45" width="50" height="24" rx="6" fill="#F59E0B" opacity="0.85"/>
+                        <text x="40" y="61" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">STREAK?</text>
+                        <!-- Giant Phone Screen trapping user -->
+                        <rect x="65" y="40" width="50" height="95" rx="10" stroke="#00F2FE" stroke-width="3" fill="#121318"/>
+                        <line x1="80" y1="50" x2="100" y2="50" stroke="#2E303A" stroke-width="2"/>
+                        <!-- Slumped Stickman reaching out -->
+                        <circle cx="90" cy="155" r="14" stroke="#FFFFFF" stroke-width="4" fill="#1A1B22"/>
+                        <line x1="90" y1="169" x2="90" y2="195" stroke="#FFFFFF" stroke-width="4"/>
+                        <!-- Arms pulled into phone glow -->
+                        <path d="M90 178L75 140L80 115" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M90 178L105 140L100 115" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M70 195L90 195L110 195" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <h3 style="font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--text-white); margin: 12px 0 6px 0;">Algorithmic Dopamine Loops</h3>
+                    <p style="font-size: 15px; color: var(--text-grey); line-height: 1.5; max-width: 380px;">
+                        Infinite reels and micro-alerts break deep concentration before cognitive flow can even begin.
+                    </p>
+                </div>
+
+                <!-- Right Big Data Cards -->
+                <div style="flex: 1.3; display: flex; flex-direction: column; gap: 20px; height: 100%;">
+                    <div class="card graphite" style="flex: 1; padding: 32px; justify-content: center;">
+                        <div class="card-number">UC IRVINE SCIENTIFIC STUDY</div>
+                        <div class="metric-hero">47 Seconds</div>
+                        <p style="font-size: 20px; color: var(--text-white); font-weight: 600; line-height: 1.4; margin-bottom: 8px;">
+                            Average continuous screen focus interval before disruption.
+                        </p>
+                        <p class="card-body">
+                            Down from 2.5 minutes in 2004. Constant task-switching destroys working memory, leaving students mentally exhausted after hours of unproductive browsing.
+                        </p>
+                    </div>
+
+                    <div class="card graphite" style="flex: 1; padding: 32px; justify-content: center;">
+                        <div class="card-number">THE WILLPOWER TRAP</div>
+                        <div class="metric-hero" style="font-size: 52px;">94% Abandonment</div>
+                        <p style="font-size: 18px; color: var(--text-white); font-weight: 600; line-height: 1.4; margin-bottom: 8px;">
+                            Of traditional blocker apps are uninstalled or bypassed in 14 days.
+                        </p>
+                        <p class="card-body">
+                            Passive timers have zero real-world cost. When resistance collapses at 3:00 PM, users disable the app with 3 quick taps.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>THE ATTENTION CRISIS OVERVIEW</span>
+                <span>PAGE 02 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 3 — THE INSIGHT (BLOCKED VS STAKES)
+         ========================================== -->
+    <section class="slide" id="slide-3">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE INSIGHT</span>
+                </div>
+                <span class="category-tag">03</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Knowing your screen time isn't enough.</h2>
+                <p class="section-subhead">There is a fundamental difference between merely measuring behaviour and creating the social and economic conditions that help people change it.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Column 1: Passive -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">01 &middot; PASSIVE TRACKING</div>
+                    <h3 class="card-heading">Awareness Without Action</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        Native tools like Apple Screen Time and Android Digital Wellbeing tell you how many hours you wasted, but only after the day is gone. Retrospective graphs do not stop the next impulse pick-up.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-graphite); border-radius: 10px; font-family: var(--font-mono); font-size: 13.5px; color: var(--text-grey);">
+                        Status Quo: Guilt without intervention
+                    </div>
+                </div>
+
+                <!-- Column 2: Blunt Blockers -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">02 &middot; PUNITIVE BLOCKING</div>
+                    <h3 class="card-heading">Friction Without Context</h3>
+                    <p class="card-body" style="margin-bottom: 24px;">
+                        Traditional blockers treat every screen opening as a moral failure. Shutting down browser access breaks genuine study and communication, forcing users to deactivate the application.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-graphite); border-radius: 10px; font-family: var(--font-mono); font-size: 13.5px; color: var(--text-grey);">
+                        Status Quo: High friction & early uninstall
+                    </div>
+                </div>
+
+                <!-- Column 3: The T1 Breakthrough -->
+                <div class="card" style="flex: 1; padding: 32px; border-color: #52525B; background: linear-gradient(145deg, #1A1B22, #14151B);">
+                    <div class="card-number" style="color: var(--accent-cyan);">03 &middot; THE T1 PHILOSOPHY</div>
+                    <h3 class="card-heading" style="color: var(--text-white);">Active Behavioral Design</h3>
+                    <p class="card-body" style="margin-bottom: 24px; color: #D1D5DB;">
+                        Habitual technology use changes when attention is backed by clear structure, peer covenants, and tangible rewards. Focus should feel like a competitive discipline, not a punishment.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 10px; font-family: var(--font-mono); font-size: 13.5px; color: var(--accent-cyan);">
+                        T1 Shift: Social stakes + Work context
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>BEHAVIORAL PHILOSOPHY &middot; SYSTEMIC SHIFT</span>
+                <span>PAGE 03 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 4 — THE SOLUTION (CENTER PHONE + ACTION SATELLITES)
+         ========================================== -->
+    <section class="slide" id="slide-4">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">THE SOLUTION</span>
+                </div>
+                <span class="category-tag">04</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Meet T1: The Proof-of-Focus Arena.</h2>
+                <p class="section-subhead">A focused operating environment designed for individuals who care about their work, their time, and their cognitive clarity.</p>
+            </div>
+
+            <!-- Phone in Center + Flanking Action Callouts -->
+            <div class="content-area" style="align-items: center; justify-content: space-between;">
+                <!-- Left Satellite Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="satellite-card">
+                        <div class="card-number">OBJECTIVE MEASUREMENT</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 21px; color: var(--text-white); margin-bottom: 8px;">The Focus Score (0–100)</h4>
+                        <p style="font-size: 15px; color: var(--text-grey); line-height: 1.55;">
+                            A normalized metric evaluating continuous deep work blocks, streak integrity, and duel completion without subjective self-reporting.
+                        </p>
+                    </div>
+
+                    <div class="satellite-card">
+                        <div class="card-number">SYNCHRONIZED ACCOUNTABILITY</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 21px; color: var(--text-white); margin-bottom: 8px;">Real-Time Focus Duels</h4>
+                        <p style="font-size: 15px; color: var(--text-grey); line-height: 1.55;">
+                            Structured deep-work sprints (15m, 25m, 45m). Dual timers hold both operators to identical accountable standards.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CENTER PHONE WITH LIVE DASHBOARD -->
+                <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);">
+                    <div class="device-pill"></div>
+                    <div class="device-viewport">
+                        <img src="t1_live_screen_home.png" class="device-screenshot" alt="T1 Main Dashboard">
+                    </div>
+                </div>
+
+                <!-- Right Satellite Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="satellite-card">
+                        <div class="card-number">WORK ENVIRONMENT INTEGRATION</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 21px; color: var(--text-white); margin-bottom: 8px;">Context-Aware App Handling</h4>
+                        <p style="font-size: 15px; color: var(--text-grey); line-height: 1.55;">
+                            Differentiates between legitimate documentation/study browsers and infinite algorithmic reels so real work is never interrupted.
+                        </p>
+                    </div>
+
+                    <div class="satellite-card">
+                        <div class="card-number">TANGIBLE VALUE</div>
+                        <h4 style="font-family: var(--font-heading); font-size: 21px; color: var(--text-white); margin-bottom: 8px;">Proof-of-Focus Economy</h4>
+                        <p style="font-size: 15px; color: var(--text-grey); line-height: 1.55;">
+                            Completed sessions generate verified $T1 tokens redeemable for exclusive discipline milestones, streak protection, and rank status.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>T1 APPLICATION ARCHITECTURE &middot; VERSION 1.0.9</span>
+                <span>PAGE 04 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 5 — HOW T1 WORKS (THREE-STEP FLOW WITH ACTION FIGURES)
+         ========================================== -->
+    <section class="slide" id="slide-5">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">HOW IT WORKS</span>
+                </div>
+                <span class="category-tag">05</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A simple, three-step methodology.</h2>
+                <p class="section-subhead">Designed around cognitive psychology principles to foster long-term behavioral change without overwhelming friction.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Step 1: Understand -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-number">PHASE 01</div>
+                        <!-- SVG Telemetry Icon -->
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="18" stroke="#303036" stroke-width="2"/>
+                            <path d="M12 24L18 16L24 22L30 12" stroke="#00F2FE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div style="font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: var(--text-white); margin-bottom: 12px;">
+                        UNDERSTAND
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        T1 monitors background interaction patterns using Android's native UsageStats API without accessing personal messages, browsing content, or credentials.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 10px; border: 1px solid var(--border-dark); font-size: 14px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Uncovers exact times of involuntary attention leakage throughout the day.
+                    </div>
+                </div>
+
+                <!-- Step 2: Intervene -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-number">PHASE 02</div>
+                        <!-- SVG Intervention Shield -->
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <path d="M20 6L32 11V21C32 28 26 33 20 36C14 33 8 28 8 21V11L20 6Z" stroke="#F59E0B" stroke-width="2" fill="rgba(245, 158, 11, 0.1)"/>
+                            <path d="M16 20L20 24L26 17" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div style="font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: var(--text-white); margin-bottom: 12px;">
+                        INTERVENE
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        At the moment of distraction, T1 presents calm, timely micro-interventions or launches a focused peer session to break compulsive phone unlock loops.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 10px; border: 1px solid var(--border-dark); font-size: 14px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Replaces automated dopamine scrolling with deliberate conscious choice.
+                    </div>
+                </div>
+
+                <!-- Step 3: Improve -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div class="card-number">PHASE 03</div>
+                        <!-- SVG Token Trophy -->
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="16" stroke="#10B981" stroke-width="2" fill="rgba(16, 185, 129, 0.1)"/>
+                            <path d="M15 15H25V18H21V28H19V18H15V15Z" fill="#10B981"/>
+                            <circle cx="25" cy="26" r="1.5" fill="#10B981"/>
+                        </svg>
+                    </div>
+                    <div style="font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: var(--text-white); margin-bottom: 12px;">
+                        IMPROVE
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Focus time is recognized and recorded. Users earn token benchmarks, track weekly consistency, and observe measurable improvements in continuous work blocks.
+                    </p>
+                    <div style="margin-top: auto; padding: 14px; background: var(--bg-obsidian); border-radius: 10px; border: 1px solid var(--border-dark); font-size: 14px; color: var(--text-grey);">
+                        <strong style="color: var(--text-white);">Result:</strong> Builds self-reinforcing daily momentum that outlasts temporary motivation.
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>BEHAVIORAL METHODOLOGY &middot; THREE-STEP CYCLE</span>
+                <span>PAGE 05 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 6 — PRODUCT DEMONSTRATION (CENTER ARENA PHONE + DYNAMIC SIDES)
+         ========================================== -->
+    <section class="slide" id="slide-6">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">PRODUCT DEMONSTRATION</span>
+                </div>
+                <span class="category-tag">06</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Engineered for daily utility & real-time stakes.</h2>
+                <p class="section-subhead">Actual production screens demonstrating live focus sessions, real-time peer duels, and context-aware tool whitelisting.</p>
+            </div>
+
+            <!-- Dynamic Layout: Left Notification Phone, Center Duel Phone, Right Whitelist Phone -->
+            <div class="content-area" style="align-items: center; justify-content: space-between;">
+                <!-- Left Phone Card: Incoming Push Watchdog -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <div class="device-chassis medium">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_notif_challenge.png" class="device-screenshot" alt="Push Challenge Notification">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 270px;">
+                        <div style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--text-white);">Instant Heads-Up Actions</div>
+                        <div style="font-size: 13px; color: var(--text-grey); font-family: var(--font-mono); margin-top: 4px;">Wakes terminated apps on all Android OEMs</div>
+                    </div>
+                </div>
+
+                <!-- CENTER HERO PHONE: LIVE DUEL ARENA -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                    <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_battle_arena.png" class="device-screenshot" alt="Focus Fight Arena">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 320px;">
+                        <div style="font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--text-white);">Focus Fight Protocol</div>
+                        <div style="font-size: 13px; color: var(--text-grey); font-family: var(--font-mono); margin-top: 4px;">Real-Time Synchronized Peer Duels</div>
+                    </div>
+                </div>
+
+                <!-- Right Phone Card: Allowed Apps Whitelist -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <div class="device-chassis medium">
+                        <div class="device-pill"></div>
+                        <div class="device-viewport">
+                            <img src="t1_live_screen_allowed_apps.png" class="device-screenshot" alt="Dual-Purpose App Whitelist">
+                        </div>
+                    </div>
+                    <div style="text-align: center; max-width: 270px;">
+                        <div style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--text-white);">Dual-Purpose Whitelist</div>
+                        <div style="font-size: 13px; color: var(--text-grey); font-family: var(--font-mono); margin-top: 4px;">Permits essential work tools like Chrome</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>NATIVE ANDROID RELEASE BUILD v1.0.10</span>
+                <span>PAGE 06 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 7 — MARKET OPPORTUNITY (FOCUSED BEACHHEAD)
+         ========================================== -->
+    <section class="slide" id="slide-7">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">MARKET OPPORTUNITY</span>
+                </div>
+                <span class="category-tag">07</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A large problem. A focused starting point.</h2>
+                <p class="section-subhead">Beginning with high-intent knowledge segments where personal attention and cognitive endurance directly correlate with career and academic outcomes.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Initial Beachhead -->
+                <div class="card" style="flex: 1.2; padding: 34px;">
+                    <div class="card-number">INITIAL TARGET AUDIENCE</div>
+                    <h3 class="card-heading" style="font-size: 26px;">Competitive Students & Remote Engineers</h3>
+                    <p class="card-body" style="margin-bottom: 24px; font-size: 17px;">
+                        Our primary demographic consists of students preparing for demanding competitive examinations (JEE, NEET, UPSC, CA, CFA, USMLE) and remote software engineers where distraction equals lost performance.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 14px; margin-top: auto;">
+                        <div style="display: flex; justify-content: space-between; padding: 14px; background: var(--bg-graphite); border-radius: 10px;">
+                            <span style="color: var(--text-white); font-weight: 600; font-size: 16px;">High Intent to Pay</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-grey); font-size: 15px;">₹500–₹2,000/mo already spent on study aids</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 14px; background: var(--bg-graphite); border-radius: 10px;">
+                            <span style="color: var(--text-white); font-weight: 600; font-size: 16px;">Natural Network Density</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-grey); font-size: 15px;">Clustered in coaching cohorts, hostels & study rooms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defensible Sizing -->
+                <div class="card graphite" style="flex: 1; padding: 34px;">
+                    <div class="card-number">MARKET CONTEXT &middot; GLOBAL INDUSTRY</div>
+                    <div class="metric-hero" style="font-size: 54px;">$9.2B</div>
+                    <p style="font-size: 18px; color: var(--text-white); font-weight: 600; margin-bottom: 12px;">
+                        Global Digital Wellbeing & Focus Software by 2028 (18.2% CAGR).
+                    </p>
+                    <p class="card-body" style="font-size: 16px;">
+                        Driven by escalating employer and student demand for distraction management. Moving from passive mindfulness apps toward active cognitive endurance tools.
+                    </p>
+
+                    <div style="margin-top: 24px; border-top: 1px solid var(--border-dark); padding-top: 20px;">
+                        <div class="card-number">INITIAL DISTRIBUTION CHANNELS</div>
+                        <p style="font-size: 15px; color: var(--text-grey); line-height: 1.6;">
+                            Direct collegiate ambassador partnerships across top engineering & medical universities and organic peer-to-peer duel invitation links.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>DEFENSIBLE MARKET SIZING & DISTRIBUTION</span>
+                <span>PAGE 07 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 8 — BUSINESS MODEL (IN RUPEES ₹ WITH TOKEN ASSET)
+         ========================================== -->
+    <section class="slide" id="slide-8">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">BUSINESS MODEL</span>
+                </div>
+                <span class="category-tag">08</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">Transparent pricing in Rupees (₹), aligned with user success.</h2>
+                <p class="section-subhead">No ad networks, no data brokering. Revenue is generated purely from delivering verifiable focus and personal productivity value.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Stream 1: T1 Pro Sub -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">REVENUE STREAM 01</div>
+                    <h3 class="card-heading" style="font-size: 26px;">T1 Pro Subscription</h3>
+                    <div style="font-family: var(--font-heading); font-size: 38px; font-weight: 800; color: var(--text-white); margin-bottom: 8px;">
+                        ₹69 <span style="font-size: 18px; font-weight: 500; color: var(--text-grey);">/ month</span>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-emerald); margin-bottom: 18px;">
+                        Annual Plan: ₹599 / year (Save 30%)
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Provides unlimited daily Focus Fights, advanced AI habit diagnostics, automated cloud streak recovery, and historical analytics exports. Student launch tier at ₹49/mo.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Individual recurring SaaS
+                    </div>
+                </div>
+
+                <!-- Stream 2: Token Economics & Stakes -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">REVENUE STREAM 02</div>
+                    <h3 class="card-heading" style="font-size: 26px;">Token Packs & Escrow</h3>
+                    <div style="font-family: var(--font-heading); font-size: 38px; font-weight: 800; color: var(--text-white); margin-bottom: 8px;">
+                        ₹49 – ₹199 <span style="font-size: 18px; font-weight: 500; color: var(--text-grey);">/ pack</span>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-amber); margin-bottom: 18px;">
+                        Tournament Pool Fee: 5% on public duels
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Micro-packages for wager tokens (500 to 2,500 T1 tokens). The platform manages transparent peer escrows and retains a modest 5% tournament operational pool fee.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Transactional in-app utility
+                    </div>
+                </div>
+
+                <!-- Stream 3: Campus & Cohort Licenses -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">REVENUE STREAM 03</div>
+                    <h3 class="card-heading" style="font-size: 26px;">Campus Cohort Licenses</h3>
+                    <div style="font-family: var(--font-heading); font-size: 38px; font-weight: 800; color: var(--text-white); margin-bottom: 8px;">
+                        ₹4,999 <span style="font-size: 18px; font-weight: 500; color: var(--text-grey);">/ semester</span>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent-cyan); margin-bottom: 18px;">
+                        Per 100 student batch / study hall
+                    </div>
+                    <p class="card-body" style="margin-bottom: 20px;">
+                        Cohort licenses for university test-prep academies, coding bootcamps, and coaching institutes requiring structured study halls and student focus leaderboards.
+                    </p>
+                    <div style="margin-top: auto; padding: 12px; background: var(--bg-graphite); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-grey);">
+                        Model: Annual B2B seat licensing
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>REVENUE ARCHITECTURE & MONETIZATION IN RUPEES (₹)</span>
+                <span>PAGE 08 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 9 — TRACTION & CURRENT STATUS
+         ========================================== -->
+    <section class="slide" id="slide-9">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">CURRENT STATUS</span>
+                </div>
+                <span class="category-tag">09</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">What we've built. What we're learning.</h2>
+                <p class="section-subhead">A grounded summary of our technical milestones, production readiness, and active user validation.</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Status 1 -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">MILESTONE &middot; COMPLETED</div>
+                    <h3 class="card-heading">Production Release Built</h3>
+                    <p class="card-body" style="margin-bottom: 20px; font-size: 17px;">
+                        Version 1.0.9 (VersionCode 10) built and validated. Meets Google Play Store Target SDK 36 guidelines with zero foreground service compliance friction.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 14px; color: var(--text-white); padding: 12px; background: var(--bg-graphite); border-radius: 8px;">
+                        &check; 12,540+ Android devices verified
+                    </div>
+                </div>
+
+                <!-- Status 2 -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">MILESTONE &middot; COMPLETED</div>
+                    <h3 class="card-heading">Cross-OEM Reliability</h3>
+                    <p class="card-body" style="margin-bottom: 20px; font-size: 17px;">
+                        Solved aggressive background battery killing on Xiaomi MIUI, Samsung OneUI, OnePlus OxygenOS, and Pixel via custom AlarmManager watchdog architecture.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 14px; color: var(--text-white); padding: 12px; background: var(--bg-graphite); border-radius: 8px;">
+                        &check; Challenge alerts wake terminated apps
+                    </div>
+                </div>
+
+                <!-- Status 3 -->
+                <div class="card" style="flex: 1; padding: 32px;">
+                    <div class="card-number">MILESTONE &middot; IN PROGRESS</div>
+                    <h3 class="card-heading">Closed Testing & Cohorts</h3>
+                    <p class="card-body" style="margin-bottom: 20px; font-size: 17px;">
+                        Currently gathering quantitative interaction telemetry and session completion metrics with our initial cohort of competitive student testers.
+                    </p>
+                    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 14px; color: var(--text-white); padding: 12px; background: var(--bg-graphite); border-radius: 8px;">
+                        &check; Play Console Closed Track Active
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>FACTUAL DEVELOPMENT PROGRESS</span>
+                <span>PAGE 09 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 10 — ROADMAP (HORIZONTAL TIMELINE)
+         ========================================== -->
+    <section class="slide" id="slide-10">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">EXECUTION ROADMAP</span>
+                </div>
+                <span class="category-tag">10</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A disciplined, phased rollout.</h2>
+                <p class="section-subhead">Progressing systematically from our core Android foundation to multi-platform study environments.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center;">
+                <div style="width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                    <!-- Phase 1 -->
+                    <div class="card" style="border-top: 4px solid var(--text-white); padding: 28px;">
+                        <div class="card-number">PHASE 01 &middot; CURRENT</div>
+                        <h3 class="card-heading" style="font-size: 22px;">Product Validation</h3>
+                        <p class="card-body" style="font-size: 15px; margin-top: 10px;">
+                            Android release stabilization, battery watchdog verification, 1v1 Focus Fight mechanics, closed testing graduation on Play Store.
+                        </p>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="card" style="border-top: 4px solid var(--border-dark); padding: 28px;">
+                        <div class="card-number">PHASE 02 &middot; Q2 2026</div>
+                        <h3 class="card-heading" style="font-size: 22px;">Campus Pilot</h3>
+                        <p class="card-body" style="font-size: 15px; margin-top: 10px;">
+                            Study squad multi-user sessions (4–8 people), collegiate ambassador program, token rewards store launch for discipline milestones.
+                        </p>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="card" style="border-top: 4px solid var(--border-dark); padding: 28px;">
+                        <div class="card-number">PHASE 03 &middot; Q3–Q4 2026</div>
+                        <h3 class="card-heading" style="font-size: 22px;">Retention & iOS</h3>
+                        <p class="card-body" style="font-size: 15px; margin-top: 10px;">
+                            Native iOS application using Apple ScreenTime FamilyControls API, weekly streak protection, synchronized study room multiplayer.
+                        </p>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="card" style="border-top: 4px solid var(--border-dark); padding: 28px;">
+                        <div class="card-number">PHASE 04 &middot; 2027</div>
+                        <h3 class="card-heading" style="font-size: 22px;">Desktop & B2B</h3>
+                        <p class="card-body" style="font-size: 15px; margin-top: 10px;">
+                            macOS and Windows desktop companion app for unified cross-device lockouts, and institutional team cohort licensing for universities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>STRATEGIC MILESTONES & HORIZONS</span>
+                <span>PAGE 10 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 11 — VISION (BREAKING FREE WITH PRESTIGE)
+         ========================================== -->
+    <section class="slide" id="slide-11">
+        <div class="slide-inner">
+            <div class="top-bar">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                    <span style="color: var(--border-dark);">&middot;</span>
+                    <span class="category-tag">LONG-TERM VISION</span>
+                </div>
+                <span class="category-tag">11</span>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-headline">A healthier relationship with technology.</h2>
+                <p class="section-subhead">We envision a world where technology empowers human intention rather than quietly eroding it.</p>
+            </div>
+
+            <div class="content-area" style="align-items: center; justify-content: space-between;">
+                <!-- Left Vision Narrative -->
+                <div style="flex: 1.2; max-width: 880px;">
+                    <p style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: var(--text-white); line-height: 1.4; margin-bottom: 24px; letter-spacing: -0.5px;">
+                        "The most valuable resource of the 21st century is not capital, compute, or code. It is human attention."
+                    </p>
+                    <p class="card-body" style="font-size: 19px; margin-bottom: 20px; line-height: 1.6;">
+                        T1 is built on the conviction that deep focus is a learnable, protectable craft. By designing systems that elevate human agency over algorithmic impulses, we enable the next generation of builders, scholars, and thinkers to do their finest work.
+                    </p>
+                    <p class="card-body" style="font-size: 19px; line-height: 1.6;">
+                        Not by retreating from digital tools, but by mastering them.
+                    </p>
+                </div>
+
+                <!-- Right Visual: T1 Rank Screen Showcase -->
+                <div class="device-chassis" style="box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);">
+                    <div class="device-pill"></div>
+                    <div class="device-viewport">
+                        <img src="t1_live_screen_rank.png" class="device-screenshot" alt="T1 Leaderboards & Global Standing">
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bar">
+                <span>INTENTIONAL COMPUTING &middot; THE LONG-TERM HORIZON</span>
+                <span>PAGE 11 / 12</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 12 — CLOSING (PROMINENT CENTERED LOGO + FLANKING ACTION STICKMEN)
+         ========================================== -->
+    <section class="slide slide-gradient-bg" id="slide-12">
+        <div class="slide-inner" style="justify-content: space-between;">
+            <!-- Top Minimal Bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="brand-cluster">
+                    <span class="brand-name">T1.</span>
+                </div>
+                <span class="category-tag">CONCLUSION</span>
+            </div>
+
+            <!-- Closing Center with Prominent 110px Logo & Left/Right Action Stickmen -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 80px; margin: auto 0;">
+                <!-- Left Stickman: Victorious Focus Champion -->
+                <div style="text-align: center;">
+                    <svg width="150" height="220" viewBox="0 0 150 220" fill="none" class="stickman-figure">
+                        <!-- Head -->
+                        <circle cx="75" cy="45" r="18" stroke="#FFFFFF" stroke-width="5" fill="#1A1B22"/>
+                        <!-- Torso -->
+                        <line x1="75" y1="63" x2="75" y2="135" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Victory Arms raised in Triumph -->
+                        <path d="M75 80L35 45L20 20" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M75 80L115 45L130 20" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Confident Stride Legs -->
+                        <path d="M75 135L45 180L35 210" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M75 135L105 180L125 205" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Aura sparks -->
+                        <circle cx="15" cy="15" r="3" fill="#00F2FE"/>
+                        <circle cx="135" cy="15" r="3" fill="#00F2FE"/>
+                    </svg>
+                    <div style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-cyan); letter-spacing: 1.5px; margin-top: 8px;">TOP 1% OPERATOR</div>
+                </div>
+
+                <!-- Center Prominent Logo & Punchy Headline -->
+                <div style="text-align: center; max-width: 800px;">
+                    <!-- Massive 110px Logo Box -->
+                    <div class="logo-box-closing">
+                        <svg width="60" height="60" viewBox="0 0 108 108" fill="none">
+                            <path d="M28 38H52V41H42V72H38V41H28V38Z" fill="#FFFFFF"/>
+                            <path d="M57 38H61V72H57V42L53 44.5L51.5 41.5L57 38Z" fill="#FFFFFF"/>
+                            <path d="M65 68H69V72H65V68Z" fill="#00F2FE"/>
+                        </svg>
+                    </div>
+
+                    <h1 style="font-family: var(--font-heading); font-size: 64px; font-weight: 800; color: var(--text-white); letter-spacing: -2px; line-height: 1.05; margin-bottom: 8px;">
+                        YOUR ATTENTION.
+                    </h1>
+                    <h1 style="font-family: var(--font-heading); font-size: 64px; font-weight: 800; color: var(--text-white); letter-spacing: -2px; line-height: 1.05; margin-bottom: 24px;">
+                        YOUR ADVANTAGE.
+                    </h1>
+
+                    <p style="font-family: var(--font-body); font-size: 24px; color: var(--text-grey); font-weight: 500;">
+                        Let's build better digital habits.
+                    </p>
+                </div>
+
+                <!-- Right Stickman: Focus Shield Guardian -->
+                <div style="text-align: center;">
+                    <svg width="150" height="220" viewBox="0 0 150 220" fill="none" class="stickman-figure">
+                        <!-- Head -->
+                        <circle cx="75" cy="45" r="18" stroke="#FFFFFF" stroke-width="5" fill="#1A1B22"/>
+                        <!-- Torso -->
+                        <line x1="75" y1="63" x2="75" y2="135" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Left Arm holding Flag of Focus -->
+                        <path d="M75 80L40 70L25 50" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <line x1="25" y1="30" x2="25" y2="190" stroke="#00F2FE" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M25 35H65L50 55L65 75H25" fill="rgba(0, 242, 254, 0.3)" stroke="#00F2FE" stroke-width="3"/>
+                        <!-- Right Arm holding shield -->
+                        <path d="M75 80L105 85L120 75" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <rect x="110" y="55" width="28" height="48" rx="8" stroke="#FFFFFF" stroke-width="4" fill="#1A1B22"/>
+                        <path d="M117 79L124 79" stroke="#00F2FE" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Solid Stand Legs -->
+                        <path d="M75 135L55 180L45 210" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M75 135L95 180L110 210" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                    </svg>
+                    <div style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-cyan); letter-spacing: 1.5px; margin-top: 8px;">UNBREAKABLE HABIT</div>
+                </div>
+            </div>
+
+            <!-- Bottom Meta -->
+            <div class="footer-bar">
+                <span style="font-family: var(--font-mono); color: var(--text-white);">T1 &middot; BUILD BETTER DIGITAL HABITS</span>
+                <span style="font-family: var(--font-mono); color: var(--text-grey);">founders@t1focus.app &middot; t1focus.app</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide Navigation Script -->
     <script>
         let currentSlide = 1;
-        const totalSlides = 11;
-        const slides = document.querySelectorAll('.slide');
-        const slideCounter = document.getElementById('slideCounter');
-        const progressBar = document.getElementById('progressBar');
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        const ambientGlow = document.getElementById('ambientGlow');
+        const totalSlides = 12;
 
-        const glowColors = [
-            'rgba(255, 59, 148, 0.35)', // 1
-            'rgba(239, 68, 68, 0.35)',  // 2
-            'rgba(56, 189, 248, 0.35)', // 3
-            'rgba(168, 85, 247, 0.35)', // 4
-            'rgba(16, 185, 129, 0.35)', // 5
-            'rgba(245, 158, 11, 0.35)', // 6
-            'rgba(255, 59, 148, 0.35)', // 7
-            'rgba(16, 185, 129, 0.35)', // 8
-            'rgba(56, 189, 248, 0.35)', // 9
-            'rgba(168, 85, 247, 0.35)', // 10
-            'rgba(255, 59, 148, 0.45)'  // 11
-        ];
-
-        function showSlide(index) {
-            if (index < 1) index = 1;
-            if (index > totalSlides) index = totalSlides;
-
-            currentSlide = index;
-
-            slides.forEach((s, idx) => {
-                s.classList.remove('active');
-                if (idx + 1 === currentSlide) {
-                    s.classList.add('active');
-                }
-            });
-
-            slideCounter.textContent = `SLIDE ${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
-            progressBar.style.width = `${(currentSlide / totalSlides) * 100}%`;
-
-            btnPrev.disabled = currentSlide === 1;
-            btnNext.disabled = currentSlide === totalSlides;
-
-            ambientGlow.style.background = `radial-gradient(circle, ${glowColors[currentSlide - 1]} 0%, rgba(5,5,8,0) 70%)`;
-        }
-
-        function nextSlide() {
-            if (currentSlide < totalSlides) {
-                showSlide(currentSlide + 1);
+        function updateIndicator() {
+            const el = document.getElementById('slideIndicator');
+            if (el) {
+                el.innerText = `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
             }
         }
 
-        function prevSlide() {
-            if (currentSlide > 1) {
-                showSlide(currentSlide - 1);
+        function scrollToSlide(slideIndex) {
+            if (slideIndex < 1) slideIndex = 1;
+            if (slideIndex > totalSlides) slideIndex = totalSlides;
+            currentSlide = slideIndex;
+            const target = document.getElementById(`slide-${currentSlide}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
             }
+            updateIndicator();
         }
 
-        function toggleFullscreen() {
+        function navigateSlide(direction) {
+            scrollToSlide(currentSlide + direction);
+        }
+
+        function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {});
             } else {
@@ -1042,25 +1310,34 @@
             }
         }
 
-        // Keyboard Event Listeners
+        // Keyboard hotkeys
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
                 e.preventDefault();
-                nextSlide();
+                navigateSlide(1);
             } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
                 e.preventDefault();
-                prevSlide();
-            } else if (e.key === 'f' || e.key === 'F') {
-                toggleFullscreen();
-            } else if (e.key === 'Home') {
-                showSlide(1);
-            } else if (e.key === 'End') {
-                showSlide(totalSlides);
+                navigateSlide(-1);
+            } else if (e.key.toLowerCase() === 'f') {
+                toggleFullScreen();
             }
         });
 
-        // Initialize First Slide
-        showSlide(1);
+        // Intersection Observer to update indicator on manual scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    const num = parseInt(id.replace('slide-', ''));
+                    if (!isNaN(num)) {
+                        currentSlide = num;
+                        updateIndicator();
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.slide').forEach(slide => observer.observe(slide));
     </script>
 </body>
 </html>

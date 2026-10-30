@@ -19,9 +19,13 @@ sealed class BatteryOptimizationState {
 class BatteryOptimizationDetector @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    fun isIgnoringBatteryOptimizations(): Boolean {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return true
+        return powerManager.isIgnoringBatteryOptimizations(context.packageName)
+    }
+
     fun getBatteryOptimizationState(): BatteryOptimizationState {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return BatteryOptimizationState.Unknown
-        return if (powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
+        return if (isIgnoringBatteryOptimizations()) {
             BatteryOptimizationState.Unrestricted
         } else {
             BatteryOptimizationState.Optimized
@@ -29,9 +33,33 @@ class BatteryOptimizationDetector @Inject constructor(
     }
 
     fun getRequestIntent(): Intent {
-        return Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = Uri.parse("package:${context.packageName}")
+        return Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    }
+
+    fun openOptimizationSettings(ctx: Context) {
+        try {
+            val directIntent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = Uri.parse("package:${context.packageName}")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            ctx.startActivity(directIntent)
+        } catch (_: Exception) {
+            try {
+                val listIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                ctx.startActivity(listIntent)
+            } catch (_: Exception) {
+                try {
+                    val appSettingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    ctx.startActivity(appSettingsIntent)
+                } catch (_: Exception) {}
+            }
         }
     }
 }

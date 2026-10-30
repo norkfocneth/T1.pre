@@ -25,3 +25,9 @@ skills-lock.json
 *.zip
 submission_staging/
 /*.png
+tools/
+
+app bundle/
+hackfront/
+
+.claude/

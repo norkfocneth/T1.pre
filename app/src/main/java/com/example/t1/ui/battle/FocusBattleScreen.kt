@@ -25,10 +25,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,58 +44,51 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 // =========================================================================
-// GLOSSY OBSIDIAN LUXURY GRADIENT SYSTEM
+// OBSIDIAN CHARCOAL THEME SYSTEM (Aligned with Home, Leaderboard & Profile)
 // =========================================================================
 object BattleGradients {
     val screenBackground = Brush.verticalGradient(
         listOf(
-            Color(0xFF0C101A),
-            Color(0xFF06080D),
-            Color(0xFF030406)
+            BgTop,    // #0F0F0F
+            BgBottom  // #0A0A0A
         )
     )
 
-    // Green & Red duel clash theme (Clash between Emerald Focus & Crimson Intensity)
+    // Subtle Duel Clash aura: Emerald focus vs Crimson intensity
     val duelClashAura = Brush.horizontalGradient(
         listOf(
-            Color(0xFF10B981).copy(alpha = 0.22f),
-            Color(0xFF060910).copy(alpha = 0.05f),
-            Color(0xFFEF4444).copy(alpha = 0.22f)
+            Color(0xFF10B981).copy(alpha = 0.16f),
+            Card,
+            Color(0xFFEF4444).copy(alpha = 0.16f)
         )
     )
     val duelBorderGradient = Brush.horizontalGradient(
         listOf(
-            Color(0xFF34D399).copy(alpha = 0.60f),
-            Color(0xFF38BDF8).copy(alpha = 0.30f),
-            Color(0xFFF43F5E).copy(alpha = 0.60f)
-        )
-    )
-    val duelAmbientSweep = Brush.sweepGradient(
-        listOf(
-            Color(0xFF10B981),
-            Color(0xFF38BDF8),
-            Color(0xFFEF4444),
-            Color(0xFF10B981)
+            Color(0xFF34D399).copy(alpha = 0.40f),
+            Border,
+            Color(0xFFF43F5E).copy(alpha = 0.40f)
         )
     )
 
+    // Obsidian card fill (#131316 / #101014)
     val cardFill = Brush.verticalGradient(
         listOf(
-            Color(0xFF161B28).copy(alpha = 0.88f),
-            Color(0xFF0B0E17).copy(alpha = 0.96f)
+            Card,
+            Color(0xFF101014)
         )
     )
 
+    // Subtle border (#222230)
     val glassBorder = Brush.verticalGradient(
         listOf(
-            Color.White.copy(alpha = 0.20f),
-            Color.White.copy(alpha = 0.03f)
+            Border,
+            Color(0xFF1A1A24)
         )
     )
 
     val primaryButtonBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFFFFFFFF),
+            Color.White,
             Color(0xFFE2E8F0)
         )
     )
@@ -108,75 +101,77 @@ object BattleGradients {
 
     val secondaryButtonBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF181E2B).copy(alpha = 0.85f),
-            Color(0xFF0E121B).copy(alpha = 0.85f)
+            Secondary,
+            Color(0xFF181820)
         )
     )
     val secondaryButtonBorder = Brush.verticalGradient(
         listOf(
-            Color.White.copy(alpha = 0.22f),
-            Color.White.copy(alpha = 0.06f)
+            Border,
+            Color(0xFF1C1C26)
         )
     )
 
+    // Selected duration chip: Obsidian charcoal with crisp white border
     val selectedDurationBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF17253D),
-            Color(0xFF0D1525)
+            Color(0xFF22222C),
+            Color(0xFF181822)
         )
     )
     val selectedDurationBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFF60A5FA),
-            Color(0xFF2563EB).copy(alpha = 0.40f)
+            Color.White.copy(alpha = 0.85f),
+            Color(0xFF888899).copy(alpha = 0.50f)
         )
     )
 
+    // Selected wager chip: Dark amber with gold border
     val selectedWagerBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF2C2210),
-            Color(0xFF171106)
+            Color(0xFF281E0E),
+            Color(0xFF1C150A)
         )
     )
     val selectedWagerBorder = Brush.verticalGradient(
         listOf(
             Color(0xFFFBBF24),
-            Color(0xFFD97706).copy(alpha = 0.40f)
+            Color(0xFFD97706).copy(alpha = 0.60f)
         )
     )
 
     val arenaFocusedCard = Brush.verticalGradient(
         listOf(
-            Color(0xFF131B2B).copy(alpha = 0.92f),
-            Color(0xFF080D16).copy(alpha = 0.98f)
+            Color(0xFF131318),
+            Color(0xFF0D0D12)
         )
     )
     val arenaFocusedBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFF38BDF8).copy(alpha = 0.45f),
-            Color.White.copy(alpha = 0.06f)
+            Color(0xFF34D399).copy(alpha = 0.45f),
+            Border
         )
     )
 
     val arenaPausedCard = Brush.verticalGradient(
         listOf(
-            Color(0xFF1C1612).copy(alpha = 0.92f),
-            Color(0xFF0F0B08).copy(alpha = 0.98f)
+            Color(0xFF1C160E),
+            Color(0xFF14100A)
         )
     )
     val arenaPausedBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFFF59E0B).copy(alpha = 0.45f),
-            Color.White.copy(alpha = 0.06f)
+            Color(0xFFF59E0B).copy(alpha = 0.50f),
+            Border
         )
     )
 
     val timerFocusedSweep = Brush.sweepGradient(
         listOf(
-            Color(0xFF38BDF8),
-            Color(0xFFFFFFFF),
-            Color(0xFF818CF8),
-            Color(0xFF38BDF8)
+            Color(0xFF10B981),
+            Color(0xFF34D399),
+            Color(0xFF059669),
+            Color(0xFF10B981)
         )
     )
     val timerPausedSweep = Brush.sweepGradient(
@@ -189,26 +184,26 @@ object BattleGradients {
 
     val wonBadgeBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF064E3B).copy(alpha = 0.80f),
-            Color(0xFF022C22).copy(alpha = 0.90f)
+            Color(0xFF064E3B).copy(alpha = 0.70f),
+            Color(0xFF022C22).copy(alpha = 0.85f)
         )
     )
     val wonBadgeBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFF34D399).copy(alpha = 0.65f),
+            Color(0xFF34D399).copy(alpha = 0.50f),
             Color(0xFF059669).copy(alpha = 0.20f)
         )
     )
 
     val lostBadgeBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF4C0519).copy(alpha = 0.80f),
-            Color(0xFF2B020D).copy(alpha = 0.90f)
+            Color(0xFF4C0519).copy(alpha = 0.70f),
+            Color(0xFF2B020D).copy(alpha = 0.85f)
         )
     )
     val lostBadgeBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFFF43F5E).copy(alpha = 0.65f),
+            Color(0xFFF43F5E).copy(alpha = 0.50f),
             Color(0xFFBE123C).copy(alpha = 0.20f)
         )
     )
@@ -222,29 +217,25 @@ object BattleGradients {
     )
     val rewardCardBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF1F1A0F).copy(alpha = 0.92f),
-            Color(0xFF0E0C06).copy(alpha = 0.96f)
+            Color(0xFF1C170E),
+            Color(0xFF120F08)
         )
     )
     val rewardCardBorder = Brush.verticalGradient(
         listOf(
-            Color(0xFFFBBF24).copy(alpha = 0.50f),
-            Color(0xFFD97706).copy(alpha = 0.15f)
+            Color(0xFFFBBF24).copy(alpha = 0.40f),
+            Border
         )
     )
 }
 
 @Composable
-fun T1TokenImage(
-    modifier: Modifier = Modifier.size(20.dp)
-) {
+fun T1TokenImage(modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = com.example.t1.R.drawable.t1_token),
         contentDescription = "T1 Token",
-        contentScale = ContentScale.Crop,
-        modifier = modifier
-            .clip(CircleShape)
-            .border(0.5.dp, Color.White.copy(alpha = 0.35f), CircleShape)
+        modifier = modifier,
+        contentScale = ContentScale.Fit
     )
 }
 
@@ -277,20 +268,14 @@ fun UserBattleHeroCard(
                     Box(
                         modifier = Modifier
                             .size(48.dp)
-                            .background(
-                                Brush.radialGradient(listOf(Color(0xFF1E293B), Color(0xFF0B0F19))),
-                                CircleShape
-                            )
-                            .border(
-                                1.5.dp,
-                                Brush.sweepGradient(listOf(Color(0xFF10B981), Color(0xFF38BDF8), Color(0xFF10B981))),
-                                CircleShape
-                            ),
+                            .background(Secondary, CircleShape)
+                            .border(1.5.dp, Border, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = user.displayName.take(1).uppercase(),
-                            style = TrackingNarrow.copy(
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
                                 color = Color.White,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
@@ -302,7 +287,8 @@ fun UserBattleHeroCard(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = user.displayName,
-                                style = TrackingNarrow.copy(
+                                style = TextStyle(
+                                    fontFamily = SpaceGrotesk,
                                     color = Color.White,
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold
@@ -318,8 +304,9 @@ fun UserBattleHeroCard(
                             ) {
                                 Text(
                                     text = "YOU",
-                                    style = TrackingNarrow.copy(
-                                        color = Color(0xFF34D399),
+                                    style = TextStyle(
+                                        fontFamily = Inter,
+                                        color = Emerald400,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -328,29 +315,28 @@ fun UserBattleHeroCard(
                         }
                         Text(
                             text = "@${user.username}",
-                            style = TrackingNarrow.copy(
-                                color = Color(0xFF94A3B8),
+                            style = TextStyle(
+                                fontFamily = Inter,
+                                color = MutedForeground,
                                 fontSize = 13.sp
                             )
                         )
                     }
                 }
 
-                // Consistency / Streak Badge
+                // Streak / Consistency Badge
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(100.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFF1F180A), Color(0xFF140F04))
-                            )
-                        )
-                        .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.5f), RoundedCornerShape(100.dp))
+                        .background(Color(0xFF1E170A))
+                        .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.45f), RoundedCornerShape(100.dp))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
+                    val streakText = if (user.bio.contains("Streak:")) "🔥 ${user.bio.substringAfter("Streak: ").substringBefore(" •")}" else "🔥 Top Focus"
                     Text(
-                        text = "🔥 5d Streak",
-                        style = TrackingNarrow.copy(
+                        text = streakText,
+                        style = TextStyle(
+                            fontFamily = Inter,
                             color = Color(0xFFFDE68A),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -366,8 +352,8 @@ fun UserBattleHeroCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF090C13).copy(alpha = 0.75f))
-                    .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(14.dp))
+                    .background(Secondary.copy(alpha = 0.5f))
+                    .border(1.dp, Border.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
                     .padding(vertical = 12.dp, horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
@@ -375,44 +361,44 @@ fun UserBattleHeroCard(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${user.battlesCount}",
-                        style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     )
                     Text(
                         text = "Fights",
-                        style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 11.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                     )
                 }
-                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Border))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${user.winsCount}",
-                        style = TrackingNarrow.copy(color = Color(0xFF34D399), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Emerald400, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     )
                     Text(
                         text = "Wins",
-                        style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 11.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                     )
                 }
-                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Border))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${user.lossesCount}",
-                        style = TrackingNarrow.copy(color = Color(0xFFFB7185), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Red400, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     )
                     Text(
                         text = "Losses",
-                        style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 11.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                     )
                 }
-                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Border))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${user.winRatePercent}%",
-                        style = TrackingNarrow.copy(color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     )
                     Text(
                         text = "Win Rate",
-                        style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 11.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                     )
                 }
             }
@@ -433,24 +419,25 @@ fun FocusBattleScreen(
     // Minimization detection: Pause focus timer if user exits or minimizes app during live arena
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, uiState.currentStep) {
-        if (uiState.currentStep == BattleStep.LIVE_ARENA) {
-            val observer = LifecycleEventObserver { _, event ->
-                when (event) {
-                    Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
+                    if (uiState.currentStep == BattleStep.LIVE_ARENA) {
                         viewModel.onAppMinimized()
                     }
-                    Lifecycle.Event.ON_RESUME -> {
+                }
+                Lifecycle.Event.ON_RESUME -> {
+                    viewModel.refreshBatteryOptimizationStatus()
+                    if (uiState.currentStep == BattleStep.LIVE_ARENA) {
                         viewModel.onAppResumed()
                     }
-                    else -> {}
                 }
+                else -> {}
             }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
-            }
-        } else {
-            onDispose {}
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -459,13 +446,13 @@ fun FocusBattleScreen(
             .fillMaxSize()
             .background(BattleGradients.screenBackground)
     ) {
-        // Subtle ambient radial glow at top
+        // Subtle ambient obsidian glow
         Canvas(modifier = Modifier.fillMaxWidth().height(360.dp)) {
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF1E293B).copy(alpha = 0.28f),
-                        Color(0xFF0F172A).copy(alpha = 0.10f),
+                        Color(0xFF1E1E26).copy(alpha = 0.20f),
+                        Color(0xFF121216).copy(alpha = 0.08f),
                         Color.Transparent
                     ),
                     center = Offset(size.width / 2f, -40f),
@@ -486,10 +473,13 @@ fun FocusBattleScreen(
                     BattleDiscoveryView(
                         currentUser = uiState.currentUser,
                         searchQuery = uiState.searchQuery,
+                        allCommunityUsers = uiState.allCommunityUsers,
                         recentUsers = uiState.recentUsers,
                         suggestedUsers = uiState.suggestedUsers,
                         incomingFight = uiState.incomingFight,
                         incomingChallenger = uiState.incomingChallenger,
+                        isBatteryWhitelisted = uiState.isBatteryWhitelisted,
+                        onEnableBackgroundAlerts = { viewModel.openBatterySettings(context) },
                         onSearchChange = { viewModel.onSearchQueryChanged(it) },
                         onSelectUser = {
                             Haptics.playLight(view)
@@ -637,21 +627,30 @@ fun FocusBattleScreen(
 fun BattleDiscoveryView(
     currentUser: BattleUser,
     searchQuery: String,
+    allCommunityUsers: List<BattleUser> = emptyList(),
     recentUsers: List<BattleUser>,
     suggestedUsers: List<BattleUser>,
     incomingFight: com.example.t1.data.remote.model.FocusFightDto? = null,
     incomingChallenger: BattleUser? = null,
+    isBatteryWhitelisted: Boolean = true,
+    onEnableBackgroundAlerts: () -> Unit = {},
     onSearchChange: (String) -> Unit,
     onSelectUser: (BattleUser) -> Unit,
     onIncomingInviteClick: () -> Unit
 ) {
-    val filteredRecent = remember(searchQuery, recentUsers) {
-        if (searchQuery.isBlank()) recentUsers
-        else recentUsers.filter { it.username.contains(searchQuery, ignoreCase = true) || it.displayName.contains(searchQuery, ignoreCase = true) }
+    val allSearchPool = remember(allCommunityUsers, recentUsers, suggestedUsers, currentUser) {
+        val pool = (allCommunityUsers + recentUsers + suggestedUsers).distinctBy { it.id }
+        pool.filter { it.id != currentUser.id }
     }
-    val filteredSuggested = remember(searchQuery, suggestedUsers) {
-        if (searchQuery.isBlank()) suggestedUsers
-        else suggestedUsers.filter { it.username.contains(searchQuery, ignoreCase = true) || it.displayName.contains(searchQuery, ignoreCase = true) }
+    val searchMatches = remember(searchQuery, allSearchPool) {
+        if (searchQuery.isBlank()) emptyList()
+        else {
+            val cleanQuery = searchQuery.trim().removePrefix("@")
+            allSearchPool.filter {
+                it.username.contains(cleanQuery, ignoreCase = true) ||
+                it.displayName.contains(cleanQuery, ignoreCase = true)
+            }
+        }
     }
 
     val hasIncoming = incomingFight != null
@@ -673,7 +672,8 @@ fun BattleDiscoveryView(
             Column {
                 Text(
                     text = "Focus Fight",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
@@ -681,8 +681,9 @@ fun BattleDiscoveryView(
                 )
                 Text(
                     text = "Live focus duels with your circle",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF64748B),
+                    style = TextStyle(
+                        fontFamily = Inter,
+                        color = MutedForeground,
                         fontSize = 14.sp
                     )
                 )
@@ -698,11 +699,10 @@ fun BattleDiscoveryView(
                 Icon(
                     imageVector = Icons.Default.SportsMma,
                     contentDescription = "Fight Invites",
-                    tint = if (hasIncoming) Color(0xFF10B981) else Color(0xFF64748B),
+                    tint = if (hasIncoming) Emerald400 else MutedForeground,
                     modifier = Modifier.size(20.dp)
                 )
                 if (hasIncoming) {
-                    // Pulsing indicator dot for real incoming fight requests
                     val infiniteTransition = rememberInfiniteTransition(label = "fight_dot_pulse")
                     val dotScale by infiniteTransition.animateFloat(
                         initialValue = 0.9f,
@@ -719,14 +719,82 @@ fun BattleDiscoveryView(
                             .offset(x = (-3).dp, y = (3).dp)
                             .size(8.dp)
                             .scale(dotScale)
-                            .background(Color(0xFF10B981), CircleShape)
-                            .border(1.5.dp, Color(0xFF0C101A), CircleShape)
+                            .background(Emerald400, CircleShape)
+                            .border(1.5.dp, Background, CircleShape)
                     )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
+
+        // Unrestricted Battery Guidance Banner for Android OEMs (Xiaomi, Samsung, OnePlus, Vivo)
+        if (!isBatteryWhitelisted) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF1E1E26))
+                    .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                    .clickable(onClick = onEnableBackgroundAlerts)
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF59E0B).copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = "Alerts Whitelist",
+                            tint = Color(0xFFFBBF24),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Enable Closed-App Fight Alerts",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        )
+                        Text(
+                            text = "Allow duels when phone is locked or closed",
+                            style = TextStyle(
+                                fontFamily = Inter,
+                                fontSize = 11.sp,
+                                color = MutedForeground
+                            )
+                        )
+                    }
+                }
+                Text(
+                    text = "Enable",
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFBBF24)
+                    ),
+                    modifier = Modifier
+                        .background(Color(0xFFF59E0B).copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+        }
 
         // User's Own Battle Profile Card
         UserBattleHeroCard(user = currentUser)
@@ -741,12 +809,12 @@ fun BattleDiscoveryView(
                     .background(
                         Brush.horizontalGradient(
                             listOf(
-                                Color(0xFF10B981).copy(alpha = 0.22f),
-                                Color(0xFF0C101A)
+                                Emerald500.copy(alpha = 0.20f),
+                                Card
                             )
                         )
                     )
-                    .border(1.dp, Color(0xFF10B981).copy(alpha = 0.50f), RoundedCornerShape(16.dp))
+                    .border(1.dp, Emerald400.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
                     .clickable(onClick = onIncomingInviteClick)
                     .padding(14.dp)
             ) {
@@ -760,13 +828,13 @@ fun BattleDiscoveryView(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF10B981).copy(alpha = 0.25f)),
+                                .background(Emerald500.copy(alpha = 0.25f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SportsMma,
                                 contentDescription = null,
-                                tint = Color(0xFF34D399),
+                                tint = Emerald400,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -774,17 +842,17 @@ fun BattleDiscoveryView(
                         Column {
                             Text(
                                 text = "⚔️ Focus Fight Challenge!",
-                                style = TrackingNarrow.copy(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             )
                             Text(
                                 text = "@${incomingChallenger.username} • ${incomingFight.durationMinutes}m • ${incomingFight.wagerTokens} tokens",
-                                style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 12.sp)
                             )
                         }
                     }
                     Text(
                         text = "Review ›",
-                        style = TrackingNarrow.copy(color = Color(0xFF34D399), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontFamily = Inter, color = Emerald400, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     )
                 }
             }
@@ -792,15 +860,15 @@ fun BattleDiscoveryView(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Pill-Shaped Curved Search Input Bar with Smooth Styling
+        // Obsidian Pill-Shaped Search Input Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .clip(RoundedCornerShape(32.dp))
-                .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(32.dp))
-                .padding(horizontal = 18.dp),
+                .height(50.dp)
+                .clip(RoundedCornerShape(25.dp))
+                .background(Card)
+                .border(1.dp, Border, RoundedCornerShape(25.dp))
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
@@ -810,17 +878,18 @@ fun BattleDiscoveryView(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
-                    tint = Color(0xFF38BDF8),
-                    modifier = Modifier.size(20.dp)
+                    tint = MutedForeground,
+                    modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 androidx.compose.foundation.text.BasicTextField(
                     value = searchQuery,
                     onValueChange = onSearchChange,
                     modifier = Modifier.weight(1f),
-                    textStyle = TrackingNarrow.copy(
+                    textStyle = TextStyle(
+                        fontFamily = Inter,
                         color = Color.White,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     ),
                     singleLine = true,
@@ -828,9 +897,10 @@ fun BattleDiscoveryView(
                         if (searchQuery.isEmpty()) {
                             Text(
                                 text = "Search fighter by username...",
-                                style = TrackingNarrow.copy(
-                                    color = Color(0xFF64748B),
-                                    fontSize = 15.sp
+                                style = TextStyle(
+                                    fontFamily = Inter,
+                                    color = MutedForeground,
+                                    fontSize = 14.sp
                                 )
                             )
                         }
@@ -840,58 +910,116 @@ fun BattleDiscoveryView(
                 if (searchQuery.isNotEmpty()) {
                     IconButton(
                         onClick = { onSearchChange("") },
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Clear",
-                            tint = Color(0xFF94A3B8),
-                            modifier = Modifier.size(15.dp)
+                            tint = MutedForeground,
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
-            if (filteredRecent.isNotEmpty()) {
+            if (searchQuery.isNotBlank()) {
                 item {
                     Text(
-                        text = "Recent Opponents",
-                        style = TrackingNarrow.copy(
-                            color = Color(0xFF94A3B8),
+                        text = "Search Results (${searchMatches.size})",
+                        style = TextStyle(
+                            fontFamily = SpaceGrotesk,
+                            color = MutedForeground,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
                         ),
                         modifier = Modifier.padding(bottom = 2.dp)
                     )
                 }
-                items(filteredRecent) { user ->
-                    UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                if (searchMatches.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Card)
+                                .border(1.dp, Border, RoundedCornerShape(16.dp))
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🥊 No fighters found matching \"$searchQuery\"",
+                                style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp)
+                            )
+                        }
+                    }
+                } else {
+                    items(searchMatches) { user ->
+                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    }
                 }
-            }
+            } else {
+                if (recentUsers.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Recent Opponents",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                color = MutedForeground,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                    }
+                    items(recentUsers) { user ->
+                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    }
+                }
 
-            if (filteredSuggested.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Suggested Fighters",
-                        style = TrackingNarrow.copy(
-                            color = Color(0xFF94A3B8),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
+                if (suggestedUsers.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Suggested Fighters",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                color = MutedForeground,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                    }
+                    items(suggestedUsers) { user ->
+                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    }
                 }
-                items(filteredSuggested) { user ->
-                    UserSearchRow(user = user, onClick = { onSelectUser(user) })
+
+                if (allCommunityUsers.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "All Community Fighters (${allCommunityUsers.size})",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                color = MutedForeground,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                    }
+                    items(allCommunityUsers) { user ->
+                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    }
                 }
             }
         }
@@ -903,39 +1031,38 @@ fun UserSearchRow(user: BattleUser, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(BattleGradients.cardFill)
-            .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(18.dp))
+            .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 13.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .background(
-                        Brush.radialGradient(listOf(Color(0xFF263045), Color(0xFF131722))),
-                        CircleShape
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.16f), CircleShape),
+                    .size(42.dp)
+                    .background(Secondary, CircleShape)
+                    .border(1.dp, Border, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = user.displayName.take(1).uppercase(),
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
                     text = "@${user.username}",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
@@ -943,8 +1070,9 @@ fun UserSearchRow(user: BattleUser, onClick: () -> Unit) {
                 )
                 Text(
                     text = "${user.battlesCount} fights • ${user.winRatePercent}% win",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF94A3B8),
+                    style = TextStyle(
+                        fontFamily = Inter,
+                        color = MutedForeground,
                         fontSize = 12.sp
                     )
                 )
@@ -952,7 +1080,7 @@ fun UserSearchRow(user: BattleUser, onClick: () -> Unit) {
         }
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(34.dp)
                 .background(BattleGradients.secondaryButtonBrush, CircleShape)
                 .border(1.dp, BattleGradients.secondaryButtonBorder, CircleShape),
             contentAlignment = Alignment.Center
@@ -960,8 +1088,8 @@ fun UserSearchRow(user: BattleUser, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.SportsMma,
                 contentDescription = "Fight",
-                tint = Color(0xFF38BDF8),
-                modifier = Modifier.size(17.dp)
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
             )
         }
     }
@@ -1006,7 +1134,8 @@ fun BattleUserDetailView(
             }
             Text(
                 text = "Fighter Profile",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -1015,7 +1144,7 @@ fun BattleUserDetailView(
             Spacer(modifier = Modifier.size(40.dp))
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         // Center Profile Card
         Column(
@@ -1024,31 +1153,26 @@ fun BattleUserDetailView(
         ) {
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .background(
-                        Brush.radialGradient(listOf(Color(0xFF2C374E), Color(0xFF131723))),
-                        CircleShape
-                    )
-                    .border(
-                        2.dp,
-                        Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.40f), Color.White.copy(alpha = 0.08f))),
-                        CircleShape
-                    ),
+                    .size(92.dp)
+                    .background(Secondary, CircleShape)
+                    .border(1.5.dp, Border, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = user.displayName.take(1).uppercase(),
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = "@${user.username}",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -1056,87 +1180,82 @@ fun BattleUserDetailView(
             )
             Text(
                 text = user.displayName,
-                style = TrackingNarrow.copy(
-                    color = Color(0xFF94A3B8),
-                    fontSize = 15.sp
+                style = TextStyle(
+                    fontFamily = Inter,
+                    color = MutedForeground,
+                    fontSize = 14.sp
                 )
             )
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 3 Stats Card Row (Glossy Glass Card with Specular Rim)
+        // 3 Stats Card Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(20.dp))
-                .padding(vertical = 18.dp, horizontal = 16.dp),
+                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(18.dp))
+                .padding(vertical = 16.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "${user.battlesCount}",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
-                        fontSize = 22.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
                     text = "Fights",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF64748B),
-                        fontSize = 12.sp
-                    )
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                 )
             }
-            Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color(0xFF1E2330)))
+            Box(modifier = Modifier.width(1.dp).height(32.dp).background(Border))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "${user.winRatePercent}%",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF34D399),
-                        fontSize = 22.sp,
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
+                        color = Emerald400,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
                     text = "Win Rate",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF64748B),
-                        fontSize = 12.sp
-                    )
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                 )
             }
-            Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color(0xFF1E2330)))
+            Box(modifier = Modifier.width(1.dp).height(32.dp).background(Border))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    T1TokenImage(modifier = Modifier.size(18.dp))
+                    T1TokenImage(modifier = Modifier.size(17.dp))
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "${user.totalTokensWon}",
-                        style = TrackingNarrow.copy(
+                        style = TextStyle(
+                            fontFamily = SpaceGrotesk,
                             color = Color(0xFFFBBF24),
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                     )
                 }
                 Text(
                     text = "Tokens",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFF64748B),
-                        fontSize = 12.sp
-                    )
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // Bio Card (Glossy glass card)
+        // Bio Card
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1146,15 +1265,16 @@ fun BattleUserDetailView(
                 .padding(16.dp)
         ) {
             Text(
-                text = user.bio,
-                style = TrackingNarrow.copy(
-                    color = Color(0xFF94A3B8),
-                    fontSize = 14.sp
+                text = user.bio.ifBlank { "T1 Focus Fighter • Ready for live duels." },
+                style = TextStyle(
+                    fontFamily = Inter,
+                    color = MutedForeground,
+                    fontSize = 13.sp
                 )
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         // Recent Activity Section
         Row(
@@ -1164,17 +1284,11 @@ fun BattleUserDetailView(
         ) {
             Text(
                 text = "Recent Activity",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
-                )
-            )
-            Text(
-                text = "See all",
-                style = TrackingNarrow.copy(
-                    color = Color(0xFF64748B),
-                    fontSize = 13.sp
                 )
             )
         }
@@ -1185,7 +1299,7 @@ fun BattleUserDetailView(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(90.dp)
+                    .height(80.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(BattleGradients.cardFill)
                     .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(14.dp)),
@@ -1193,44 +1307,34 @@ fun BattleUserDetailView(
             ) {
                 Text(
                     text = "Loading fights...",
-                    style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 13.sp)
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 13.sp)
                 )
             }
         } else if (userFights.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(80.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(BattleGradients.cardFill)
-                    .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(14.dp))
-                    .padding(vertical = 20.dp, horizontal = 16.dp),
+                    .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.SportsMma,
-                        contentDescription = null,
-                        tint = Color(0xFF64748B),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "No focus fights yet",
-                        style = TrackingNarrow.copy(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                    )
-                    Text(
-                        text = "Be the first to challenge @${user.username}!",
-                        style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 12.sp)
-                    )
-                }
+                Text(
+                    text = "No recent fights on record",
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 13.sp)
+                )
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                userFights.take(5).forEach { record ->
+            LazyColumn(
+                modifier = Modifier.weight(1f, fill = false),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(userFights.take(4)) { record ->
                     RecentActivityRow(
                         opponent = record.opponentUsername,
                         duration = "${record.durationMinutes}m",
-                        tokens = if (record.isWin) "+${record.tokensDelta}" else "-${record.tokensDelta}",
+                        tokens = "${record.tokensDelta}",
                         isWin = record.isWin
                     )
                 }
@@ -1239,7 +1343,7 @@ fun BattleUserDetailView(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Big Primary Fight Button (Glossy Titanium Capsule)
+        // Start Focus Fight Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1260,7 +1364,8 @@ fun BattleUserDetailView(
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Start Focus Fight",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = Inter,
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -1285,42 +1390,39 @@ fun RecentActivityRow(
             .clip(RoundedCornerShape(14.dp))
             .background(BattleGradients.cardFill)
             .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(14.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 14.dp, vertical = 11.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(34.dp)
-                    .background(
-                        Brush.radialGradient(listOf(Color(0xFF263045), Color(0xFF131722))),
-                        CircleShape
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape),
+                    .size(32.dp)
+                    .background(Secondary, CircleShape)
+                    .border(1.dp, Border, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = opponent.take(1).uppercase(),
-                    style = TrackingNarrow.copy(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
                     text = "vs @$opponent",
-                    style = TrackingNarrow.copy(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "$duration • ",
-                        style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 12.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp)
                     )
                     T1TokenImage(modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = "$tokens tokens",
-                        style = TrackingNarrow.copy(color = Color(0xFFFBBF24), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        style = TextStyle(fontFamily = Inter, color = Color(0xFFFBBF24), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     )
                 }
             }
@@ -1331,12 +1433,13 @@ fun RecentActivityRow(
                 .clip(RoundedCornerShape(100.dp))
                 .background(if (isWin) BattleGradients.wonBadgeBrush else BattleGradients.lostBadgeBrush)
                 .border(1.dp, if (isWin) BattleGradients.wonBadgeBorder else BattleGradients.lostBadgeBorder, RoundedCornerShape(100.dp))
-                .padding(horizontal = 12.dp, vertical = 5.dp)
+                .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
             Text(
                 text = if (isWin) "Won" else "Lost",
-                style = TrackingNarrow.copy(
-                    color = if (isWin) Color(0xFF6EE7B7) else Color(0xFFFDA4AF),
+                style = TextStyle(
+                    fontFamily = Inter,
+                    color = if (isWin) Emerald400 else Red400,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1386,7 +1489,8 @@ fun BattleChallengeConfigView(
             }
             Text(
                 text = "Configure Focus Fight",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -1395,72 +1499,71 @@ fun BattleChallengeConfigView(
             Spacer(modifier = Modifier.size(40.dp))
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(26.dp))
 
-        // Opponent Snippet (Glossy glass card)
+        // Opponent Snippet
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(BattleGradients.cardFill)
                 .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(16.dp))
-                .padding(16.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        Brush.radialGradient(listOf(Color(0xFF263045), Color(0xFF131722))),
-                        CircleShape
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.16f), CircleShape),
+                    .size(44.dp)
+                    .background(Secondary, CircleShape)
+                    .border(1.dp, Border, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = opponent.displayName.take(1).uppercase(),
-                    style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                 )
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
                     text = "Fight vs @${opponent.username}",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
                     text = opponent.displayName,
-                    style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 13.sp)
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 13.sp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Duration Chips
         Text(
             text = "Duration",
-            style = TrackingNarrow.copy(
-                color = Color(0xFF94A3B8),
-                fontSize = 14.sp,
+            style = TextStyle(
+                fontFamily = SpaceGrotesk,
+                color = MutedForeground,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             listOf(15, 25, 45).forEach { mins ->
                 val isSelected = selectedDuration == mins
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(64.dp)
+                        .height(60.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (isSelected) BattleGradients.selectedDurationBrush else BattleGradients.cardFill)
                         .border(
@@ -1474,17 +1577,19 @@ fun BattleChallengeConfigView(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "$mins",
-                            style = TrackingNarrow.copy(
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
                                 color = Color.White,
-                                fontSize = 20.sp,
+                                fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
                             text = "min",
-                            style = TrackingNarrow.copy(
-                                color = if (isSelected) Color(0xFF93C5FD) else Color(0xFF64748B),
-                                fontSize = 12.sp
+                            style = TextStyle(
+                                fontFamily = Inter,
+                                color = if (isSelected) Color.White.copy(alpha = 0.8f) else MutedForeground,
+                                fontSize = 11.sp
                             )
                         )
                     }
@@ -1492,18 +1597,19 @@ fun BattleChallengeConfigView(
             }
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Wager Chips
         Text(
             text = "Wager (T1 Tokens)",
-            style = TrackingNarrow.copy(
-                color = Color(0xFF94A3B8),
-                fontSize = 14.sp,
+            style = TextStyle(
+                fontFamily = SpaceGrotesk,
+                color = MutedForeground,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -1513,7 +1619,7 @@ fun BattleChallengeConfigView(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp)
+                        .height(52.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (isSelected) BattleGradients.selectedWagerBrush else BattleGradients.cardFill)
                         .border(
@@ -1526,9 +1632,10 @@ fun BattleChallengeConfigView(
                 ) {
                     Text(
                         text = "$tokens",
-                        style = TrackingNarrow.copy(
+                        style = TextStyle(
+                            fontFamily = SpaceGrotesk,
                             color = if (isSelected) Color(0xFFFBBF24) else Color.White,
-                            fontSize = 18.sp,
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -1536,43 +1643,43 @@ fun BattleChallengeConfigView(
             }
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Reward Summary Card (Glossy Glass Card with Green & Red Duel Border)
+        // Reward Summary Card
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(BattleGradients.cardFill)
                 .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(16.dp))
-                .padding(20.dp)
+                .padding(18.dp)
         ) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "You'll wager",
-                        style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp)
+                        style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    T1TokenImage(modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
+                    T1TokenImage(modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "$selectedWager tokens",
-                        style = TrackingNarrow.copy(color = Color(0xFFFBBF24), fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Color(0xFFFBBF24), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "If you win, you get",
-                        style = TrackingNarrow.copy(color = Color(0xFF34D399), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        style = TextStyle(fontFamily = Inter, color = Emerald400, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     T1TokenImage(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${selectedWager * 2} tokens",
-                        style = TrackingNarrow.copy(color = Color(0xFF34D399), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Emerald400, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     )
                 }
             }
@@ -1601,7 +1708,12 @@ fun BattleChallengeConfigView(
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Start Focus Fight",
-                    style = TrackingNarrow.copy(color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    style = TextStyle(
+                        fontFamily = Inter,
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             }
         }
@@ -1623,7 +1735,7 @@ fun BattleWaitingView(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.15f,
+        targetValue = 1.10f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -1641,16 +1753,14 @@ fun BattleWaitingView(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Avatar with animated glossy pulse ring
+        // Avatar with pulse ring
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(130.dp)
                 .scale(pulseScale)
                 .drawBehind {
                     drawCircle(
-                        brush = Brush.radialGradient(
-                            colors = listOf(Color(0xFF38BDF8).copy(alpha = 0.25f), Color.Transparent)
-                        ),
+                        color = Emerald400.copy(alpha = 0.15f),
                         radius = size.minDimension / 1.5f
                     )
                 },
@@ -1658,96 +1768,92 @@ fun BattleWaitingView(
         ) {
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .background(
-                        Brush.radialGradient(listOf(Color(0xFF2C374E), Color(0xFF131723))),
-                        CircleShape
-                    )
-                    .border(
-                        2.dp,
-                        Brush.sweepGradient(listOf(Color(0xFF38BDF8), Color.White, Color(0xFF38BDF8))),
-                        CircleShape
-                    ),
+                    .size(92.dp)
+                    .background(Secondary, CircleShape)
+                    .border(2.dp, Border, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = opponent.displayName.take(1).uppercase(),
-                    style = TrackingNarrow.copy(color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "@${opponent.username}",
-            style = TrackingNarrow.copy(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         )
         Text(
             text = opponent.displayName,
-            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 14.sp)
+            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp)
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Text(
             text = "Fight Request Sent",
-            style = TrackingNarrow.copy(color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         )
         Text(
             text = "Waiting for @${opponent.username} to accept fight...",
-            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp),
-            modifier = Modifier.padding(top = 6.dp)
+            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp),
+            modifier = Modifier.padding(top = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
-        // Info Card (Glossy Glass Card)
+        // Info Card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(20.dp))
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(18.dp))
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "⏱ Duration", style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp))
-                Text(text = "$durationMinutes minutes", style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                Text(text = "⏱ Duration", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp))
+                Text(text = "$durationMinutes minutes", style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold))
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    T1TokenImage(modifier = Modifier.size(17.dp))
+                    T1TokenImage(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Wager", style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp))
+                    Text(text = "Wager", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp))
                 }
-                Text(text = "$wagerTokens tokens", style = TrackingNarrow.copy(color = Color(0xFFFBBF24), fontWeight = FontWeight.Bold))
+                Text(text = "$wagerTokens tokens", style = TextStyle(fontFamily = SpaceGrotesk, color = Color(0xFFFBBF24), fontWeight = FontWeight.Bold))
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    T1TokenImage(modifier = Modifier.size(17.dp))
+                    T1TokenImage(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Potential Win", style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp))
+                    Text(text = "Potential Win", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp))
                 }
-                Text(text = "$potentialWinTokens tokens", style = TrackingNarrow.copy(color = Color(0xFF34D399), fontWeight = FontWeight.Bold))
+                Text(text = "$potentialWinTokens tokens", style = TextStyle(fontFamily = SpaceGrotesk, color = Emerald400, fontWeight = FontWeight.Bold))
             }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        // Cancel Fight Request Button (Glossy Glass Capsule)
+        // Cancel Fight Request Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .height(54.dp)
+                .clip(RoundedCornerShape(27.dp))
                 .background(BattleGradients.secondaryButtonBrush)
-                .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(28.dp))
+                .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(27.dp))
                 .clickable(onClick = onCancel),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "Cancel Fight Request", style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
+            Text(
+                text = "Cancel Fight Request",
+                style = TextStyle(fontFamily = Inter, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            )
         }
 
         Spacer(modifier = Modifier.navigationBarsPadding().height(24.dp))
@@ -1755,7 +1861,7 @@ fun BattleWaitingView(
 }
 
 // =========================================================================
-// INCOMING FOCUS FIGHT MODAL (Recipients View)
+// SCREEN 5: INCOMING FIGHT INVITE
 // =========================================================================
 @Composable
 fun BattleIncomingInviteView(
@@ -1776,73 +1882,66 @@ fun BattleIncomingInviteView(
     ) {
         Box(
             modifier = Modifier
-                .size(96.dp)
-                .background(
-                    Brush.radialGradient(listOf(Color(0xFF2C374E), Color(0xFF131723))),
-                    CircleShape
-                )
-                .border(
-                    2.dp,
-                    Brush.sweepGradient(listOf(Color(0xFF38BDF8), Color.White, Color(0xFF38BDF8))),
-                    CircleShape
-                ),
+                .size(92.dp)
+                .background(Secondary, CircleShape)
+                .border(2.dp, Border, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = challenger.displayName.take(1).uppercase(),
-                style = TrackingNarrow.copy(color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         Text(
             text = "@${challenger.username}",
-            style = TrackingNarrow.copy(color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         )
         Text(
             text = "wants to duel in Focus Fight",
-            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 16.sp),
+            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 15.sp),
             modifier = Modifier.padding(top = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        // 3 Column Stats (Glossy Glass Card with Specular Rim)
+        // 3 Column Stats
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(20.dp))
-                .padding(20.dp),
+                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(18.dp))
+                .padding(18.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "$durationMinutes min", style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp))
-                Text(text = "Duration", style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 12.sp))
+                Text(text = "$durationMinutes min", style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp))
+                Text(text = "Duration", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp))
             }
-            Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color(0xFF1E2330)))
+            Box(modifier = Modifier.width(1.dp).height(28.dp).background(Border))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     T1TokenImage(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "$wagerTokens", style = TrackingNarrow.copy(color = Color(0xFFFBBF24), fontWeight = FontWeight.Bold, fontSize = 18.sp))
+                    Text(text = "$wagerTokens", style = TextStyle(fontFamily = SpaceGrotesk, color = Color(0xFFFBBF24), fontWeight = FontWeight.Bold, fontSize = 18.sp))
                 }
-                Text(text = "T1 Tokens", style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 12.sp))
+                Text(text = "T1 Tokens", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp))
             }
-            Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color(0xFF1E2330)))
+            Box(modifier = Modifier.width(1.dp).height(28.dp).background(Border))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     T1TokenImage(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "$potentialWin", style = TrackingNarrow.copy(color = Color(0xFF34D399), fontWeight = FontWeight.Bold, fontSize = 18.sp))
+                    Text(text = "$potentialWin", style = TextStyle(fontFamily = SpaceGrotesk, color = Emerald400, fontWeight = FontWeight.Bold, fontSize = 18.sp))
                 }
-                Text(text = "Potential Win", style = TrackingNarrow.copy(color = Color(0xFF64748B), fontSize = 12.sp))
+                Text(text = "Potential Win", style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 11.sp))
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         Box(
             modifier = Modifier
@@ -1854,37 +1953,37 @@ fun BattleIncomingInviteView(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "\"Let's build a more focused version of ourselves.\"",
-                style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 14.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
+                text = "\"Discipline is the new currency. Welcome to the duel.\"",
+                style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 13.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
                 textAlign = TextAlign.Center
             )
         }
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(27.dp))
                     .background(BattleGradients.secondaryButtonBrush)
-                    .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(28.dp))
+                    .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(27.dp))
                     .clickable(onClick = onDecline),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Decline", style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
+                Text(text = "Decline", style = TextStyle(fontFamily = Inter, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 15.sp))
             }
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(27.dp))
                     .background(BattleGradients.primaryButtonBrush)
-                    .border(1.dp, BattleGradients.primaryButtonBorder, RoundedCornerShape(28.dp))
+                    .border(1.dp, BattleGradients.primaryButtonBorder, RoundedCornerShape(27.dp))
                     .clickable(onClick = onAccept),
                 contentAlignment = Alignment.Center
             ) {
@@ -1896,7 +1995,7 @@ fun BattleIncomingInviteView(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Accept Fight", style = TrackingNarrow.copy(color = Color.Black, fontWeight = FontWeight.Bold))
+                    Text(text = "Accept Fight", style = TextStyle(fontFamily = Inter, color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 15.sp))
                 }
             }
         }
@@ -1906,7 +2005,7 @@ fun BattleIncomingInviteView(
 }
 
 // =========================================================================
-// SCREEN 5: 3-SECOND COUNTDOWN
+// SCREEN 6: COUNTDOWN BEFORE FIGHT
 // =========================================================================
 @Composable
 fun BattleCountdownView(
@@ -1922,35 +2021,13 @@ fun BattleCountdownView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(68.dp)
-                .clip(CircleShape)
-                .background(BattleGradients.wonBadgeBrush)
-                .border(1.5.dp, BattleGradients.wonBadgeBorder, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.SportsMma,
-                contentDescription = "Accepted",
-                tint = Color(0xFF34D399),
-                modifier = Modifier.size(34.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Fight Accepted",
-            style = TrackingNarrow.copy(color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        )
         Text(
             text = "Focus Fight begins in...",
-            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 16.sp),
+            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 15.sp),
             modifier = Modifier.padding(top = 6.dp)
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         // Big Animated Countdown Circle
         Box(
@@ -1958,7 +2035,7 @@ fun BattleCountdownView(
                 .size(180.dp)
                 .drawBehind {
                     drawCircle(
-                        color = Color(0xFF141824),
+                        color = Secondary,
                         radius = size.minDimension / 2,
                         style = Stroke(width = 6.dp.toPx())
                     )
@@ -1974,7 +2051,8 @@ fun BattleCountdownView(
         ) {
             Text(
                 text = "$countdownNumber",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 72.sp,
                     fontWeight = FontWeight.Bold
@@ -1982,37 +2060,37 @@ fun BattleCountdownView(
             )
         }
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(56.dp))
 
-        // Matchup Footer with Green & Red Duel Gradient Clash Styling
+        // Matchup Footer
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(20.dp))
-                .padding(vertical = 16.dp, horizontal = 24.dp),
+                .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(18.dp))
+                .padding(vertical = 14.dp, horizontal = 22.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).background(Color(0xFF34D399), CircleShape))
+                Box(modifier = Modifier.size(8.dp).background(Emerald400, CircleShape))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "@$challenger", style = TrackingNarrow.copy(color = Color(0xFF34D399), fontWeight = FontWeight.Bold))
+                Text(text = "@$challenger", style = TextStyle(fontFamily = SpaceGrotesk, color = Emerald400, fontWeight = FontWeight.Bold, fontSize = 14.sp))
             }
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(100.dp))
-                    .background(Brush.verticalGradient(listOf(Color(0xFF1E2433), Color(0xFF121620))))
-                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(100.dp))
+                    .background(Secondary)
+                    .border(1.dp, Border, RoundedCornerShape(100.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text(text = "VS", style = TrackingNarrow.copy(color = Color(0xFFE2E8F0), fontWeight = FontWeight.Bold, fontSize = 12.sp))
+                Text(text = "VS", style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "@$opponent", style = TrackingNarrow.copy(color = Color(0xFFFB7185), fontWeight = FontWeight.Bold))
+                Text(text = "@$opponent", style = TextStyle(fontFamily = SpaceGrotesk, color = Red400, fontWeight = FontWeight.Bold, fontSize = 14.sp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(modifier = Modifier.size(8.dp).background(Color(0xFFFB7185), CircleShape))
+                Box(modifier = Modifier.size(8.dp).background(Red400, CircleShape))
             }
         }
 
@@ -2021,7 +2099,7 @@ fun BattleCountdownView(
 }
 
 // =========================================================================
-// SCREEN 6: LIVE DUAL BATTLE ARENA (Split View)
+// SCREEN 7: LIVE DUAL BATTLE ARENA (Split View)
 // =========================================================================
 @Composable
 fun BattleLiveArenaView(
@@ -2069,29 +2147,31 @@ fun BattleLiveArenaView(
             }
             Text(
                 text = "Focus Fight",
-                style = TrackingNarrow.copy(
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk,
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
-            IconButton(
-                onClick = { /* Options */ },
+            Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(BattleGradients.cardFill)
-                    .border(1.dp, BattleGradients.glassBorder, CircleShape)
+                    .border(1.dp, BattleGradients.glassBorder, CircleShape),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.SportsMma,
                     contentDescription = "Fight Arena",
-                    tint = Color(0xFF10B981)
+                    tint = Emerald400,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Top Card: You (Emerald Green theme)
         DualPlayerCard(
@@ -2101,10 +2181,10 @@ fun BattleLiveArenaView(
             remainingSeconds = mySeconds,
             totalSeconds = myTotalSeconds,
             isOpponent = false,
-            pausedReason = if (myStatus == ParticipantStatus.PAUSED) "App minimized\nTimer paused" else ""
+            pausedReason = if (myStatus == ParticipantStatus.PAUSED) "App minimized • Timer paused" else ""
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         // Bottom Card: Opponent (Crimson Red theme)
         DualPlayerCard(
@@ -2123,17 +2203,17 @@ fun BattleLiveArenaView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .height(54.dp)
+                .clip(RoundedCornerShape(27.dp))
                 .background(BattleGradients.secondaryButtonBrush)
-                .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(28.dp))
+                .border(1.dp, BattleGradients.secondaryButtonBorder, RoundedCornerShape(27.dp))
                 .clickable(onClick = onSurrender),
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Default.Flag, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(18.dp))
+                Icon(imageVector = Icons.Default.Flag, contentDescription = null, tint = Red400, modifier = Modifier.size(17.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Surrender Fight", style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
+                Text(text = "Surrender Fight", style = TextStyle(fontFamily = Inter, color = Red400, fontWeight = FontWeight.SemiBold, fontSize = 15.sp))
             }
         }
 
@@ -2163,16 +2243,14 @@ fun DualPlayerCard(
         isPaused -> BattleGradients.arenaPausedBorder
         !isOpponent -> Brush.linearGradient(
             listOf(
-                Color(0xFF10B981).copy(alpha = 0.55f),
-                Color(0xFF059669).copy(alpha = 0.20f),
-                Color.White.copy(alpha = 0.05f)
+                Emerald400.copy(alpha = 0.50f),
+                Border
             )
         )
         else -> Brush.linearGradient(
             listOf(
-                Color(0xFFEF4444).copy(alpha = 0.55f),
-                Color(0xFFB91C1C).copy(alpha = 0.20f),
-                Color.White.copy(alpha = 0.05f)
+                Red400.copy(alpha = 0.50f),
+                Border
             )
         )
     }
@@ -2181,36 +2259,27 @@ fun DualPlayerCard(
         isPaused -> BattleGradients.arenaPausedCard
         !isOpponent -> Brush.verticalGradient(
             listOf(
-                Color(0xFF091F18),
-                Color(0xFF07120F),
-                Color(0xFF06090D)
+                Color(0xFF0F1E16),
+                Card
             )
         )
         else -> Brush.verticalGradient(
             listOf(
-                Color(0xFF220C0F),
-                Color(0xFF14070A),
-                Color(0xFF06090D)
+                Color(0xFF1E0F12),
+                Card
             )
         )
     }
 
     val arcSweepBrush = when {
         isPaused -> BattleGradients.timerPausedSweep
-        !isOpponent -> Brush.sweepGradient(
-            listOf(
-                Color(0xFF059669),
-                Color(0xFF10B981),
-                Color(0xFF34D399),
-                Color(0xFF6EE7B7)
-            )
-        )
+        !isOpponent -> BattleGradients.timerFocusedSweep
         else -> Brush.sweepGradient(
             listOf(
                 Color(0xFF991B1B),
-                Color(0xFFEF4444),
-                Color(0xFFF87171),
-                Color(0xFFFCA5A5)
+                Red500,
+                Red400,
+                Color(0xFF991B1B)
             )
         )
     }
@@ -2218,10 +2287,10 @@ fun DualPlayerCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(22.dp))
             .background(cardBg)
-            .border(1.dp, cardBorder, RoundedCornerShape(24.dp))
-            .padding(20.dp)
+            .border(1.dp, cardBorder, RoundedCornerShape(22.dp))
+            .padding(18.dp)
     ) {
         Column {
             // Header Row: Avatar, Username, Status Badge
@@ -2233,53 +2302,49 @@ fun DualPlayerCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(42.dp)
                             .background(
-                                Brush.radialGradient(
-                                    if (!isOpponent) listOf(Color(0xFF0D3325), Color(0xFF071A12))
-                                    else listOf(Color(0xFF3B1218), Color(0xFF1E0A0E))
-                                ),
+                                if (!isOpponent) Color(0xFF0D3325) else Color(0xFF3B1218),
                                 CircleShape
                             )
                             .border(
                                 1.5.dp,
-                                if (!isOpponent) Color(0xFF10B981).copy(alpha = 0.7f)
-                                else Color(0xFFEF4444).copy(alpha = 0.7f),
+                                if (!isOpponent) Emerald400.copy(alpha = 0.7f) else Red400.copy(alpha = 0.7f),
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = displayName.take(1).uppercase(),
-                            style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
                             text = displayName,
-                            style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                         )
                         Text(
                             text = "@$username",
-                            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 13.sp)
+                            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 12.sp)
                         )
                     }
                 }
 
-                // Status Badge (Capsule)
+                // Status Badge
                 if (isPaused) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(100.dp))
-                            .background(Brush.horizontalGradient(listOf(Color(0xFF2E1C14), Color(0xFF1E110B))))
+                            .background(Color(0xFF2E1C14))
                             .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.45f), RoundedCornerShape(100.dp))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Pause, contentDescription = null, tint = Color(0xFFFBBF24), modifier = Modifier.size(12.dp))
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(text = "PAUSED", style = TrackingNarrow.copy(color = Color(0xFFFDE68A), fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                            Icon(imageVector = Icons.Default.Pause, contentDescription = null, tint = Color(0xFFFBBF24), modifier = Modifier.size(11.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "PAUSED", style = TextStyle(fontFamily = Inter, color = Color(0xFFFDE68A), fontSize = 10.sp, fontWeight = FontWeight.Bold))
                         }
                     }
                 } else {
@@ -2288,28 +2353,29 @@ fun DualPlayerCard(
                             .clip(RoundedCornerShape(100.dp))
                             .background(
                                 if (!isOpponent) BattleGradients.wonBadgeBrush
-                                else Brush.horizontalGradient(listOf(Color(0xFF381016), Color(0xFF22080D)))
+                                else Brush.verticalGradient(listOf(Color(0xFF381016), Color(0xFF22080D)))
                             )
                             .border(
                                 1.dp,
                                 if (!isOpponent) BattleGradients.wonBadgeBorder
-                                else Brush.horizontalGradient(listOf(Color(0xFFEF4444).copy(alpha = 0.6f), Color(0xFFB91C1C).copy(alpha = 0.3f))),
+                                else BattleGradients.lostBadgeBorder,
                                 RoundedCornerShape(100.dp)
                             )
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
                                     .size(6.dp)
-                                    .background(if (!isOpponent) Color(0xFF34D399) else Color(0xFFEF4444), CircleShape)
+                                    .background(if (!isOpponent) Emerald400 else Red400, CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(5.dp))
                             Text(
                                 text = "FOCUSED",
-                                style = TrackingNarrow.copy(
-                                    color = Color(0xFFE2E8F0),
-                                    fontSize = 11.sp,
+                                style = TextStyle(
+                                    fontFamily = Inter,
+                                    color = if (!isOpponent) Emerald400 else Red400,
+                                    fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -2318,61 +2384,51 @@ fun DualPlayerCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Large Circular Progress Ring
+            // Big Circular Progress Ring Centerpiece
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp),
+                    .height(140.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(140.dp)
+                        .size(136.dp)
                         .drawBehind {
-                            val strokeWidth = 5.dp.toPx()
-                            if (isPaused) {
-                                // Dashed ring for paused state
-                                val pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 14f), 0f)
-                                drawCircle(
-                                    brush = BattleGradients.timerPausedSweep,
-                                    radius = (size.minDimension - strokeWidth) / 2,
-                                    style = Stroke(width = strokeWidth, pathEffect = pathEffect)
-                                )
-                            } else {
-                                // Background circle
-                                drawCircle(
-                                    color = Color(0xFF141824),
-                                    radius = (size.minDimension - strokeWidth) / 2,
-                                    style = Stroke(width = strokeWidth)
-                                )
-                                // Active progress arc
-                                drawArc(
-                                    brush = arcSweepBrush,
-                                    startAngle = -90f,
-                                    sweepAngle = progress * 360f,
-                                    useCenter = false,
-                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                                )
-                            }
+                            drawCircle(
+                                color = Secondary,
+                                radius = size.minDimension / 2 - 8.dp.toPx(),
+                                style = Stroke(width = 10.dp.toPx())
+                            )
+                            drawArc(
+                                brush = arcSweepBrush,
+                                startAngle = -90f,
+                                sweepAngle = progress * 360f,
+                                useCenter = false,
+                                style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
+                            )
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = timeFormatted,
-                            style = TrackingNarrow.copy(
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
                                 color = Color.White,
                                 fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.5).sp
                             )
                         )
                         Text(
                             text = "/ $totalFormatted",
-                            style = TrackingNarrow.copy(
-                                color = Color(0xFF64748B),
-                                fontSize = 13.sp
+                            style = TextStyle(
+                                fontFamily = Inter,
+                                color = MutedForeground,
+                                fontSize = 12.sp
                             )
                         )
                     }
@@ -2380,37 +2436,26 @@ fun DualPlayerCard(
             }
 
             if (isPaused) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Column(
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PauseCircle,
-                            contentDescription = null,
-                            tint = Color(0xFFFBBF24),
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (pausedReason.isNotBlank()) pausedReason else "App minimized",
-                            style = TrackingNarrow.copy(
-                                color = Color(0xFFFDE68A),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Icon(
+                        imageVector = Icons.Default.PauseCircle,
+                        contentDescription = null,
+                        tint = Color(0xFFFBBF24),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Timer paused",
-                        style = TrackingNarrow.copy(
-                            color = Color(0xFF94A3B8),
-                            fontSize = 12.sp
+                        text = if (pausedReason.isNotBlank()) pausedReason.replace("\n", " • ") else "App minimized • Timer paused",
+                        style = TextStyle(
+                            fontFamily = Inter,
+                            color = Color(0xFFFDE68A),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }
@@ -2442,7 +2487,7 @@ fun MinimalistCrown(modifier: Modifier = Modifier) {
 }
 
 // =========================================================================
-// SCREEN 7: VICTORY & FIGHT RESULT
+// SCREEN 8: VICTORY & FIGHT RESULT
 // =========================================================================
 @Composable
 fun BattleResultView(
@@ -2465,39 +2510,33 @@ fun BattleResultView(
     ) {
         // Winner Avatar with Ripple Circles and Minimalist Crown
         Box(
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(190.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Ripple 3
             Box(
                 modifier = Modifier
-                    .size(190.dp)
+                    .size(180.dp)
                     .border(
                         1.dp,
-                        if (isVictory) Brush.radialGradient(listOf(Color(0xFF10B981).copy(alpha = 0.20f), Color(0xFF10B981).copy(alpha = 0.02f)))
-                        else Brush.radialGradient(listOf(Color.White.copy(alpha = 0.06f), Color.White.copy(alpha = 0.01f))),
+                        if (isVictory) Emerald400.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.05f),
                         CircleShape
                     )
             )
-            // Ripple 2
             Box(
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(140.dp)
                     .border(
                         1.dp,
-                        if (isVictory) Brush.radialGradient(listOf(Color(0xFF10B981).copy(alpha = 0.35f), Color(0xFF10B981).copy(alpha = 0.04f)))
-                        else Brush.radialGradient(listOf(Color.White.copy(alpha = 0.10f), Color.White.copy(alpha = 0.02f))),
+                        if (isVictory) Emerald400.copy(alpha = 0.30f) else Color.White.copy(alpha = 0.08f),
                         CircleShape
                     )
             )
-            // Ripple 1
             Box(
                 modifier = Modifier
-                    .size(114.dp)
+                    .size(106.dp)
                     .border(
                         1.5.dp,
-                        if (isVictory) Brush.radialGradient(listOf(Color(0xFF34D399).copy(alpha = 0.55f), Color(0xFF10B981).copy(alpha = 0.08f)))
-                        else Brush.radialGradient(listOf(Color.White.copy(alpha = 0.16f), Color.White.copy(alpha = 0.03f))),
+                        if (isVictory) Emerald400.copy(alpha = 0.55f) else Color.White.copy(alpha = 0.15f),
                         CircleShape
                     )
             )
@@ -2505,23 +2544,22 @@ fun BattleResultView(
             // Center Winner Avatar
             Box(
                 modifier = Modifier
-                    .size(86.dp)
+                    .size(80.dp)
                     .background(
-                        if (isVictory) Brush.radialGradient(listOf(Color(0xFF0F3826), Color(0xFF061A11)))
-                        else Brush.radialGradient(listOf(Color(0xFF242C3D), Color(0xFF0F131C))),
+                        if (isVictory) Color(0xFF0F3826) else Secondary,
                         CircleShape
                     )
                     .border(
                         2.dp,
-                        if (isVictory) Brush.linearGradient(listOf(Color(0xFF34D399), Color(0xFF10B981)))
-                        else Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.1f))),
+                        if (isVictory) Emerald400 else Border,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = if (isVictory) myUsername.take(1).uppercase() else opponentUsername.take(1).uppercase(),
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = SpaceGrotesk,
                         color = Color.White,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold
@@ -2542,102 +2580,103 @@ fun BattleResultView(
 
         Text(
             text = if (isVictory) "Victory!" else "Fight Concluded",
-            style = TrackingNarrow.copy(
+            style = TextStyle(
+                fontFamily = SpaceGrotesk,
                 color = Color.White,
-                fontSize = 32.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
         )
         Text(
             text = if (isVictory) "You held your focus and dominated the duel." else "Opponent lasted longer in flow state.",
-            style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 15.sp),
-            modifier = Modifier.padding(top = 6.dp)
+            style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 14.sp),
+            modifier = Modifier.padding(top = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Side-by-side comparison card (Green vs Red Duel Clash)
+        // Side-by-side comparison card
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(20.dp))
-                .padding(vertical = 20.dp, horizontal = 24.dp),
+                .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(18.dp))
+                .padding(vertical = 18.dp, horizontal = 22.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
-                        .background(Brush.radialGradient(listOf(Color(0xFF0D3325), Color(0xFF071A12))), CircleShape)
-                        .border(1.dp, Color(0xFF10B981).copy(alpha = 0.70f), CircleShape),
+                        .size(36.dp)
+                        .background(Color(0xFF0D3325), CircleShape)
+                        .border(1.dp, Emerald400.copy(alpha = 0.70f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = myUsername.take(1).uppercase(),
-                        style = TrackingNarrow.copy(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "@$myUsername",
-                    style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 13.sp)
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 12.sp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = completedTime,
-                    style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp, letterSpacing = (-0.5).sp)
                 )
                 Text(
-                    text = "Completed",
-                    style = TrackingNarrow.copy(color = Color(0xFF34D399), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    text = "Focused",
+                    style = TextStyle(fontFamily = Inter, color = Emerald400, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 )
             }
 
-            Box(modifier = Modifier.width(1.dp).height(80.dp).background(Color(0xFF1E2330)))
+            Box(modifier = Modifier.width(1.dp).height(74.dp).background(Border))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
-                        .background(Brush.radialGradient(listOf(Color(0xFF3B1218), Color(0xFF1E0A0E))), CircleShape)
-                        .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.70f), CircleShape),
+                        .size(36.dp)
+                        .background(Color(0xFF3B1218), CircleShape)
+                        .border(1.dp, Red400.copy(alpha = 0.70f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = opponentUsername.take(1).uppercase(),
-                        style = TrackingNarrow.copy(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "@$opponentUsername",
-                    style = TrackingNarrow.copy(color = Color(0xFF94A3B8), fontSize = 13.sp)
+                    style = TextStyle(fontFamily = Inter, color = MutedForeground, fontSize = 12.sp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = opponentTime,
-                    style = TrackingNarrow.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                    style = TextStyle(fontFamily = SpaceGrotesk, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp, letterSpacing = (-0.5).sp)
                 )
                 Text(
-                    text = "Paused",
-                    style = TrackingNarrow.copy(color = Color(0xFFF87171), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    text = "Opponent",
+                    style = TextStyle(fontFamily = Inter, color = Red400, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // Token Reward Card with Real T1 Token & Duel Clash Border
+        // Token Reward Card
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(BattleGradients.rewardCardBrush)
                 .border(1.dp, BattleGradients.duelBorderGradient, RoundedCornerShape(16.dp))
-                .padding(vertical = 18.dp, horizontal = 20.dp),
+                .padding(vertical = 16.dp, horizontal = 20.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -2645,45 +2684,47 @@ fun BattleResultView(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    T1TokenImage(modifier = Modifier.size(26.dp))
-                    Spacer(modifier = Modifier.width(10.dp))
+                    T1TokenImage(modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "+ $tokensWon tokens",
-                        style = TrackingNarrow.copy(
+                        style = TextStyle(
+                            fontFamily = SpaceGrotesk,
                             color = Color(0xFFFEF3C7),
-                            fontSize = 20.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold
                         )
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "T1 Tokens added to your vault balance.",
-                    style = TrackingNarrow.copy(
-                        color = Color(0xFFD1D5DB),
-                        fontSize = 13.sp
+                    style = TextStyle(
+                        fontFamily = Inter,
+                        color = MutedForeground,
+                        fontSize = 12.sp
                     )
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(26.dp))
 
-        // Action 1: Find Next Fight (Primary Duel Button)
+        // Action 1: Find Next Fight
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .height(54.dp)
+                .clip(RoundedCornerShape(27.dp))
                 .background(
                     Brush.horizontalGradient(
                         listOf(
-                            Color(0xFF10B981),
+                            Emerald500,
                             Color(0xFF059669)
                         )
                     )
                 )
-                .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(28.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(27.dp))
                 .clickable(onClick = onFindNextFight),
             contentAlignment = Alignment.Center
         ) {
@@ -2697,7 +2738,8 @@ fun BattleResultView(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Find Next Fight",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = Inter,
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -2706,16 +2748,16 @@ fun BattleResultView(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // Action 2: Back to Home (Secondary Outline Button)
+        // Action 2: Back to Home
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .height(52.dp)
+                .clip(RoundedCornerShape(26.dp))
                 .background(BattleGradients.cardFill)
-                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(28.dp))
+                .border(1.dp, BattleGradients.glassBorder, RoundedCornerShape(26.dp))
                 .clickable(onClick = onBackHome),
             contentAlignment = Alignment.Center
         ) {
@@ -2729,7 +2771,8 @@ fun BattleResultView(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Back to Home",
-                    style = TrackingNarrow.copy(
+                    style = TextStyle(
+                        fontFamily = Inter,
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold

@@ -1,0 +1,10 @@
+## Local configuration template for T1 (Top 1% - Proof-of-Focus Engine)
+## Copy this file to local.properties and update the values for your local environment.
+
+sdk.dir=C\:\\Android\\sdk
+supabase.url=https://your-project.supabase.co
+supabase.anon_key=your-anon-public-key
+google.web_client_id=your-google-web-client-id.apps.googleusercontent.com
+release.store_password=
+release.key_alias=t1-upload-key
+release.key_password=

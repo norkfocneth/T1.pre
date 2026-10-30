@@ -61,7 +61,8 @@ object SplashStateManager {
 fun MainNavigation(
     authViewModel: AuthViewModel = hiltViewModel(),
     mainViewModel: MainViewModel = hiltViewModel(),
-    previewScreen: String? = null
+    previewScreen: String? = null,
+    autoAcceptFightId: String? = null
 ) {
     when (previewScreen) {
         "questions" -> {
@@ -196,7 +197,9 @@ fun MainNavigation(
                         DashboardShell(
                             profile = state.profile,
                             mainViewModel = mainViewModel,
-                            onSignOut = { authViewModel.signOut() }
+                            onSignOut = { authViewModel.signOut() },
+                            initialTab = if (previewScreen == "focus_fight" || previewScreen == "battle" || autoAcceptFightId != null) T1Tab.BATTLE else T1Tab.HOME,
+                            autoAcceptFightId = autoAcceptFightId
                         )
                     }
                 }
@@ -220,9 +223,6 @@ fun MainNavigation(
     }
 }
 
-
-
-
 /**
  * Container rendering the main dashboard with BottomNav, HomeScreen, Leaderboard, and Settings views.
  */
@@ -232,14 +232,23 @@ fun DashboardShell(
     profile: UserProfile,
     mainViewModel: MainViewModel,
     onSignOut: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialTab: T1Tab = T1Tab.HOME,
+    autoAcceptFightId: String? = null
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    var activeTab by remember { mutableStateOf(T1Tab.HOME) }
+    var activeTab by remember { mutableStateOf(initialTab) }
+    LaunchedEffect(initialTab) { activeTab = initialTab }
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
 
     val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
+    LaunchedEffect(autoAcceptFightId) {
+        if (!autoAcceptFightId.isNullOrBlank()) {
+            activeTab = T1Tab.BATTLE
+            battleViewModel.autoAcceptFight(autoAcceptFightId)
+        }
+    }
     val battleState by battleViewModel.uiState.collectAsStateWithLifecycle()
     val isBattleImmersive = activeTab == T1Tab.BATTLE && battleState.currentStep != com.example.t1.domain.model.battle.BattleStep.DISCOVERY
     val shouldShowBottomNav = !showSettings && !isBattleImmersive

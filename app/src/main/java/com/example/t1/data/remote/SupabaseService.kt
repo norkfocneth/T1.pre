@@ -14,6 +14,9 @@ import javax.inject.Singleton
 import com.example.t1.data.remote.model.TokenWalletDto
 import com.example.t1.data.remote.model.TokenTransactionDto
 import com.example.t1.data.remote.model.FocusFightDto
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Singleton
 class SupabaseService @Inject constructor(
@@ -254,6 +257,44 @@ class SupabaseService @Inject constructor(
         }
     }
 
+    fun isFightExpired(createdAt: String?, maxAgeMinutes: Long = 3): Boolean {
+        if (createdAt.isNullOrBlank()) return false
+        return try {
+            val millis = parseIsoTimestamp(createdAt)
+            val now = System.currentTimeMillis()
+            (now - millis) > (maxAgeMinutes * 60 * 1000)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun parseIsoTimestamp(dateStr: String): Long {
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                java.time.Instant.parse(dateStr).toEpochMilli()
+            } else {
+                val clean = if (dateStr.contains(".")) {
+                    dateStr.substringBefore(".") + "Z"
+                } else if (dateStr.endsWith("+00:00")) {
+                    dateStr.replace("+00:00", "Z")
+                } else {
+                    dateStr
+                }
+                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+                sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                sdf.parse(clean)?.time ?: System.currentTimeMillis()
+            }
+        } catch (e: Exception) {
+            try {
+                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+                sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                sdf.parse(dateStr.take(19))?.time ?: System.currentTimeMillis()
+            } catch (ex: Exception) {
+                System.currentTimeMillis()
+            }
+        }
+    }
+
     suspend fun getPendingFightForUser(userId: String): FocusFightDto? {
         return try {
             val response = postgrest.from("focus_fights").select(columns = Columns.ALL) {
@@ -262,7 +303,21 @@ class SupabaseService @Inject constructor(
                     eq("status", "PENDING")
                 }
             }
-            response.decodeList<FocusFightDto>().lastOrNull()
+            val list = response.decodeList<FocusFightDto>()
+            val validFights = list.filter { fight ->
+                val expired = isFightExpired(fight.createdAt, maxAgeMinutes = 3)
+                if (expired && fight.id != null) {
+                    try {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            updateFightStatus(fight.id, "EXPIRED")
+                        }
+                    } catch (_: Exception) {}
+                    false
+                } else {
+                    true
+                }
+            }
+            validFights.lastOrNull()
         } catch (e: Exception) {
             android.util.Log.e("SupabaseService", "Error fetching pending fights: ${e.message}", e)
             null

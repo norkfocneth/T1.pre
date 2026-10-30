@@ -31,8 +31,8 @@ class SupabaseServiceTest {
     fun testIsUsernameTaken() = runTest {
         try {
             val client = createSupabaseClient(
-                supabaseUrl = "https://ehukatpgqeqjkcgqhxtr.supabase.co",
-                supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVodWthdHBncWVxamtjZ3FoeHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDIwMjksImV4cCI6MjA5ODA3ODAyOX0.-YoeeLX4ZWn9YbeC-GVsV5yARR1HWnbqwraWBE1ZTsM"
+                supabaseUrl = System.getenv("SUPABASE_URL") ?: "https://mock.supabase.co",
+                supabaseKey = System.getenv("SUPABASE_ANON_KEY") ?: "mock-anon-key"
             ) {
                 install(io.github.jan.supabase.auth.Auth) {
                     sessionManager = io.github.jan.supabase.auth.MemorySessionManager()

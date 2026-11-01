@@ -19,6 +19,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
@@ -39,10 +40,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -50,8 +49,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,23 +66,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.t1.ui.components.PrivacyOverviewDialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.t1.theme.*
 import com.example.t1.util.Haptics
+import kotlinx.coroutines.delay
+import android.view.HapticFeedbackConstants
 
 @Composable
 fun PermissionScreen(
@@ -95,16 +89,13 @@ fun PermissionScreen(
     val view = LocalView.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val uriHandler = LocalUriHandler.current
 
-    var currentStep by remember { mutableIntStateOf(1) } // 1: Usage Access, 2: Notifications
+    // Steps: 1 = Notification explain, 2 = Notification grant, 3 = Usage explain, 4 = Usage grant
+    var currentStep by remember { mutableIntStateOf(1) }
     var isUsageGranted by remember { mutableStateOf(false) }
     var isNotificationGranted by remember { mutableStateOf(false) }
-    var isConsentChecked by remember { mutableStateOf(false) }
-    var showPrivacyOverview by remember { mutableStateOf(false) }
 
     fun checkPermissions() {
-        // Check Usage Access
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
         isUsageGranted = if (appOps != null) {
             val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -116,14 +107,11 @@ fun PermissionScreen(
             mode == AppOpsManager.MODE_ALLOWED
         } else false
 
-        // Check Notification Access
         isNotificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         } else {
             NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
-
-        // Auto advance removed: user sees verification state and clicks Continue
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -133,24 +121,15 @@ fun PermissionScreen(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    LaunchedEffect(Unit) {
-        checkPermissions()
-    }
+    LaunchedEffect(Unit) { checkPermissions() }
 
-    // Launcher for Notification permission (Android 13+)
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         isNotificationGranted = isGranted
-        if (isGranted) {
-            Haptics.playSuccess(context)
-            onContinue()
-        }
     }
 
     OnboardingBackground(modifier = modifier) {
@@ -161,351 +140,245 @@ fun PermissionScreen(
                     fadeOut(tween(250)) + slideOutHorizontally(targetOffsetX = { -300 })
                 )
             },
-            label = "permission_screen_pager"
+            label = "permission_step_pager"
         ) { step ->
             when (step) {
-                1 -> {
-                    UsageIntelligenceStep(
-                        isGranted = isUsageGranted,
-                        isConsentChecked = isConsentChecked,
-                        onConsentChanged = { isConsentChecked = it },
-                        onOpenSettings = {
-                            Haptics.playMedium(view)
+                1 -> TypewriterPermissionExplainer(
+                    icon = Icons.Default.Notifications,
+                    iconTint = Color(0xFF38BDF8),
+                    stepLabel = "STEP 1 OF 2",
+                    title = "Why We Need Notification Access",
+                    explanation = "T1 sends you intelligent, non-intrusive notifications — never spam. We notify you about daily Focus Score briefings every morning, 1v1 Focus Fight challenge invitations from friends, streak freeze warnings before you lose your streak, and gentle micro-nudges when you exceed your own app time limits. You stay in full control and can disable any channel anytime.",
+                    onNext = { currentStep = 2 },
+                    onSkip = { currentStep = 3 }
+                )
+                2 -> NotificationGrantStep(
+                    isGranted = isNotificationGranted,
+                    onRequestPermission = {
+                        Haptics.playMedium(view)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    },
+                    onContinue = {
+                        Haptics.playLight(view)
+                        currentStep = 3
+                    },
+                    onSkip = {
+                        Haptics.playLight(view)
+                        currentStep = 3
+                    }
+                )
+                3 -> TypewriterPermissionExplainer(
+                    icon = Icons.Default.Security,
+                    iconTint = Color(0xFF818CF8),
+                    stepLabel = "STEP 2 OF 2",
+                    title = "Why We Need Usage Access",
+                    explanation = "T1 is a Sprint Analyzer, not a spy. We read only aggregate app category usage durations and screen unlock counts, entirely on your device. This data never leaves your phone. We use it to compute your Focus Score against your personal 7-day rolling baseline, track daily screen time distribution across Social, Entertainment, Productivity, and Education categories, and power the real-time Focus Fight anti-cheat system. We never read your messages, photos, contacts, GPS location, or any private account data.",
+                    onNext = { currentStep = 4 },
+                    onSkip = { onContinue() }
+                )
+                4 -> UsageGrantStep(
+                    isGranted = isUsageGranted,
+                    onOpenSettings = {
+                        Haptics.playMedium(view)
+                        try {
+                            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
                             try {
-                                val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", context.packageName, null)
-                                }
-                                context.startActivity(intent)
+                                context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                             } catch (_: Exception) {
-                                try {
-                                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                                } catch (_: Exception) {
-                                    context.startActivity(Intent(Settings.ACTION_SETTINGS))
-                                }
+                                context.startActivity(Intent(Settings.ACTION_SETTINGS))
                             }
-                        },
-                        onVerifyState = {
-                            Haptics.playLight(view)
-                            checkPermissions()
-                            if (isUsageGranted) {
-                                currentStep = 2
-                            }
-                        },
-                        onSkipLater = {
-                            Haptics.playLight(view)
-                            currentStep = 2
-                        },
-                        onOpenPrivacyPolicy = {
-                            showPrivacyOverview = true
                         }
-                    )
-                }
-                2 -> {
-                    NotificationIntelligenceStep(
-                        isGranted = isNotificationGranted,
-                        onRequestPermission = {
-                            Haptics.playMedium(view)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                onContinue()
-                            }
-                        },
-                        onContinue = {
-                            Haptics.playLight(view)
-                            onContinue()
-                        }
-                    )
-                }
+                    },
+                    onVerify = {
+                        Haptics.playLight(view)
+                        checkPermissions()
+                        if (isUsageGranted) onContinue()
+                    },
+                    onSkip = {
+                        Haptics.playLight(view)
+                        onContinue()
+                    }
+                )
             }
-        }
-
-        if (showPrivacyOverview) {
-            PrivacyOverviewDialog(
-                onDismiss = { showPrivacyOverview = false },
-                onOpenWebPolicy = {
-                    try {
-                        uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/privacy")
-                    } catch (_: Exception) {}
-                }
-            )
         }
     }
 }
 
 /**
- * Step 1: The exact "Usage Intelligence Access Required" trust card from User's Image 1.
+ * Typewriter-animated explainer screen for a permission.
+ * Text appears character-by-character. Once done, "Enable" button fades in.
+ * Tapping screen during typing reveals full text instantly.
  */
 @Composable
-private fun UsageIntelligenceStep(
-    isGranted: Boolean,
-    isConsentChecked: Boolean,
-    onConsentChanged: (Boolean) -> Unit,
-    onOpenSettings: () -> Unit,
-    onVerifyState: () -> Unit,
-    onSkipLater: () -> Unit,
-    onOpenPrivacyPolicy: () -> Unit
+private fun TypewriterPermissionExplainer(
+    icon: ImageVector,
+    iconTint: Color,
+    stepLabel: String,
+    title: String,
+    explanation: String,
+    onNext: () -> Unit,
+    onSkip: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val view = LocalView.current
+    var displayedChars by remember { mutableIntStateOf(0) }
+    var isDone by remember { mutableStateOf(false) }
 
-    Column(
+    LaunchedEffect(explanation) {
+        displayedChars = 0
+        isDone = false
+        delay(300L)
+        for (i in 1..explanation.length) {
+            if (isDone) break
+            displayedChars = i
+            if (!explanation[i - 1].isWhitespace()) {
+                if (Haptics.isEnabled) {
+                    try { view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Exception) {}
+                }
+            }
+            delay(14L)
+        }
+        displayedChars = explanation.length
+        isDone = true
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    if (!isDone) {
+                        displayedChars = explanation.length
+                        isDone = true
+                    }
+                }
+            )
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp)
-            .verticalScroll(scrollState)
-            .padding(top = 16.dp, bottom = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 24.dp, vertical = 20.dp)
     ) {
-        // Shield Icon with glowing ring
+        // Skip button top-right
         Box(
             modifier = Modifier
-                .size(68.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF13131A))
-                .border(1.dp, Color(0xFF2E2E42), CircleShape),
-            contentAlignment = Alignment.Center
+                .align(Alignment.TopEnd)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF1E1E28).copy(alpha = 0.7f))
+                .border(1.dp, Color(0xFF38384A), RoundedCornerShape(20.dp))
+                .clickable(onClick = onSkip)
+                .padding(horizontal = 14.dp, vertical = 6.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Security,
-                contentDescription = "Shield",
-                tint = Color(0xFF818CF8),
-                modifier = Modifier.size(32.dp)
+            Text(
+                text = "Skip ➔",
+                style = BodySmall.copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF94A3B8))
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Title
-        Text(
-            text = "Usage Intelligence\nAccess Required",
-            style = HeadlineMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = Foreground,
-                textAlign = TextAlign.Center
-            ),
-            lineHeight = 32.sp
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Subtitle
-        Text(
-            text = "T1 requires Usage Stats Access to track daily screen time, app categories, and focus metrics in the background.",
-            style = BodyMedium.copy(
-                color = MutedForeground,
-                fontSize = 13.sp,
-                lineHeight = 19.sp,
-                textAlign = TextAlign.Center
-            ),
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Comprehensive Trust Card (Image 1 replica)
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFF101015).copy(alpha = 0.9f))
-                .border(1.dp, Color(0xFF222230), RoundedCornerShape(20.dp))
-                .padding(20.dp)
+                .fillMaxSize()
+                .padding(top = 60.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Section 1: WHAT WE VERIFY
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF13131A))
+                    .border(1.dp, Color(0xFF2E2E42), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(32.dp))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Step label pill
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF6366F1).copy(alpha = 0.22f))
+                    .border(1.dp, Color(0xFF818CF8).copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+            ) {
                 Text(
-                    text = "WHAT WE VERIFY",
-                    style = BodySmall.copy(
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFA1A1AA),
-                        letterSpacing = 1.2.sp
-                    )
+                    text = "✦  $stepLabel",
+                    style = BodySmall.copy(fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFA5B4FC), letterSpacing = 1.2.sp)
                 )
+            }
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                VerifyItem(text = "Total Daily Screen Time")
-                VerifyItem(text = "App Category Breakdown (Social, Entert., etc.)")
-                VerifyItem(text = "Daily Screen Unlocks & Session Counts")
-                VerifyItem(text = "Active App Session Durations")
+            // Title
+            Text(
+                text = title,
+                style = HeadlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = Foreground,
+                    textAlign = TextAlign.Center
+                ),
+                lineHeight = 32.sp
+            )
 
-                Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                // Divider line
+            // Typewriter explanation text
+            Text(
+                text = explanation.take(displayedChars),
+                style = BodyMedium.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 22.sp,
+                    color = Color(0xFFCBD5E1),
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // "Enable" button appears after typing is done
+            AnimatedVisibility(
+                visible = isDone,
+                enter = fadeIn(tween(400)) + slideInVertically(initialOffsetY = { 30 })
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Color(0xFF1F1F2C))
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // Section 2: WHAT WE NEVER COLLECT
-                Text(
-                    text = "WHAT WE NEVER COLLECT",
-                    style = BodySmall.copy(
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFA1A1AA),
-                        letterSpacing = 1.2.sp
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(27.dp))
+                        .background(Color.White)
+                        .clickable(onClick = onNext),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Enable ➔",
+                        style = BodyMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 15.sp)
                     )
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                NeverCollectItem(text = "Messages, Chats or Notification Contents")
-                NeverCollectItem(text = "Contacts, Images or Media Files")
-                NeverCollectItem(text = "Real-time GPS Location Coordinates")
-                NeverCollectItem(text = "Private / Sensitive Account Identifiers")
+                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Checkbox: Consent
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onConsentChanged(!isConsentChecked) }
-                .padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = isConsentChecked || isGranted,
-                onCheckedChange = { onConsentChanged(it) },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF6366F1),
-                    uncheckedColor = Color(0xFF4B5563),
-                    checkmarkColor = Color.White
-                )
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = buildAnnotatedString {
-                    append("I read the ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = Color(0xFF38BDF8),
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    ) {
-                        append("Privacy Policy")
-                    }
-                    append(" and consent to T1 aggregating and analyzing my usage data.")
-                },
-                style = BodySmall.copy(
-                    fontSize = 12.sp,
-                    color = Color(0xFF94A3B8),
-                    lineHeight = 17.sp
-                ),
-                modifier = Modifier.clickable { onOpenPrivacyPolicy() }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Action Button: Open System Settings
-        val canOpen = isConsentChecked || isGranted
-        val interactionSource = remember { MutableInteractionSource() }
-        val isPressed by interactionSource.collectIsPressedAsState()
-        val scale = if (isPressed) 0.98f else 1f
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp)
-                .scale(scale)
-                .alpha(if (canOpen) 1f else 0.5f)
-                .clip(RoundedCornerShape(27.dp))
-                .background(
-                    if (isGranted) Color(0xFF10B981) else Color.White
-                )
-                .clickable(
-                    enabled = canOpen,
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onOpenSettings
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = if (isGranted) Icons.Default.Check else Icons.Default.OpenInNew,
-                    contentDescription = null,
-                    tint = if (isGranted) Color.White else Color.Black,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isGranted) "Permission Granted ✓" else "Open System Settings",
-                    style = BodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = if (isGranted) Color.White else Color.Black,
-                        fontSize = 15.sp
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Verify Permission State or Continue Button
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF161620))
-                .border(1.dp, Color(0xFF272738), RoundedCornerShape(24.dp))
-                .clickable(onClick = onVerifyState),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = if (isGranted) "Continue ➔" else "Verify Permission State",
-                style = BodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isGranted) Color(0xFF38BDF8) else Color(0xFFA1A1AA),
-                    fontSize = 14.sp
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Skip / Setup later link
-        Text(
-            text = "Set up later in Settings",
-            style = BodySmall.copy(
-                fontSize = 12.sp,
-                color = MutedForeground,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .clickable(onClick = onSkipLater)
-                .padding(8.dp)
-        )
     }
 }
 
 /**
- * Step 2: Non-intrusive notification permission explanation.
+ * Notification grant action step.
  */
 @Composable
-private fun NotificationIntelligenceStep(
+private fun NotificationGrantStep(
     isGranted: Boolean,
     onRequestPermission: () -> Unit,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onSkip: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -516,10 +389,7 @@ private fun NotificationIntelligenceStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Box(
@@ -530,43 +400,28 @@ private fun NotificationIntelligenceStep(
                     .border(1.dp, Color(0xFF2E2E42), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = Color(0xFF38BDF8),
-                    modifier = Modifier.size(32.dp)
-                )
+                Icon(imageVector = Icons.Default.Notifications, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(32.dp))
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Timely Focus\nInterceptions",
-                style = HeadlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Foreground,
-                    textAlign = TextAlign.Center
-                ),
+                text = if (isGranted) "Notifications Enabled ✓" else "Enable Notifications",
+                style = HeadlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Foreground, textAlign = TextAlign.Center),
                 lineHeight = 32.sp
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "T1 uses intelligent, non-intrusive notifications for daily score updates, duel reminders, and saving you when doomscrolling.",
-                style = BodyMedium.copy(
-                    color = MutedForeground,
-                    fontSize = 13.sp,
-                    lineHeight = 19.sp,
-                    textAlign = TextAlign.Center
-                ),
+                text = if (isGranted) "Perfect! You'll receive Focus Score updates and Focus Fight invitations." else "Tap the button below to allow T1 to send you Focus Score briefings and duel invitations.",
+                style = BodyMedium.copy(color = MutedForeground, fontSize = 13.sp, lineHeight = 19.sp, textAlign = TextAlign.Center),
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Information Box
+            // Quick summary pills
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -575,11 +430,11 @@ private fun NotificationIntelligenceStep(
                     .border(1.dp, Color(0xFF222230), RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    VerifyItem(text = "Daily morning Focus Score briefing")
-                    VerifyItem(text = "Micro-nudges when exceeding app limits")
-                    VerifyItem(text = "Streak freeze & leaderboard position alerts")
-                    NeverCollectItem(text = "Zero marketing spam or annoying promotions")
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PermVerifyItem(text = "Daily morning Focus Score briefing")
+                    PermVerifyItem(text = "1v1 Focus Fight challenge invitations")
+                    PermVerifyItem(text = "Streak freeze warnings before losing streaks")
+                    PermNeverItem(text = "Zero marketing spam or annoying promotions")
                 }
             }
         }
@@ -590,19 +445,13 @@ private fun NotificationIntelligenceStep(
                     .fillMaxWidth()
                     .height(54.dp)
                     .clip(RoundedCornerShape(27.dp))
-                    .background(Color.White)
-                    .clickable(
-                        onClick = if (!isGranted) onRequestPermission else onContinue
-                    ),
+                    .background(if (isGranted) Color(0xFF10B981) else Color.White)
+                    .clickable(onClick = if (!isGranted) onRequestPermission else onContinue),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isGranted) "Continue ➔" else "Enable Notifications",
-                    style = BodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        fontSize = 15.sp
-                    )
+                    text = if (isGranted) "Continue ➔" else "Allow Notifications",
+                    style = BodyMedium.copy(fontWeight = FontWeight.Bold, color = if (isGranted) Color.White else Color.Black, fontSize = 15.sp)
                 )
             }
 
@@ -610,69 +459,152 @@ private fun NotificationIntelligenceStep(
 
             Text(
                 text = "Skip for now",
-                style = BodySmall.copy(
-                    fontSize = 12.sp,
-                    color = MutedForeground,
-                    fontWeight = FontWeight.Medium
-                ),
+                style = BodySmall.copy(fontSize = 12.sp, color = MutedForeground, fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onSkip).padding(8.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Usage access grant action step.
+ */
+@Composable
+private fun UsageGrantStep(
+    isGranted: Boolean,
+    onOpenSettings: () -> Unit,
+    onVerify: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF13131A))
+                    .border(1.dp, Color(0xFF2E2E42), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = Icons.Default.Security, contentDescription = null, tint = Color(0xFF818CF8), modifier = Modifier.size(32.dp))
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = if (isGranted) "Usage Access Granted ✓" else "Grant Usage Access",
+                style = HeadlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Foreground, textAlign = TextAlign.Center),
+                lineHeight = 32.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = if (isGranted) "All set! T1 can now compute your Focus Score from real usage data." else "Open System Settings and enable Usage Access for T1 to compute your personalized Focus Score.",
+                style = BodyMedium.copy(color = MutedForeground, fontSize = 13.sp, lineHeight = 19.sp, textAlign = TextAlign.Center),
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onContinue)
-                    .padding(8.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF101015).copy(alpha = 0.9f))
+                    .border(1.dp, Color(0xFF222230), RoundedCornerShape(20.dp))
+                    .padding(20.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PermVerifyItem(text = "Total Daily Screen Time")
+                    PermVerifyItem(text = "App Category Breakdown (Social, Educ., etc.)")
+                    PermVerifyItem(text = "Daily Screen Unlocks & Session Counts")
+                    PermNeverItem(text = "Messages, Chats, Contacts, GPS — never")
+                }
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(27.dp))
+                    .background(if (isGranted) Color(0xFF10B981) else Color.White)
+                    .clickable(onClick = if (!isGranted) onOpenSettings else onVerify),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Icon(
+                        imageVector = if (isGranted) Icons.Default.Check else Icons.Default.OpenInNew,
+                        contentDescription = null,
+                        tint = if (isGranted) Color.White else Color.Black,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isGranted) "Continue ➔" else "Open System Settings",
+                        style = BodyMedium.copy(fontWeight = FontWeight.Bold, color = if (isGranted) Color.White else Color.Black, fontSize = 15.sp)
+                    )
+                }
+            }
+
+            if (!isGranted) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color(0xFF161620))
+                        .border(1.dp, Color(0xFF272738), RoundedCornerShape(24.dp))
+                        .clickable(onClick = onVerify),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Verify Permission State",
+                        style = BodyMedium.copy(fontWeight = FontWeight.SemiBold, color = Color(0xFFA1A1AA), fontSize = 14.sp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Set up later in Settings",
+                style = BodySmall.copy(fontSize = 12.sp, color = MutedForeground, fontWeight = FontWeight.Medium),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onSkip).padding(8.dp)
             )
         }
     }
 }
 
 @Composable
-private fun VerifyItem(text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.CheckCircle,
-            contentDescription = null,
-            tint = Color(0xFF10B981),
-            modifier = Modifier.size(17.dp)
-        )
+private fun PermVerifyItem(text: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(17.dp))
         Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = text,
-            style = BodyMedium.copy(
-                fontSize = 13.sp,
-                color = Foreground.copy(alpha = 0.9f),
-                lineHeight = 18.sp
-            )
-        )
+        Text(text = text, style = BodyMedium.copy(fontSize = 13.sp, color = Foreground.copy(alpha = 0.9f), lineHeight = 18.sp))
     }
 }
 
 @Composable
-private fun NeverCollectItem(text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = null,
-            tint = Color(0xFFEF4444),
-            modifier = Modifier.size(17.dp)
-        )
+private fun PermNeverItem(text: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = Icons.Default.Close, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(17.dp))
         Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = text,
-            style = BodyMedium.copy(
-                fontSize = 13.sp,
-                color = Foreground.copy(alpha = 0.75f),
-                lineHeight = 18.sp
-            )
-        )
+        Text(text = text, style = BodyMedium.copy(fontSize = 13.sp, color = Foreground.copy(alpha = 0.75f), lineHeight = 18.sp))
     }
 }

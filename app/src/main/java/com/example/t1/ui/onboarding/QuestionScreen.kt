@@ -711,6 +711,7 @@ fun InterstitialMotivationalScreen(
         delay(100L)
 
         for (i in 1..fullQuote.length) {
+            if (isQuoteDone) break
             displayedQuoteCount = i
             val char = fullQuote[i - 1]
             if (!char.isWhitespace()) {
@@ -723,10 +724,17 @@ fun InterstitialMotivationalScreen(
             delay(22L)
         }
         isQuoteDone = true
+    }
 
-        // Auto-advance after 2.2 seconds of reading time
-        delay(2200L)
-        onContinue()
+    // NO auto-advance — user MUST click Continue button
+
+    val handleScreenTap = {
+        if (!isQuoteDone) {
+            // Tap reveals full quote immediately so user can read
+            displayedQuoteCount = fullQuote.length
+            isQuoteDone = true
+        }
+        // User must click the "Next Question" button to advance
     }
 
     Box(
@@ -736,11 +744,11 @@ fun InterstitialMotivationalScreen(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onContinue
+                onClick = handleScreenTap
             )
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 28.dp, vertical = 32.dp),
+            .padding(horizontal = 28.dp, vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
         // Ambient background glowing aura
@@ -761,6 +769,32 @@ fun InterstitialMotivationalScreen(
                     )
                 }
         )
+
+        // Top Skip Button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopEnd),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF1E1E28).copy(alpha = 0.7f))
+                    .border(1.dp, Color(0xFF38384A), RoundedCornerShape(20.dp))
+                    .clickable(onClick = onContinue)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "Skip ➔",
+                    style = BodySmall.copy(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF94A3B8)
+                    )
+                )
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -824,7 +858,7 @@ fun InterstitialMotivationalScreen(
                         .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
                     Text(
-                        text = "Continue",
+                        text = "Next Question",
                         style = BodyMedium.copy(
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold,

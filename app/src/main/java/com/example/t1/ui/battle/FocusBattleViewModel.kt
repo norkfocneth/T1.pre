@@ -67,7 +67,10 @@ data class BattleUiState(
     val opponentPausedReason: String = "App minimized\nTimer paused",
     val isVictory: Boolean = true,
     val tokensWonAmount: Int = 50,
-    val battleHistory: List<BattleHistoryRecord> = emptyList()
+    val battleHistory: List<BattleHistoryRecord> = emptyList(),
+    val isLocalPaused: Boolean = false,
+    val surrenderCountdownSeconds: Int = 15,
+    val opponentReconnectedAlert: Boolean = false
 )
 
 @HiltViewModel
@@ -594,14 +597,26 @@ class FocusBattleViewModel @Inject constructor(
 
     fun onAppMinimized() {
         if (_uiState.value.currentStep == BattleStep.LIVE_ARENA && _uiState.value.myStatus != ParticipantStatus.PAUSED) {
-            T1Logger.i("Focus Battle: App minimized. Pausing user focus timer immediately.")
-            _uiState.update { it.copy(myStatus = ParticipantStatus.PAUSED) }
+            T1Logger.i("Focus Battle: App minimized. Pausing duel and activating resume overlay.")
+            _uiState.update { 
+                it.copy(
+                    myStatus = ParticipantStatus.PAUSED,
+                    isLocalPaused = true,
+                    surrenderCountdownSeconds = 15
+                ) 
+            }
             val activeId = _uiState.value.activeFightId
             val isChallenger = _uiState.value.isChallenger
             if (activeId != null) {
                 viewModelScope.launch {
                     try {
-                        val pauseStatus = if (isChallenger) "PAUSED_CHALLENGER" else "PAUSED_OPPONENT"
+                        val remoteFight = supabaseService.getFightById(activeId)
+                        val currentStatus = remoteFight?.status ?: ""
+                        val pauseStatus = if (isChallenger) {
+                            if (currentStatus == "PAUSED_OPPONENT") "PAUSED_BOTH" else "PAUSED_CHALLENGER"
+                        } else {
+                            if (currentStatus == "PAUSED_CHALLENGER") "PAUSED_BOTH" else "PAUSED_OPPONENT"
+                        }
                         supabaseService.updateFightStatus(activeId, pauseStatus)
                     } catch (e: Exception) {
                         T1Logger.w("Failed to notify Supabase of app pause: ${e.message}")
@@ -611,18 +626,42 @@ class FocusBattleViewModel @Inject constructor(
         }
     }
 
+    fun onAppForegrounded() {
+        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA && _uiState.value.myStatus == ParticipantStatus.PAUSED) {
+            T1Logger.i("Focus Battle: App returned to foreground while paused. Ready for user to tap Resume.")
+            _uiState.update { it.copy(isLocalPaused = true) }
+        }
+    }
+
     fun onAppResumed() {
-        if (_uiState.value.currentStep == BattleStep.LIVE_ARENA && _uiState.value.myStatus != ParticipantStatus.FOCUSED) {
-            T1Logger.i("Focus Battle: App foregrounded. Resuming user focus timer.")
-            _uiState.update { it.copy(myStatus = ParticipantStatus.FOCUSED) }
-            val activeId = _uiState.value.activeFightId
-            if (activeId != null) {
-                viewModelScope.launch {
-                    try {
-                        supabaseService.updateFightStatus(activeId, "IN_PROGRESS")
-                    } catch (e: Exception) {
-                        T1Logger.w("Failed to notify Supabase of app resume: ${e.message}")
+        onAppForegrounded()
+    }
+
+    fun manualResumeFight() {
+        if (_uiState.value.currentStep != BattleStep.LIVE_ARENA) return
+        T1Logger.i("Focus Battle: User clicked RESUME FIGHT. Resuming focus session immediately.")
+        _uiState.update {
+            it.copy(
+                myStatus = ParticipantStatus.FOCUSED,
+                isLocalPaused = false,
+                surrenderCountdownSeconds = 15
+            )
+        }
+        val activeId = _uiState.value.activeFightId
+        val isChallenger = _uiState.value.isChallenger
+        if (activeId != null) {
+            viewModelScope.launch {
+                try {
+                    val remoteFight = supabaseService.getFightById(activeId)
+                    val currentStatus = remoteFight?.status ?: ""
+                    val resumeStatus = if (isChallenger) {
+                        if (currentStatus == "PAUSED_BOTH") "PAUSED_OPPONENT" else "IN_PROGRESS"
+                    } else {
+                        if (currentStatus == "PAUSED_BOTH") "PAUSED_CHALLENGER" else "IN_PROGRESS"
                     }
+                    supabaseService.updateFightStatus(activeId, resumeStatus)
+                } catch (e: Exception) {
+                    T1Logger.w("Failed to notify Supabase of fight resume: ${e.message}")
                 }
             }
         }
@@ -638,7 +677,10 @@ class FocusBattleViewModel @Inject constructor(
                 myStatus = ParticipantStatus.FOCUSED,
                 opponentTotalSeconds = totalSecs,
                 opponentRemainingSeconds = totalSecs,
-                opponentStatus = ParticipantStatus.FOCUSED
+                opponentStatus = ParticipantStatus.FOCUSED,
+                isLocalPaused = false,
+                surrenderCountdownSeconds = 15,
+                opponentReconnectedAlert = false
             )
         }
 
@@ -657,72 +699,101 @@ class FocusBattleViewModel @Inject constructor(
             var oppSecs = totalSecs
             val activeId = _uiState.value.activeFightId
             val isChallenger = _uiState.value.isChallenger
-            var syncTick = 0
 
             while (mySecs > 0) {
                 delay(1000)
-                syncTick++
 
-                // 1. Smoothly decrement local player's timer if actively focused
+                // 1. If local user is paused, decrement forfeit penalty countdown
+                if (_uiState.value.myStatus == ParticipantStatus.PAUSED) {
+                    val currentSurrenderSecs = _uiState.value.surrenderCountdownSeconds
+                    if (currentSurrenderSecs > 1) {
+                        _uiState.update { it.copy(surrenderCountdownSeconds = currentSurrenderSecs - 1) }
+                    } else {
+                        T1Logger.i("Focus Battle: 15s pause timeout expired. Auto-forfeiting battle.")
+                        surrender()
+                        break
+                    }
+                }
+
+                // 2. Smoothly decrement local player's timer if actively focused
                 if (_uiState.value.myStatus == ParticipantStatus.FOCUSED) {
                     mySecs -= 1
                     _uiState.update { it.copy(myRemainingSeconds = mySecs) }
                 }
 
-                // 2. Smoothly decrement opponent's timer second-by-second in realtime (client-side prediction)
+                // 3. Smoothly decrement opponent's timer second-by-second in realtime
                 if (_uiState.value.opponentStatus == ParticipantStatus.FOCUSED && oppSecs > 0) {
                     oppSecs -= 1
                     _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
                 }
 
-                // 3. Sync with Supabase every 2 seconds if real fight
-                if (activeId != null && syncTick % 2 == 0) {
+                // 4. Asynchronous fast sync with Supabase every second
+                if (activeId != null) {
                     val myElapsed = totalSecs - mySecs
-                    try {
-                        supabaseService.updateFightProgress(activeId, isChallenger, myElapsed)
-
-                        val remoteFight = supabaseService.getFightById(activeId)
-                        if (remoteFight != null) {
-                            if (remoteFight.status == "SURRENDERED") {
-                                T1Logger.i("Opponent surrendered! Winning battle.")
-                                endBattleWithVictory()
-                                break
+                    launch {
+                        try {
+                            if (_uiState.value.myStatus == ParticipantStatus.FOCUSED) {
+                                supabaseService.updateFightProgress(activeId, isChallenger, myElapsed)
                             }
 
-                            // Check remote status of opponent accurately
-                            val opponentIsPaused = if (isChallenger) {
-                                remoteFight.status == "PAUSED_OPPONENT"
-                            } else {
-                                remoteFight.status == "PAUSED_CHALLENGER"
-                            } || (remoteFight.status == "PAUSED" && _uiState.value.myStatus == ParticipantStatus.FOCUSED)
+                            val remoteFight = supabaseService.getFightById(activeId)
+                            if (remoteFight != null) {
+                                if (remoteFight.status == "SURRENDERED") {
+                                    T1Logger.i("Opponent surrendered! Winning battle.")
+                                    endBattleWithVictory()
+                                    return@launch
+                                }
 
-                            if (opponentIsPaused) {
-                                if (_uiState.value.opponentStatus != ParticipantStatus.PAUSED) {
-                                    _uiState.update {
-                                        it.copy(
-                                            opponentStatus = ParticipantStatus.PAUSED,
-                                            opponentPausedReason = "App minimized • Timer paused"
-                                        )
+                                // Check remote status of opponent
+                                val opponentIsPausedRemote = if (isChallenger) {
+                                    remoteFight.status == "PAUSED_OPPONENT" || remoteFight.status == "PAUSED_BOTH"
+                                } else {
+                                    remoteFight.status == "PAUSED_CHALLENGER" || remoteFight.status == "PAUSED_BOTH"
+                                } || (remoteFight.status == "PAUSED")
+
+                                if (opponentIsPausedRemote) {
+                                    if (_uiState.value.opponentStatus != ParticipantStatus.PAUSED) {
+                                        _uiState.update {
+                                            it.copy(
+                                                opponentStatus = ParticipantStatus.PAUSED,
+                                                opponentPausedReason = "App minimized • Rival paused"
+                                            )
+                                        }
+                                    }
+                                } else if (remoteFight.status == "IN_PROGRESS" || remoteFight.status == "ACCEPTED") {
+                                    val wasPaused = _uiState.value.opponentStatus == ParticipantStatus.PAUSED
+                                    if (wasPaused) {
+                                        _uiState.update {
+                                            it.copy(
+                                                opponentStatus = ParticipantStatus.FOCUSED,
+                                                opponentPausedReason = "",
+                                                opponentReconnectedAlert = true
+                                            )
+                                        }
+                                        launch {
+                                            delay(3000)
+                                            _uiState.update { it.copy(opponentReconnectedAlert = false) }
+                                        }
                                     }
                                 }
-                            } else if (remoteFight.status == "IN_PROGRESS" || remoteFight.status == "ACCEPTED") {
-                                if (_uiState.value.opponentStatus == ParticipantStatus.PAUSED) {
-                                    _uiState.update { it.copy(opponentStatus = ParticipantStatus.FOCUSED) }
-                                }
-                            }
 
-                            // Reconcile opponent elapsed seconds smoothly without 3-second jumping
-                            val oppElapsedRemote = if (isChallenger) remoteFight.opponentSeconds else remoteFight.challengerSeconds
-                            if (oppElapsedRemote > 0) {
-                                val expectedRemaining = (totalSecs - oppElapsedRemote).coerceAtLeast(0)
-                                if (Math.abs(oppSecs - expectedRemaining) > 5) {
-                                    oppSecs = expectedRemaining
-                                    _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
+                                // Smooth time adjustment: Never snap or jump by 3-5 seconds
+                                val oppElapsedRemote = if (isChallenger) remoteFight.opponentSeconds else remoteFight.challengerSeconds
+                                if (oppElapsedRemote > 0) {
+                                    val expectedRemaining = (totalSecs - oppElapsedRemote).coerceAtLeast(0)
+                                    val diff = oppSecs - expectedRemaining
+                                    if (Math.abs(diff) > 8) {
+                                        oppSecs = expectedRemaining
+                                        _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
+                                    } else if (diff > 1 && _uiState.value.opponentStatus == ParticipantStatus.FOCUSED) {
+                                        oppSecs -= 1
+                                        _uiState.update { it.copy(opponentRemainingSeconds = oppSecs) }
+                                    }
                                 }
                             }
+                        } catch (e: Exception) {
+                            T1Logger.w("Battle sync error: ${e.message}")
                         }
-                    } catch (e: Exception) {
-                        T1Logger.w("Battle sync error: ${e.message}")
                     }
                 }
 

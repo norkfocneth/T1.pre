@@ -539,9 +539,11 @@ fun T1ManifestoScreen(
     val fullTitle = "This is not an ordinary app."
     val fullBody = "T1 was engineered for you to be consistent. It tracks your digital leak, reveals how much better you are from yesterday, and forges you into a top 1% community member."
 
+    // Typewriter effect
     LaunchedEffect(Unit) {
         delay(200L)
         for (i in 1..fullTitle.length) {
+            if (isDone) break
             titleChars = i
             if (Haptics.isEnabled && !fullTitle[i - 1].isWhitespace()) {
                 try { view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Exception) {}
@@ -550,20 +552,36 @@ fun T1ManifestoScreen(
         }
         delay(150L)
         for (i in 1..fullBody.length) {
+            if (isDone) break
             bodyChars = i
             delay(16L)
         }
         isDone = true
     }
 
+    // NO auto-advance — user must click "Enter T1 Ecosystem" button
+
+    val handleScreenTap = {
+        if (!isDone) {
+            titleChars = fullTitle.length
+            bodyChars = fullBody.length
+            isDone = true
+        }
+        // User must click "Enter T1 Ecosystem" button to advance
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF09090C))
-            .clickable(onClick = onDismiss)
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClick = handleScreenTap
+            )
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 28.dp, vertical = 32.dp),
+            .padding(horizontal = 28.dp, vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
         // Ambient background aura
@@ -584,6 +602,32 @@ fun T1ManifestoScreen(
                     )
                 }
         )
+
+        // Top Skip Button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopEnd),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF1E1E28).copy(alpha = 0.7f))
+                    .border(1.dp, Color(0xFF38384A), RoundedCornerShape(20.dp))
+                    .clickable(onClick = onDismiss)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "Skip ➔",
+                    style = BodySmall.copy(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF94A3B8)
+                    )
+                )
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxWidth(),

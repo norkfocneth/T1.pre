@@ -585,6 +585,13 @@ fun FocusBattleScreen(
                         opponentPausedReason = uiState.opponentPausedReason,
                         opponentUsername = opponentUsername,
                         opponentDisplayName = opponentDisplayName,
+                        isLocalPaused = uiState.isLocalPaused,
+                        surrenderCountdownSeconds = uiState.surrenderCountdownSeconds,
+                        opponentReconnectedAlert = uiState.opponentReconnectedAlert,
+                        onResumeFight = {
+                            Haptics.playHeavy(view)
+                            viewModel.manualResumeFight()
+                        },
                         onSurrender = {
                             Haptics.playMedium(view)
                             viewModel.surrender()
@@ -2114,13 +2121,19 @@ fun BattleLiveArenaView(
     opponentPausedReason: String,
     opponentUsername: String,
     opponentDisplayName: String,
+    isLocalPaused: Boolean = false,
+    surrenderCountdownSeconds: Int = 15,
+    opponentReconnectedAlert: Boolean = false,
+    onResumeFight: () -> Unit = {},
     onSurrender: () -> Unit
 ) {
+    val view = LocalView.current
     Column(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
             .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -2171,7 +2184,44 @@ fun BattleLiveArenaView(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Floating Alert: Rival returned to arena
+        AnimatedVisibility(
+            visible = opponentReconnectedAlert,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF064E3B))
+                    .border(1.dp, Emerald400.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Emerald400,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "🟢 Rival returned to arena • Duel resumed!",
+                        style = TextStyle(
+                            fontFamily = Inter,
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
+                        )
+                    )
+                }
+            }
+        }
 
         // Top Card: You (Emerald Green theme)
         DualPlayerCard(
@@ -2197,7 +2247,152 @@ fun BattleLiveArenaView(
             pausedReason = opponentPausedReason
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        // When local user is paused: Prominent Resume Action Card
+        if (myStatus == ParticipantStatus.PAUSED || isLocalPaused) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFF261A13),
+                                Color(0xFF16100C)
+                            )
+                        )
+                    )
+                    .border(
+                        1.5.dp,
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color(0xFFF59E0B),
+                                Color(0xFFEF4444)
+                            )
+                        ),
+                        RoundedCornerShape(20.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PauseCircle,
+                            contentDescription = null,
+                            tint = Color(0xFFFBBF24),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "FOCUS DUEL PAUSED",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                color = Color(0xFFFDE68A),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                letterSpacing = 1.sp
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "App was minimized. Tap Resume to jump back in!",
+                        style = TextStyle(
+                            fontFamily = Inter,
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Forfeit countdown timer
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(100.dp))
+                            .background(Color(0xFF3F1D1D))
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = Red400,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Auto-forfeit penalty in: ${surrenderCountdownSeconds}s",
+                            style = TextStyle(
+                                fontFamily = SpaceGrotesk,
+                                color = Red400,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Big Glowing RESUME Button
+                    Button(
+                        onClick = {
+                            Haptics.playHeavy(view)
+                            onResumeFight()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(25.dp)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            Emerald400,
+                                            Color(0xFF059669)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "RESUME FOCUS FIGHT",
+                                    style = TextStyle(
+                                        fontFamily = SpaceGrotesk,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Bottom Surrender / End Fight (Capsule Shape)
         Box(

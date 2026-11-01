@@ -45,12 +45,7 @@ class MainActivity : ComponentActivity() {
     T1NotificationScheduler.schedule(applicationContext)
     FocusChallengeWatchdogReceiver.scheduleWatchdog(applicationContext, 45_000L)
 
-    // Prompt for notification permission on Android 13+ (API 33+)
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-      if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-        requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
-      }
-    }
+    // Notification permission is requested gracefully during onboarding
 
     // Handle deep link on cold start
     T1Logger.i("MainActivity onCreate intent data: ${intent?.data}")

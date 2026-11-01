@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
 enum class OnboardingStep {
-    AUTH, QUESTIONS, GOAL_SELECTION, APP_CLASSIFICATION, ANALYSIS, RESULT, PERMISSIONS, USERNAME
+    AUTH, QUESTIONS, GOAL_SELECTION, APP_CLASSIFICATION, ANALYSIS, RESULT, USERNAME, PERMISSIONS
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -29,6 +29,8 @@ fun OnboardingFlow(
     var selectedGoal by remember { mutableStateOf("PRODUCTIVITY") }
     var customOverrides by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var questionAnswers by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var chosenUsername by remember { mutableStateOf("user") }
+    var chosenDisplayName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(initialStep) {
         step = initialStep
@@ -102,18 +104,22 @@ fun OnboardingFlow(
                     score = focusScore,
                     avgDailyScreenTime = avgScreenTime,
                     topCategory = topCategory,
-                    onContinue = { step = OnboardingStep.PERMISSIONS }
-                )
-            }
-            OnboardingStep.PERMISSIONS -> {
-                PermissionScreen(
                     onContinue = { step = OnboardingStep.USERNAME }
                 )
             }
             OnboardingStep.USERNAME -> {
                 UsernameScreen(
                     onComplete = { username, displayName ->
-                        onComplete(username, displayName, focusScore, selectedGoal, customOverrides)
+                        chosenUsername = username
+                        chosenDisplayName = displayName
+                        step = OnboardingStep.PERMISSIONS
+                    }
+                )
+            }
+            OnboardingStep.PERMISSIONS -> {
+                PermissionScreen(
+                    onContinue = {
+                        onComplete(chosenUsername, chosenDisplayName, focusScore, selectedGoal, customOverrides)
                     }
                 )
             }

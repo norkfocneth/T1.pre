@@ -1,7 +1,7 @@
 package com.example.t1.ui.tour
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -13,8 +13,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,57 +29,48 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.t1.theme.Border
 import com.example.t1.theme.Foreground
+import com.example.t1.theme.HeadlineMedium
 import com.example.t1.theme.HeadlineSmall
 import com.example.t1.theme.LabelMedium
 import com.example.t1.theme.LabelSmall
 import com.example.t1.theme.MutedForeground
-import com.example.t1.theme.TrackingWide
 import com.example.t1.util.Haptics
 
-private val TourPrimary = Color(0xFF38BDF8) // Bright Cyan / Sky Blue
-private val TourAccent = Color(0xFF3B82F6)  // Vibrant Royal Blue
-private val TourGlow = Color(0xFF60A5FA)    // Soft Glow
+private val TourPrimary = Color(0xFF38BDF8)
+private val TourAccent = Color(0xFF6366F1)
+private val CardBg = Color(0xFF0F0F14)
 
-/**
- * Interactive Spotlight Coach Mark Overlay for first-time onboarding tour.
- * Darkens background, highlights active UI components with glowing animated cutouts,
- * and renders a glassmorphic educational card.
- */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GuidedProductTourOverlay(
@@ -94,129 +83,93 @@ fun GuidedProductTourOverlay(
     val steps = remember(userGoal) { TourStepCatalog.getSteps(userGoal) }
     var currentStepIndex by remember { mutableIntStateOf(0) }
     val currentStep = steps.getOrElse(currentStepIndex) { steps.first() }
-
-    val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
-    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
     val view = LocalView.current
 
-    // Keep active screen/tab synced with the step target
+    // Whether the detailed interactive inspection dialog is open
+    var isDetailOpen by remember { mutableStateOf(false) }
+
     LaunchedEffect(currentStepIndex) {
         onStepSync(currentStep)
+        isDetailOpen = false
     }
 
-    // Intercept hardware back button to navigate backwards in tour
     BackHandler {
-        if (currentStepIndex > 0) {
+        if (isDetailOpen) {
+            isDetailOpen = false
+        } else if (currentStepIndex > 0) {
             currentStepIndex--
         } else {
             onSkipTour()
         }
     }
 
-    // Subtle pulsing neon glow animation around spotlight
-    val infiniteTransition = rememberInfiniteTransition(label = "spotlight_pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.95f,
+    // Bouncing Arrow Animation
+    val infiniteTransition = rememberInfiniteTransition(label = "arrow_bounce")
+    val bounceAnim by infiniteTransition.animateFloat(
+        initialValue = -8f,
+        targetValue = 8f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(700, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "pulse_alpha"
+        label = "bounce"
+    )
+
+    // Pulsing glow animation
+    val pulseGlow by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 0.95f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
     )
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .clickable(enabled = false) {} // Prevent touches leaking through to background
+            .background(Color(0xFF040407).copy(alpha = if (isDetailOpen) 0.85f else 0.65f))
     ) {
-        // ══════════════════════════════════════════════════════════════════════
-        // 1. SPOTLIGHT SCRIM CANVAS (DARK OVERLAY + CUTOUT + NEON OUTLINE)
-        // ══════════════════════════════════════════════════════════════════════
-        val targetRect = remember(currentStep.highlightTarget, screenWidthPx, screenHeightPx) {
-            calculateTargetRect(
-                target = currentStep.highlightTarget,
-                width = screenWidthPx,
-                height = screenHeightPx,
-                density = density.density
-            )
-        }
-
-        if (targetRect != null) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer(alpha = 0.99f) // Required for BlendMode.Clear
-            ) {
-                // Dim full screen with dark scrim
-                drawRect(
-                    color = Color(0xFF040407).copy(alpha = 0.88f),
-                    size = size
-                )
-
-                // Cut out spotlight rectangle
-                val cornerRadiusPx = 24.dp.toPx()
-                val path = Path().apply {
-                    addRoundRect(
-                        roundRect = RoundRect(
-                            rect = targetRect,
-                            cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
-                        )
-                    )
-                }
-                drawPath(
-                    path = path,
-                    color = Color.Transparent,
-                    blendMode = BlendMode.Clear
-                )
-
-                // Draw glowing neon border around cutout
-                drawRoundRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            TourPrimary.copy(alpha = pulseAlpha),
-                            TourGlow.copy(alpha = pulseAlpha * 0.7f),
-                            TourPrimary.copy(alpha = pulseAlpha * 0.3f)
-                        )
-                    ),
-                    topLeft = targetRect.topLeft,
-                    size = targetRect.size,
-                    cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
-                    style = Stroke(width = 2.dp.toPx())
-                )
-            }
-        } else {
-            // Full-screen dark backdrop for Welcome Step
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF050508).copy(alpha = 0.92f))
-            )
-        }
-
-        // ══════════════════════════════════════════════════════════════════════
-        // 2. TOP BAR: SKIP TOUR BUTTON
-        // ══════════════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════════════
+        // 1. TOP BAR: Step Counter & Skip Button
+        // ══════════════════════════════════════════════════════════════════
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.End,
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF181822).copy(alpha = 0.9f))
+                    .border(1.dp, Color(0xFF2E2E3E), RoundedCornerShape(16.dp))
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "FEATURE  ${currentStepIndex + 1} OF ${steps.size}",
+                    style = LabelSmall.copy(
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFA5B4FC),
+                        letterSpacing = 1.1.sp
+                    )
+                )
+            }
+
+            Box(
+                modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF141418).copy(alpha = 0.8f))
-                    .border(1.dp, Border.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                    .background(Color(0xFF1E1E28).copy(alpha = 0.85f))
+                    .border(1.dp, Color(0xFF38384A), RoundedCornerShape(20.dp))
                     .clickable {
                         Haptics.playLight(view)
                         onSkipTour()
                     }
-                    .padding(horizontal = 14.dp, vertical = 7.dp)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -225,75 +178,129 @@ fun GuidedProductTourOverlay(
                     Text(
                         text = "Skip Tour",
                         style = LabelSmall.copy(
-                            color = MutedForeground,
+                            color = Color(0xFFCBD5E1),
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                     )
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Skip Tour",
-                        tint = MutedForeground,
-                        modifier = Modifier.size(12.dp)
+                        tint = Color(0xFFCBD5E1),
+                        modifier = Modifier.size(13.dp)
                     )
                 }
             }
         }
 
-        // ══════════════════════════════════════════════════════════════════════
-        // 3. COACH MARK CARD
-        // ══════════════════════════════════════════════════════════════════════
-        val cardAlignment = when (currentStep.highlightTarget) {
-            HighlightTarget.FULL_SCREEN_WELCOME -> Alignment.Center
-            HighlightTarget.FOCUS_RING -> Alignment.BottomCenter
-            HighlightTarget.GOAL_BADGE -> Alignment.TopCenter
-            HighlightTarget.SCREEN_TIME_CARD -> Alignment.TopCenter
-            HighlightTarget.APP_CATEGORIES -> Alignment.TopCenter
-            HighlightTarget.LEADERBOARD_PODIUM -> Alignment.BottomCenter
-            HighlightTarget.TOKENS_WALLET -> Alignment.BottomCenter
-            HighlightTarget.PROFILE_IDENTITY -> Alignment.BottomCenter
-            HighlightTarget.SETTINGS_PRIVACY -> Alignment.BottomCenter
-            HighlightTarget.SETTINGS_DELETE -> Alignment.TopCenter
+        // ══════════════════════════════════════════════════════════════════
+        // 2. INTERACTIVE TARGET SPOTLIGHT & ANIMATED ARROW (When not in detail)
+        // ══════════════════════════════════════════════════════════════════
+        if (!isDetailOpen) {
+            TargetSpotlightOverlay(
+                step = currentStep,
+                bounceAnim = bounceAnim,
+                pulseGlow = pulseGlow,
+                onTargetClick = {
+                    Haptics.playMedium(view)
+                    isDetailOpen = true
+                }
+            )
         }
 
-        val cardPaddingModifier = when (cardAlignment) {
-            Alignment.BottomCenter -> Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 24.dp)
-            Alignment.TopCenter -> Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 70.dp, start = 20.dp, end = 20.dp)
-            else -> Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 24.dp)
-        }
-
-        AnimatedContent(
-            targetState = currentStep,
-            transitionSpec = {
-                (slideInVertically { 30 } + fadeIn(tween(250)))
-                    .togetherWith(slideOutVertically { -30 } + fadeOut(tween(200)))
-            },
-            label = "coach_mark_anim",
-            modifier = cardPaddingModifier
-        ) { step ->
-            CoachMarkCard(
-                step = step,
-                totalSteps = steps.size - 1, // Exclude step 0 in progress count
-                onBack = {
-                    if (currentStepIndex > 0) {
-                        Haptics.playLight(view)
-                        currentStepIndex--
+        // ══════════════════════════════════════════════════════════════════
+        // 3. BOTTOM PROMPT BANNER (When detail is closed)
+        // ══════════════════════════════════════════════════════════════════
+        if (!isDetailOpen) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF111116).copy(alpha = 0.95f))
+                    .border(1.dp, Color(0xFF282838), RoundedCornerShape(20.dp))
+                    .clickable {
+                        Haptics.playMedium(view)
+                        isDetailOpen = true
                     }
-                },
+                    .padding(18.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = currentStep.stepLabel,
+                            style = LabelSmall.copy(
+                                color = Color(0xFFA5B4FC),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.5.sp,
+                                letterSpacing = 1.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = currentStep.featureName,
+                            style = HeadlineSmall.copy(
+                                color = Foreground,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(TourAccent, TourPrimary)
+                                )
+                            )
+                            .padding(horizontal = 14.dp, vertical = 9.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Tap to Inspect ➔",
+                            style = LabelMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // 4. DEEP-DIVE INSPECTION DIALOG (WITH COMPETITOR COMPARISON)
+        // ══════════════════════════════════════════════════════════════════
+        AnimatedVisibility(
+            visible = isDetailOpen,
+            enter = fadeIn(tween(250)) + slideInVertically(initialOffsetY = { 300 }),
+            exit = fadeOut(tween(200)) + slideOutVertically(targetOffsetY = { 300 }),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            FeatureDetailModal(
+                step = currentStep,
+                onClose = { isDetailOpen = false },
                 onNext = {
                     Haptics.playLight(view)
                     if (currentStepIndex < steps.size - 1) {
                         currentStepIndex++
                     } else {
                         onCompleteTour()
+                    }
+                },
+                onBack = {
+                    Haptics.playLight(view)
+                    if (currentStepIndex > 0) {
+                        currentStepIndex--
                     }
                 }
             )
@@ -302,140 +309,364 @@ fun GuidedProductTourOverlay(
 }
 
 /**
- * The Glassmorphic Coach Mark Content Card.
+ * Renders target spotlight box and animated pointing arrow directly over the element.
  */
 @Composable
-private fun CoachMarkCard(
+private fun TargetSpotlightOverlay(
     step: TourStep,
-    totalSteps: Int,
-    onBack: () -> Unit,
-    onNext: () -> Unit,
-    modifier: Modifier = Modifier
+    bounceAnim: Float,
+    pulseGlow: Float,
+    onTargetClick: () -> Unit
 ) {
-    val view = LocalView.current
+    val configuration = LocalConfiguration.current
+    val screenHeightDp = configuration.screenHeightDp
 
-    Box(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        // Ambient soft blue neon glow behind card
+    // Calculate vertical center for each element
+    val targetTopDp = when (step.highlightTarget) {
+        HighlightTarget.TOKEN_WALLET -> 48.dp
+        HighlightTarget.FOCUS_RING -> 180.dp
+        HighlightTarget.GOAL_CARD -> (screenHeightDp * 0.54f).dp
+        HighlightTarget.BATTLE_ARENA -> 120.dp
+        HighlightTarget.WHITELIST_TOOLS -> 360.dp
+        HighlightTarget.LEADERBOARD_PODIUM -> 100.dp
+    }
+
+    val targetHeightDp = when (step.highlightTarget) {
+        HighlightTarget.TOKEN_WALLET -> 52.dp
+        HighlightTarget.FOCUS_RING -> 230.dp
+        HighlightTarget.GOAL_CARD -> 130.dp
+        HighlightTarget.BATTLE_ARENA -> 210.dp
+        HighlightTarget.WHITELIST_TOOLS -> 170.dp
+        HighlightTarget.LEADERBOARD_PODIUM -> 220.dp
+    }
+
+    val targetWidthDp = when (step.highlightTarget) {
+        HighlightTarget.TOKEN_WALLET -> 170.dp
+        HighlightTarget.FOCUS_RING -> 250.dp
+        else -> (configuration.screenWidthDp - 36).dp
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Glowing target box around the real feature
         Box(
             modifier = Modifier
-                .matchParentSize()
-                .offset(y = 4.dp)
-                .blur(20.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(TourPrimary.copy(alpha = 0.15f))
+                .align(Alignment.TopCenter)
+                .offset(y = targetTopDp)
+                .width(targetWidthDp)
+                .height(targetHeightDp)
+                .clip(RoundedCornerShape(22.dp))
+                .border(
+                    width = 2.dp,
+                    color = TourPrimary.copy(alpha = pulseGlow),
+                    shape = RoundedCornerShape(22.dp)
+                )
+                .background(TourPrimary.copy(alpha = 0.08f))
+                .clickable(onClick = onTargetClick)
         )
 
-        // Glassmorphic Card Container
+        // Bouncing Arrow & Pulsing Callout Pill
+        val calloutY = if (step.arrowDirection == ArrowDirection.POINTING_DOWN) {
+            targetTopDp - 60.dp + bounceAnim.dp
+        } else {
+            targetTopDp + targetHeightDp + 12.dp + bounceAnim.dp
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = calloutY)
+                .padding(horizontal = 24.dp)
+                .clickable(onClick = onTargetClick),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (step.arrowDirection == ArrowDirection.POINTING_DOWN) {
+                InteractiveCalloutPill(text = step.tapPrompt)
+                Spacer(modifier = Modifier.height(6.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowDownward,
+                    contentDescription = "Inspect",
+                    tint = TourPrimary,
+                    modifier = Modifier.size(28.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ArrowUpward,
+                    contentDescription = "Inspect",
+                    tint = TourPrimary,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                InteractiveCalloutPill(text = step.tapPrompt)
+            }
+        }
+    }
+}
+
+@Composable
+private fun InteractiveCalloutPill(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF1E1E2C))
+            .border(1.dp, TourPrimary.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.TouchApp,
+                contentDescription = null,
+                tint = TourPrimary,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = text,
+                style = LabelSmall.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            )
+        }
+    }
+}
+
+/**
+ * Detailed bottom sheet showing complete feature breakdown AND competitor comparison.
+ */
+@Composable
+private fun FeatureDetailModal(
+    step: TourStep,
+    onClose: () -> Unit,
+    onNext: () -> Unit,
+    onBack: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(top = 54.dp, bottom = 12.dp, start = 14.dp, end = 14.dp),
+        contentAlignment = Alignment.BottomCenter
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(22.dp))
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF16161D),
-                            Color(0xFF0F0F14)
-                        )
-                    )
-                )
-                .border(
-                    width = 1.dp,
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Border.copy(alpha = 0.8f),
-                            TourPrimary.copy(alpha = 0.3f),
-                            Border.copy(alpha = 0.4f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(22.dp)
-                )
-                .padding(22.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .clip(RoundedCornerShape(26.dp))
+                .background(CardBg)
+                .border(1.dp, Color(0xFF282838), RoundedCornerShape(26.dp))
+                .padding(20.dp)
+                .verticalScroll(scrollState)
         ) {
-            // Header Row: Step Badge & Dots Indicator
+            // Header: Step pill & Close button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Step Badge Pill
-                Row(
+                Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(TourPrimary.copy(alpha = 0.15f))
-                        .border(0.5.dp, TourPrimary.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        .background(TourAccent.copy(alpha = 0.22f))
+                        .border(1.dp, TourAccent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(TourPrimary)
-                    )
                     Text(
-                        text = step.stepLabel,
-                        style = TrackingWide.copy(
-                            color = TourPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 9.5.sp,
-                            letterSpacing = 1.sp
+                        text = "✦  ${step.stepLabel}",
+                        style = LabelSmall.copy(
+                            color = Color(0xFFA5B4FC),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.1.sp
                         )
                     )
                 }
 
-                // Micro Progress Dots (Steps 1..9)
-                if (!step.isWelcome) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        for (i in 1..totalSteps) {
-                            val isActive = i == step.id
-                            val isDone = i < step.id
-                            Box(
-                                modifier = Modifier
-                                    .size(width = if (isActive) 14.dp else 5.dp, height = 5.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(
-                                        when {
-                                            isActive -> TourPrimary
-                                            isDone -> TourPrimary.copy(alpha = 0.45f)
-                                            else -> Color(0xFF262630)
-                                        }
-                                    )
-                            )
-                        }
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1E1E28))
+                        .clickable(onClick = onClose),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color(0xFFCBD5E1),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
 
-            // Title
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Feature Name
             Text(
-                text = step.title,
-                style = HeadlineSmall.copy(
+                text = step.featureName,
+                style = HeadlineMedium.copy(
                     color = Foreground,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    lineHeight = 26.sp
+                    fontSize = 22.sp
                 )
             )
 
-            // Description Body
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Summary description
             Text(
-                text = step.description,
+                text = step.whatItDoesSummary,
                 style = LabelMedium.copy(
-                    color = Color(0xFFC8C8D2),
-                    fontWeight = FontWeight.Normal,
+                    color = Color(0xFFCBD5E1),
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp
                 )
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ══════════════════════════════════════════════════════════════
+            // SECTION 1: HOW IT WORKS IN PRACTICE
+            // ══════════════════════════════════════════════════════════════
+            Text(
+                text = "HOW TO USE THIS FEATURE",
+                style = LabelSmall.copy(
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF94A3B8),
+                    letterSpacing = 1.2.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            step.howToUseSteps.forEachIndexed { index, stepText ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(TourAccent.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            style = LabelSmall.copy(
+                                color = Color(0xFFA5B4FC),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = stepText,
+                        style = LabelMedium.copy(
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 13.sp,
+                            lineHeight = 18.5.sp
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // ══════════════════════════════════════════════════════════════
+            // SECTION 2: WHY T1 BEATS COMPETITION (Forest / Opal / Freedom)
+            // ══════════════════════════════════════════════════════════════
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF09090D))
+                    .border(1.dp, Color(0xFF232332), RoundedCornerShape(16.dp))
+                    .padding(14.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "⚔️ WHY T1 IS BETTER THAN ${step.competitorName.uppercase()}",
+                        style = LabelSmall.copy(
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF38BDF8),
+                            letterSpacing = 1.1.sp
+                        )
+                    )
+
+                    step.comparisons.forEach { cmp ->
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "• " + cmp.title,
+                                style = LabelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 12.sp
+                                )
+                            )
+                            // T1 Advantage
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                modifier = Modifier.padding(start = 6.dp)
+                            ) {
+                                Text(
+                                    text = "✓ T1: ",
+                                    style = LabelSmall.copy(
+                                        color = Color(0xFF10B981),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                                Text(
+                                    text = cmp.t1Advantage,
+                                    style = LabelSmall.copy(
+                                        color = Color(0xFFCBD5E1),
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 16.sp
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            // Competitor Flaw
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                modifier = Modifier.padding(start = 6.dp)
+                            ) {
+                                Text(
+                                    text = "✕ Others: ",
+                                    style = LabelSmall.copy(
+                                        color = Color(0xFFEF4444),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                                Text(
+                                    text = cmp.competitorFlaw,
+                                    style = LabelSmall.copy(
+                                        color = Color(0xFF94A3B8),
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 16.sp
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Action Buttons Footer
             Row(
@@ -443,15 +674,17 @@ private fun CoachMarkCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Back Button (hidden on Welcome)
                 if (!step.isWelcome) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF1B1B22))
-                            .border(1.dp, Border, RoundedCornerShape(12.dp))
-                            .clickable { onBack() }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF1E1E28))
+                            .border(1.dp, Border, RoundedCornerShape(14.dp))
+                            .clickable {
+                                onBack()
+                                onClose()
+                            }
+                            .padding(horizontal = 18.dp, vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -465,134 +698,32 @@ private fun CoachMarkCard(
                     }
                 }
 
-                // Primary Next / Explore CTA
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    TourAccent,
-                                    TourPrimary
-                                )
+                                colors = listOf(TourAccent, TourPrimary)
                             )
                         )
-                        .clickable { onNext() }
+                        .clickable {
+                            onNext()
+                            onClose()
+                        }
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = step.primaryButtonText,
-                            style = LabelMedium.copy(
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
+                    Text(
+                        text = if (step.isFinal) "Finish Tour & Start Focusing ✨" else "Got it! Next Feature ➔",
+                        style = LabelMedium.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.5.sp
                         )
-                    }
+                    )
                 }
             }
-        }
-    }
-}
-
-/**
- * Calculates spotlight cutout bounding box in screen pixels for each targeted element.
- */
-private fun calculateTargetRect(
-    target: HighlightTarget,
-    width: Float,
-    height: Float,
-    density: Float
-): Rect? {
-    val dpToPx = density
-
-    return when (target) {
-        HighlightTarget.FULL_SCREEN_WELCOME -> null
-
-        HighlightTarget.FOCUS_RING -> {
-            // Focus ring centered horizontally in top area of HomeScreen
-            val cx = width * 0.5f
-            val cy = 350f * dpToPx
-            val radius = 150f * dpToPx
-            Rect(cx - radius, cy - radius, cx + radius, cy + radius)
-        }
-
-        HighlightTarget.GOAL_BADGE -> {
-            // Focus Goal & Comparison card right below Focus Ring
-            val left = 20f * dpToPx
-            val right = width - 20f * dpToPx
-            val top = 540f * dpToPx
-            val bottom = 710f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.SCREEN_TIME_CARD -> {
-            // Screen Time & Activity Breakdown Card on HomeScreen
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 635f * dpToPx
-            val bottom = 780f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.APP_CATEGORIES -> {
-            // Dual-Purpose App Categories breakdown section
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 635f * dpToPx
-            val bottom = 820f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.LEADERBOARD_PODIUM -> {
-            // Leaderboard Podium (#1, #2, #3)
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 100f * dpToPx
-            val bottom = 445f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.TOKENS_WALLET -> {
-            // Top Bar Token Wallet Pill
-            val cx = width * 0.5f
-            val halfWidth = 80f * dpToPx
-            val top = 40f * dpToPx
-            val bottom = 95f * dpToPx
-            Rect(cx - halfWidth, top, cx + halfWidth, bottom)
-        }
-
-        HighlightTarget.PROFILE_IDENTITY -> {
-            // Profile identity avatar, streak badge & stats
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 55f * dpToPx
-            val bottom = 270f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.SETTINGS_PRIVACY -> {
-            // Privacy Policy & Settings Options
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 260f * dpToPx
-            val bottom = 480f * dpToPx
-            Rect(left, top, right, bottom)
-        }
-
-        HighlightTarget.SETTINGS_DELETE -> {
-            // Danger Zone / Delete Account Section
-            val left = 16f * dpToPx
-            val right = width - 16f * dpToPx
-            val top = 490f * dpToPx
-            val bottom = 720f * dpToPx
-            Rect(left, top, right, bottom)
         }
     }
 }

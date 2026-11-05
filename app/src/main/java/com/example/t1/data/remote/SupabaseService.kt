@@ -65,13 +65,14 @@ class SupabaseService @Inject constructor(
         }
     }
 
-    suspend fun getLeaderboard(): List<LeaderboardEntryDto> {
+    suspend fun getLeaderboard(limit: Long = 100): List<LeaderboardEntryDto> {
         return try {
             val response = postgrest.from("profiles")
                 .select(columns = Columns.ALL) {
                     filter {
                         eq("onboarding_completed", true)
                     }
+                    limit(limit)
                 }
             response.decodeList<LeaderboardEntryDto>()
         } catch (e: Exception) {
@@ -79,13 +80,14 @@ class SupabaseService @Inject constructor(
         }
     }
 
-    suspend fun getAllProfiles(): List<ProfileDto> {
+    suspend fun getAllProfiles(limit: Long = 100): List<ProfileDto> {
         return try {
             val response = postgrest.from("profiles")
                 .select(columns = Columns.ALL) {
                     filter {
                         eq("onboarding_completed", true)
                     }
+                    limit(limit)
                 }
             response.decodeList<ProfileDto>()
         } catch (e: Exception) {
@@ -366,7 +368,7 @@ class SupabaseService @Inject constructor(
         }
     }
 
-    suspend fun getUserFocusFights(userId: String): List<FocusFightDto> {
+    suspend fun getUserFocusFights(userId: String, limit: Long = 50): List<FocusFightDto> {
         return try {
             val response = postgrest.from("focus_fights")
                 .select(columns = Columns.ALL) {
@@ -376,6 +378,7 @@ class SupabaseService @Inject constructor(
                             eq("opponent_id", userId)
                         }
                     }
+                    limit(limit)
                 }
             response.decodeList<FocusFightDto>()
         } catch (e: Exception) {
@@ -384,9 +387,11 @@ class SupabaseService @Inject constructor(
         }
     }
 
-    suspend fun getAllFocusFights(): List<FocusFightDto> {
+    suspend fun getAllFocusFights(limit: Long = 100): List<FocusFightDto> {
         return try {
-            val response = postgrest.from("focus_fights").select(columns = Columns.ALL)
+            val response = postgrest.from("focus_fights").select(columns = Columns.ALL) {
+                limit(limit)
+            }
             response.decodeList<FocusFightDto>()
         } catch (e: Exception) {
             android.util.Log.e("SupabaseService", "Error fetching all focus fights: ${e.message}", e)

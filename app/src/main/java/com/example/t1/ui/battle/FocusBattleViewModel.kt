@@ -171,7 +171,18 @@ class FocusBattleViewModel @Inject constructor(
         }
 
         if (otherProfiles.isNotEmpty()) {
-            val mapped = otherProfiles.map { it.toBattleUser(allRemoteFights) }
+            // High-performance O(M) pre-indexing for instantaneous lookup under high concurrency
+            val completedFights = allRemoteFights.filter { it.status == "COMPLETED" || it.status == "SURRENDERED" }
+            val fightsByUser = HashMap<String, MutableList<FocusFightDto>>()
+            for (fight in completedFights) {
+                fightsByUser.getOrPut(fight.challengerId) { ArrayList() }.add(fight)
+                fightsByUser.getOrPut(fight.opponentId) { ArrayList() }.add(fight)
+            }
+
+            val mapped = otherProfiles.map { profile ->
+                val userFights = fightsByUser[profile.id] ?: emptyList()
+                profile.toBattleUserFromFights(userFights)
+            }
             val suggested = mapped.sortedByDescending { it.totalTokensWon }.take(8)
             val recent = mapped.filterNot { suggested.contains(it) }.take(10)
                 .ifEmpty { mapped.take(6) }
@@ -186,11 +197,7 @@ class FocusBattleViewModel @Inject constructor(
         }
     }
 
-    private fun ProfileDto.toBattleUser(fights: List<FocusFightDto>): BattleUser {
-        val userFights = fights.filter {
-            (it.challengerId == id || it.opponentId == id) &&
-                    (it.status == "COMPLETED" || it.status == "SURRENDERED")
-        }
+    private fun ProfileDto.toBattleUserFromFights(userFights: List<FocusFightDto>): BattleUser {
         val battles = userFights.size
         val wins = userFights.count { it.winnerId == id }
         val losses = battles - wins
@@ -211,6 +218,14 @@ class FocusBattleViewModel @Inject constructor(
             totalTokensWon = tokens,
             bio = bioText
         )
+    }
+
+    private fun ProfileDto.toBattleUser(fights: List<FocusFightDto>): BattleUser {
+        val userFights = fights.filter {
+            (it.challengerId == id || it.opponentId == id) &&
+                    (it.status == "COMPLETED" || it.status == "SURRENDERED")
+        }
+        return toBattleUserFromFights(userFights)
     }
 
     fun onSearchQueryChanged(query: String) {

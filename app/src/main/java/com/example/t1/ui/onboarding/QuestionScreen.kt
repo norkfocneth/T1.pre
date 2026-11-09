@@ -239,6 +239,18 @@ fun QuestionScreen(
     onComplete: (List<Int>) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // ─── 5-Step Animated Onboarding Question Journey (Alive 3D Mascot & Spring Physics) ───
+    FiveStepOnboardingQuestionScreen(
+        onComplete = onComplete,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun LegacyQuestionScreen(
+    onComplete: (List<Int>) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val view = LocalView.current
     val context = LocalContext.current
 

@@ -32,6 +32,8 @@ class UserPreferences @Inject constructor(
         private val KEY_FOCUS_REMINDERS_ENABLED = booleanPreferencesKey("focus_reminders_enabled")
         private val KEY_TUTORIAL_COMPLETED = booleanPreferencesKey("tutorial_completed")
         private val KEY_LEADERBOARD_TUTORIAL_COMPLETED = booleanPreferencesKey("leaderboard_tutorial_completed")
+        private val KEY_BATTLE_TUTORIAL_COMPLETED = booleanPreferencesKey("battle_tutorial_completed")
+        private val KEY_PROFILE_TUTORIAL_COMPLETED = booleanPreferencesKey("profile_tutorial_completed")
         private val KEY_TUTORIAL_VERSION = intPreferencesKey("tutorial_version")
         private val KEY_SELECTED_EXAM = stringPreferencesKey("selected_exam_track")
         private val KEY_EXAM_CHANGE_COUNT = intPreferencesKey("exam_change_count_week")
@@ -91,6 +93,20 @@ class UserPreferences @Inject constructor(
      */
     val leaderboardTutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_LEADERBOARD_TUTORIAL_COMPLETED] ?: false
+    }
+
+    /**
+     * Emits whether the focus fight product tour has been completed.
+     */
+    val battleTutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_BATTLE_TUTORIAL_COMPLETED] ?: false
+    }
+
+    /**
+     * Emits whether the profile product tour has been completed.
+     */
+    val profileTutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_PROFILE_TUTORIAL_COMPLETED] ?: false
     }
 
     /**
@@ -215,6 +231,30 @@ class UserPreferences @Inject constructor(
     suspend fun resetLeaderboardTutorial() {
         context.dataStore.edit { preferences ->
             preferences[KEY_LEADERBOARD_TUTORIAL_COMPLETED] = false
+        }
+    }
+
+    suspend fun saveBattleTutorialCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BATTLE_TUTORIAL_COMPLETED] = completed
+        }
+    }
+
+    suspend fun resetBattleTutorial() {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BATTLE_TUTORIAL_COMPLETED] = false
+        }
+    }
+
+    suspend fun saveProfileTutorialCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_PROFILE_TUTORIAL_COMPLETED] = completed
+        }
+    }
+
+    suspend fun resetProfileTutorial() {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_PROFILE_TUTORIAL_COMPLETED] = false
         }
     }
 

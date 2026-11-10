@@ -7,6 +7,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.runtime.mutableIntStateOf
+import com.example.t1.ui.tour.FocusBattleMascotGuidedTour
+import com.example.t1.ui.tour.FocusBattleTourSteps
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -410,11 +416,37 @@ fun UserBattleHeroCard(
 fun FocusBattleScreen(
     viewModel: FocusBattleViewModel,
     modifier: Modifier = Modifier,
-    onBackToHome: () -> Unit = {}
+    onBackToHome: () -> Unit = {},
+    forceShowTour: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isBattleTutorialCompleted by viewModel.battleTutorialCompleted.collectAsState()
     val view = LocalView.current
     val context = androidx.compose.ui.platform.LocalContext.current
+
+    var isTourActive by remember { mutableStateOf(forceShowTour || !isBattleTutorialCompleted) }
+    var tourStepIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isBattleTutorialCompleted, forceShowTour) {
+        if (forceShowTour || !isBattleTutorialCompleted) {
+            isTourActive = true
+        }
+    }
+
+    var headerInvitesOffset by remember { mutableStateOf(Offset.Zero) }
+    var heroCardOffset by remember { mutableStateOf(Offset.Zero) }
+    var searchBarOffset by remember { mutableStateOf(Offset.Zero) }
+    var rivalRowOffset by remember { mutableStateOf(Offset.Zero) }
+    var shieldRuleOffset by remember { mutableStateOf(Offset.Zero) }
+
+    val activeTourTarget = when (tourStepIndex) {
+        0 -> headerInvitesOffset
+        1 -> heroCardOffset
+        2 -> searchBarOffset
+        3 -> if (rivalRowOffset != Offset.Zero) rivalRowOffset else searchBarOffset.copy(y = searchBarOffset.y + 160f)
+        4 -> shieldRuleOffset
+        else -> Offset.Zero
+    }
 
     // Minimization detection: Pause focus timer if user exits or minimizes app during live arena
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -488,7 +520,12 @@ fun FocusBattleScreen(
                         onIncomingInviteClick = {
                             Haptics.playMedium(view)
                             viewModel.openIncomingInviteView()
-                        }
+                        },
+                        onHeaderInvitesPositioned = { headerInvitesOffset = it },
+                        onHeroCardPositioned = { heroCardOffset = it },
+                        onSearchBarPositioned = { searchBarOffset = it },
+                        onRivalRowPositioned = { rivalRowOffset = it },
+                        onShieldRulePositioned = { shieldRuleOffset = it }
                     )
                 }
                 BattleStep.USER_DETAIL -> {
@@ -624,6 +661,28 @@ fun FocusBattleScreen(
                 }
             }
         }
+
+        // ══════════════════════════════════════════════════════════════════
+        // Interactive Focus Fight Product Tour (Mascot Guided)
+        // ══════════════════════════════════════════════════════════════════
+        if (isTourActive && uiState.currentStep == BattleStep.DISCOVERY) {
+            FocusBattleMascotGuidedTour(
+                currentStepIndex = tourStepIndex,
+                targetScreenOffset = activeTourTarget,
+                onNext = {
+                    if (tourStepIndex < FocusBattleTourSteps.size - 1) {
+                        tourStepIndex++
+                    } else {
+                        isTourActive = false
+                        viewModel.completeBattleTutorial()
+                    }
+                },
+                onSkip = {
+                    isTourActive = false
+                    viewModel.completeBattleTutorial()
+                }
+            )
+        }
     }
 }
 
@@ -643,7 +702,12 @@ fun BattleDiscoveryView(
     onEnableBackgroundAlerts: () -> Unit = {},
     onSearchChange: (String) -> Unit,
     onSelectUser: (BattleUser) -> Unit,
-    onIncomingInviteClick: () -> Unit
+    onIncomingInviteClick: () -> Unit,
+    onHeaderInvitesPositioned: (Offset) -> Unit = {},
+    onHeroCardPositioned: (Offset) -> Unit = {},
+    onSearchBarPositioned: (Offset) -> Unit = {},
+    onRivalRowPositioned: (Offset) -> Unit = {},
+    onShieldRulePositioned: (Offset) -> Unit = {}
 ) {
     val allSearchPool = remember(allCommunityUsers, recentUsers, suggestedUsers, currentUser) {
         val pool = (allCommunityUsers + recentUsers + suggestedUsers).distinctBy { it.id }
@@ -676,7 +740,12 @@ fun BattleDiscoveryView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(
+                modifier = Modifier.onGloballyPositioned { coords ->
+                    val pos = coords.positionInRoot()
+                    onShieldRulePositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f))
+                }
+            ) {
                 Text(
                     text = "Focus Fight",
                     style = TextStyle(
@@ -700,6 +769,10 @@ fun BattleDiscoveryView(
                     .size(44.dp)
                     .background(BattleGradients.secondaryButtonBrush, CircleShape)
                     .border(1.dp, BattleGradients.secondaryButtonBorder, CircleShape)
+                    .onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        onHeaderInvitesPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f))
+                    }
                     .clickable(onClick = onIncomingInviteClick),
                 contentAlignment = Alignment.Center
             ) {
@@ -804,7 +877,13 @@ fun BattleDiscoveryView(
         }
 
         // User's Own Battle Profile Card
-        UserBattleHeroCard(user = currentUser)
+        UserBattleHeroCard(
+            user = currentUser,
+            modifier = Modifier.onGloballyPositioned { coords ->
+                val pos = coords.positionInRoot()
+                onHeroCardPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height * 0.70f))
+            }
+        )
 
         // Incoming Real Challenge Banner if available
         if (incomingFight != null && incomingChallenger != null) {
@@ -875,6 +954,10 @@ fun BattleDiscoveryView(
                 .clip(RoundedCornerShape(25.dp))
                 .background(Card)
                 .border(1.dp, Border, RoundedCornerShape(25.dp))
+                .onGloballyPositioned { coords ->
+                    val pos = coords.positionInRoot()
+                    onSearchBarPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f))
+                }
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -968,8 +1051,17 @@ fun BattleDiscoveryView(
                         }
                     }
                 } else {
-                    items(searchMatches) { user ->
-                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    itemsIndexed(searchMatches) { index, user ->
+                        UserSearchRow(
+                            user = user,
+                            onClick = { onSelectUser(user) },
+                            modifier = if (index == 0) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    onRivalRowPositioned(Offset(pos.x + coords.size.width * 0.65f, pos.y + coords.size.height / 2f))
+                                }
+                            } else Modifier
+                        )
                     }
                 }
             } else {
@@ -986,8 +1078,17 @@ fun BattleDiscoveryView(
                             modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
-                    items(recentUsers) { user ->
-                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    itemsIndexed(recentUsers) { index, user ->
+                        UserSearchRow(
+                            user = user,
+                            onClick = { onSelectUser(user) },
+                            modifier = if (index == 0) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    onRivalRowPositioned(Offset(pos.x + coords.size.width * 0.65f, pos.y + coords.size.height / 2f))
+                                }
+                            } else Modifier
+                        )
                     }
                 }
 
@@ -1005,8 +1106,17 @@ fun BattleDiscoveryView(
                             modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
-                    items(suggestedUsers) { user ->
-                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    itemsIndexed(suggestedUsers) { index, user ->
+                        UserSearchRow(
+                            user = user,
+                            onClick = { onSelectUser(user) },
+                            modifier = if (index == 0 && recentUsers.isEmpty()) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    onRivalRowPositioned(Offset(pos.x + coords.size.width * 0.65f, pos.y + coords.size.height / 2f))
+                                }
+                            } else Modifier
+                        )
                     }
                 }
 
@@ -1024,8 +1134,17 @@ fun BattleDiscoveryView(
                             modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
-                    items(allCommunityUsers) { user ->
-                        UserSearchRow(user = user, onClick = { onSelectUser(user) })
+                    itemsIndexed(allCommunityUsers) { index, user ->
+                        UserSearchRow(
+                            user = user,
+                            onClick = { onSelectUser(user) },
+                            modifier = if (index == 0 && recentUsers.isEmpty() && suggestedUsers.isEmpty()) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    onRivalRowPositioned(Offset(pos.x + coords.size.width * 0.65f, pos.y + coords.size.height / 2f))
+                                }
+                            } else Modifier
+                        )
                     }
                 }
             }
@@ -1034,9 +1153,9 @@ fun BattleDiscoveryView(
 }
 
 @Composable
-fun UserSearchRow(user: BattleUser, onClick: () -> Unit) {
+fun UserSearchRow(user: BattleUser, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(BattleGradients.cardFill)

@@ -63,8 +63,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.t1.ui.tour.ProfileMascotGuidedTour
+import com.example.t1.ui.tour.ProfileTourSteps
+import com.example.t1.ui.viewmodel.MainViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -115,9 +122,55 @@ fun ProfileScreen(
     onGoalChange: ((String) -> Unit)? = null,
     onUpdateName: ((String) -> Unit)? = null,
     onStartTour: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel? = null,
+    forceShowTour: Boolean = false
 ) {
     val view = LocalView.current
+
+    val isProfileTutorialCompleted = mainViewModel?.profileTutorialCompleted?.collectAsStateWithLifecycle()?.value ?: true
+    var isTourActive by remember { mutableStateOf(forceShowTour || !isProfileTutorialCompleted) }
+    var tourStepIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isProfileTutorialCompleted, forceShowTour) {
+        if (forceShowTour || !isProfileTutorialCompleted) {
+            isTourActive = true
+        }
+    }
+
+    val profileScrollState = rememberScrollState()
+
+    var avatarOffset by remember { mutableStateOf(Offset.Zero) }
+    var settingsOffset by remember { mutableStateOf(Offset.Zero) }
+    var titleTagOffset by remember { mutableStateOf(Offset.Zero) }
+    var activityCardOffset by remember { mutableStateOf(Offset.Zero) }
+    var weeklyTrendOffset by remember { mutableStateOf(Offset.Zero) }
+    var achievementsOffset by remember { mutableStateOf(Offset.Zero) }
+
+    // Auto-scroll when stepping through tour so elements are fully visible
+    LaunchedEffect(tourStepIndex, isTourActive) {
+        if (isTourActive) {
+            when (tourStepIndex) {
+                0 -> profileScrollState.animateScrollTo(0)
+                1 -> profileScrollState.animateScrollTo(0)
+                2 -> profileScrollState.animateScrollTo(0)
+                3 -> profileScrollState.animateScrollTo(0)
+                4 -> profileScrollState.animateScrollTo(180)
+                5 -> profileScrollState.animateScrollTo(360)
+                6 -> profileScrollState.animateScrollTo(0)
+            }
+        }
+    }
+
+    val activeTourTarget = when (tourStepIndex) {
+        0 -> avatarOffset
+        1 -> settingsOffset
+        2 -> titleTagOffset
+        3 -> activityCardOffset
+        4 -> weeklyTrendOffset
+        5 -> achievementsOffset
+        else -> Offset.Zero
+    }
 
     val achievements = remember(streak, totalFocusSessions, totalFocusDuration) {
         listOf(
@@ -157,7 +210,7 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(profileScrollState)
                 .padding(bottom = 140.dp), // space for bottom navigation
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -214,6 +267,10 @@ fun ProfileScreen(
                         tint = MutedForeground,
                         modifier = Modifier
                             .size(22.dp)
+                            .onGloballyPositioned { coords ->
+                                val pos = coords.positionInRoot()
+                                settingsOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                            }
                             .clickable {
                                 Haptics.playLight(view)
                                 onSettings()
@@ -225,7 +282,12 @@ fun ProfileScreen(
             // Avatar Section
             Spacer(modifier = Modifier.height(16.dp))
             Box(
-                modifier = Modifier.size(112.dp),
+                modifier = Modifier
+                    .size(112.dp)
+                    .onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        avatarOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 // Circular border container
@@ -422,7 +484,12 @@ fun ProfileScreen(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            titleTagOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                        }
                 )
             }
 
@@ -441,6 +508,10 @@ fun ProfileScreen(
                     .clip(RoundedCornerShape(16.dp))
                     .background(Card)
                     .border(1.dp, Border, RoundedCornerShape(16.dp))
+                    .onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        activityCardOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                    }
                     .padding(vertical = 20.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
@@ -499,6 +570,10 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
+                    .onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        weeklyTrendOffset = Offset(pos.x + coords.size.width * 0.75f, pos.y + coords.size.height * 0.55f)
+                    }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -613,6 +688,10 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
+                    .onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        achievementsOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height * 0.40f)
+                    }
             ) {
                 Text(
                     text = "ACHIEVEMENTS",
@@ -925,6 +1004,28 @@ fun ProfileScreen(
                 onDismiss = { showGoalSelector = false },
                 onConfirmGoal = { newGoal ->
                     onGoalChange?.invoke(newGoal)
+                }
+            )
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // Interactive Profile Product Tour (Mascot Guided)
+        // ══════════════════════════════════════════════════════════════════
+        if (isTourActive) {
+            ProfileMascotGuidedTour(
+                currentStepIndex = tourStepIndex,
+                targetScreenOffset = activeTourTarget,
+                onNext = {
+                    if (tourStepIndex < ProfileTourSteps.size - 1) {
+                        tourStepIndex++
+                    } else {
+                        isTourActive = false
+                        mainViewModel?.completeProfileTutorial()
+                    }
+                },
+                onSkip = {
+                    isTourActive = false
+                    mainViewModel?.completeProfileTutorial()
                 }
             )
         }

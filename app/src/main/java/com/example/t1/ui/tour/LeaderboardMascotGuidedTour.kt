@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -269,19 +270,18 @@ fun LeaderboardMascotGuidedTour(
         }
 
         // ══════════════════════════════════════════════════════════════════
-        // 2. TOP CONTROLS BAR: Skip Tour | RANK • Step X of 7 | Next ➔
+        // 2. TOP CONTROLS BAR: Skip Tour (Left) | RANK • Step X of 7 (Center)
         // ══════════════════════════════════════════════════════════════════
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 18.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 18.dp, vertical = 10.dp)
         ) {
             // Skip Tour Button (Top Left)
             Box(
                 modifier = Modifier
+                    .align(Alignment.CenterStart)
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.White.copy(alpha = 0.12f))
                     .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(16.dp))
@@ -304,6 +304,7 @@ fun LeaderboardMascotGuidedTour(
             // Step Indicator Pill (Top Center)
             Box(
                 modifier = Modifier
+                    .align(Alignment.Center)
                     .clip(RoundedCornerShape(18.dp))
                     .background(Color(0xFF1E1736).copy(alpha = 0.95f))
                     .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.45f), RoundedCornerShape(18.dp))
@@ -331,48 +332,6 @@ fun LeaderboardMascotGuidedTour(
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
-                        )
-                    )
-                }
-            }
-
-            // Next / Finish Button (Top Right)
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color(0xFFEDE9FE),
-                                Color(0xFFDDD6FE),
-                                Color(0xFFC4B5FD)
-                            )
-                        )
-                    )
-                    .clickable {
-                        Haptics.playMedium(view)
-                        onNext()
-                    }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = if (currentStep.isFinale) "Compete" else "Next",
-                        style = LabelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF1A102E)
-                        )
-                    )
-                    Text(
-                        text = "➔",
-                        style = LabelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF1A102E)
                         )
                     )
                 }
@@ -503,7 +462,7 @@ fun LeaderboardMascotGuidedTour(
                         .fillMaxWidth()
                         .padding(
                             top = if (currentStep.cardAtTop) 65.dp else 0.dp,
-                            bottom = if (!currentStep.cardAtTop) 26.dp else 0.dp
+                            bottom = if (!currentStep.cardAtTop) 110.dp else 0.dp
                         ),
                     horizontalAlignment = if (currentStep.mascotAlignLeft) Alignment.Start else Alignment.End
                 ) {
@@ -599,17 +558,68 @@ fun LeaderboardMascotGuidedTour(
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
+                                horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Tap Next ➔ to continue",
-                                    style = LabelSmall.copy(
-                                        color = Color(0xFFC084FC),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
+                                // Progress Dots
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    (0 until LeaderboardTourSteps.size - 1).forEach { idx ->
+                                        Box(
+                                            modifier = Modifier
+                                                .size(if (idx == currentStepIndex) 7.dp else 4.5.dp)
+                                                .clip(CircleShape)
+                                                .background(
+                                                    if (idx == currentStepIndex) Color(0xFFC084FC)
+                                                    else Color.White.copy(alpha = 0.22f)
+                                                )
+                                        )
+                                    }
+                                }
+
+                                // Interactive Next Button right inside the card!
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                listOf(
+                                                    Color(0xFFEDE9FE),
+                                                    Color(0xFFDDD6FE),
+                                                    Color(0xFFC4B5FD)
+                                                )
+                                            )
+                                        )
+                                        .clickable {
+                                            Haptics.playMedium(view)
+                                            onNext()
+                                        }
+                                        .padding(horizontal = 18.dp, vertical = 8.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    ) {
+                                        Text(
+                                            text = if (currentStepIndex == LeaderboardTourSteps.size - 2) "Finish" else "Next",
+                                            style = LabelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.5.sp,
+                                                color = Color(0xFF1A102E)
+                                            )
+                                        )
+                                        Text(
+                                            text = "➔",
+                                            style = LabelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.5.sp,
+                                                color = Color(0xFF1A102E)
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

@@ -116,6 +116,33 @@ fun MainNavigation(
             )
             return
         }
+        "battle_tour" -> {
+            val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
+            com.example.t1.ui.battle.FocusBattleScreen(
+                viewModel = battleViewModel,
+                onBackToHome = {},
+                forceShowTour = true
+            )
+            return
+        }
+        "profile_tour" -> {
+            ProfileScreen(
+                displayName = "Arnav",
+                username = "user.t1",
+                totalFocusSessions = 1,
+                totalFocusDuration = 35L,
+                weeklyTrend = listOf(75, 73, 71, 73, 75, 77, 78),
+                streak = 7,
+                focusRemindersEnabled = true,
+                onFocusRemindersChange = {},
+                onBack = null,
+                onSettings = {},
+                onSignOut = {},
+                mainViewModel = mainViewModel,
+                forceShowTour = true
+            )
+            return
+        }
     }
 
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
@@ -392,7 +419,8 @@ fun DashboardShell(
                                     activeTab = T1Tab.HOME
                                     mainViewModel.resetTutorial()
                                 },
-                                onSignOut = onSignOut
+                                onSignOut = onSignOut,
+                                mainViewModel = mainViewModel
                             )
                         }
                     }

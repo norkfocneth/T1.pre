@@ -21,8 +21,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -81,8 +83,24 @@ class FocusBattleViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val t1NotificationManager: T1NotificationManager,
     private val batteryOptimizationDetector: com.example.t1.data.compat.BatteryOptimizationDetector,
-    private val oemCompatibilityLayer: com.example.t1.data.compat.OemCompatibilityLayer
+    private val oemCompatibilityLayer: com.example.t1.data.compat.OemCompatibilityLayer,
+    private val userPreferences: com.example.t1.data.preferences.UserPreferences
 ) : ViewModel() {
+
+    val battleTutorialCompleted: StateFlow<Boolean> = userPreferences.battleTutorialCompletedFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun completeBattleTutorial() {
+        viewModelScope.launch {
+            userPreferences.saveBattleTutorialCompleted(true)
+        }
+    }
+
+    fun resetBattleTutorial() {
+        viewModelScope.launch {
+            userPreferences.resetBattleTutorial()
+        }
+    }
 
     private var currentProfile: UserProfile? = null
     private var allRemoteProfiles: List<ProfileDto> = emptyList()

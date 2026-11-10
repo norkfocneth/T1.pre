@@ -26,8 +26,8 @@ android {
         applicationId = "com.focneth.t1"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.0.16"
+        versionCode = 20
+        versionName = "1.0.19"
 
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")

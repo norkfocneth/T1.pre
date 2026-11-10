@@ -66,6 +66,9 @@ class MainViewModel @Inject constructor(
     val leaderboardTutorialCompleted: StateFlow<Boolean> = userPreferences.leaderboardTutorialCompletedFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val profileTutorialCompleted: StateFlow<Boolean> = userPreferences.profileTutorialCompletedFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     val tutorialVersion: StateFlow<Int> = userPreferences.tutorialVersionFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
@@ -181,6 +184,18 @@ class MainViewModel @Inject constructor(
     fun resetLeaderboardTutorial() {
         viewModelScope.launch {
             userPreferences.resetLeaderboardTutorial()
+        }
+    }
+
+    fun completeProfileTutorial() {
+        viewModelScope.launch {
+            userPreferences.saveProfileTutorialCompleted(true)
+        }
+    }
+
+    fun resetProfileTutorial() {
+        viewModelScope.launch {
+            userPreferences.resetProfileTutorial()
         }
     }
 

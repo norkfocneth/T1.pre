@@ -37,7 +37,7 @@ class UserPreferences @Inject constructor(
         private val KEY_EXAM_LAST_CHANGED_EPOCH = androidx.datastore.preferences.core.longPreferencesKey("exam_last_changed_epoch")
         private val KEY_PRIVACY_GHOST_MODE = booleanPreferencesKey("privacy_ghost_mode")
         private val KEY_GOAL_LAST_CHANGED_EPOCH = androidx.datastore.preferences.core.longPreferencesKey("goal_last_changed_epoch")
-        const val CURRENT_TUTORIAL_VERSION = 1
+        const val CURRENT_TUTORIAL_VERSION = 2
         const val DEFAULT_EXAM = "JEE (Mains & Advanced)"
     }
 
@@ -73,7 +73,9 @@ class UserPreferences @Inject constructor(
      * Emits whether the interactive onboarding product tour has been completed.
      */
     val tutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[KEY_TUTORIAL_COMPLETED] ?: false
+        val completed = preferences[KEY_TUTORIAL_COMPLETED] ?: false
+        val version = preferences[KEY_TUTORIAL_VERSION] ?: 0
+        completed && version >= CURRENT_TUTORIAL_VERSION
     }
 
     /**

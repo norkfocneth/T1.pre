@@ -44,7 +44,6 @@ import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.ui.viewmodel.OnboardingViewModel
 import com.example.t1.ui.viewmodel.OnboardingUiState
 import androidx.compose.runtime.LaunchedEffect
-import com.example.t1.ui.tour.GuidedProductTourOverlay
 import kotlinx.coroutines.delay
 
 object SplashStateManager {
@@ -92,6 +91,21 @@ fun MainNavigation(
         "battle" -> {
             val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
             com.example.t1.ui.battle.FocusBattleScreen(viewModel = battleViewModel, onBackToHome = {})
+            return
+        }
+        "tour" -> {
+            HomeScreen(
+                username = "Arnav",
+                onOpenTimer = {},
+                onOpenProfile = {},
+                dashboardState = com.example.t1.ui.viewmodel.DashboardUiState(),
+                onOpenSettings = {},
+                focusScore = 78,
+                streak = 7,
+                totalFocusSessions = 12,
+                viewModel = mainViewModel,
+                forceShowTour = true
+            )
             return
         }
     }
@@ -146,6 +160,7 @@ fun MainNavigation(
                     LaunchedEffect(onboardingState) {
                         if (onboardingState is OnboardingUiState.Success) {
                             com.example.t1.util.T1Logger.i("Onboarding completed successfully. Restoring session.")
+                            mainViewModel.resetTutorial()
                             authViewModel.restoreSession()
                             onboardingViewModel.resetState()
                         }
@@ -263,14 +278,6 @@ fun DashboardShell(
     val weeklyTrend by mainViewModel.weeklyTrend.collectAsStateWithLifecycle()
 
     val isTutorialCompleted by mainViewModel.tutorialCompleted.collectAsStateWithLifecycle()
-    var isTourActive by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isTutorialCompleted) {
-        if (!isTutorialCompleted) {
-            delay(500)
-            isTourActive = true
-        }
-    }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (showSettings) {
@@ -294,7 +301,6 @@ fun DashboardShell(
                     showSettings = false
                     activeTab = T1Tab.HOME
                     mainViewModel.resetTutorial()
-                    isTourActive = true
                 }
             )
         } else {
@@ -377,7 +383,6 @@ fun DashboardShell(
                                 onStartTour = {
                                     activeTab = T1Tab.HOME
                                     mainViewModel.resetTutorial()
-                                    isTourActive = true
                                 },
                                 onSignOut = onSignOut
                             )
@@ -414,35 +419,5 @@ fun DashboardShell(
             )
         }
 
-        // Interactive Guided Product Tour Overlay
-        AnimatedVisibility(
-            visible = isTourActive,
-            enter = fadeIn(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300))
-        ) {
-            GuidedProductTourOverlay(
-                userGoal = profile.primaryGoal ?: "Social Control",
-                onStepSync = { step ->
-                    if (step.requireSettings) {
-                        showSettings = true
-                    } else {
-                        if (showSettings) showSettings = false
-                        activeTab = step.targetTab
-                    }
-                },
-                onCompleteTour = {
-                    isTourActive = false
-                    showSettings = false
-                    activeTab = T1Tab.HOME
-                    mainViewModel.completeTutorial()
-                },
-                onSkipTour = {
-                    isTourActive = false
-                    showSettings = false
-                    activeTab = T1Tab.HOME
-                    mainViewModel.completeTutorial()
-                }
-            )
-        }
     }
 }

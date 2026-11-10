@@ -93,10 +93,17 @@ import com.example.t1.domain.permission.UsagePermissionState
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.positionInParent
 import com.example.t1.domain.focus.AICoachEngine
+import com.example.t1.ui.tour.HomeMascotGuidedTour
+import com.example.t1.ui.tour.HomeTourSteps
 
 @Composable
 fun HomeScreen(
@@ -109,7 +116,8 @@ fun HomeScreen(
     focusScore: Int = 85,
     streak: Int = 12,
     totalFocusSessions: Int = 0,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    forceShowTour: Boolean = false
 ) {
     val view = LocalView.current
     val context = LocalContext.current
@@ -118,6 +126,67 @@ fun HomeScreen(
     val tokenTransactions by viewModel.tokenTransactions.collectAsStateWithLifecycle()
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
     val weeklyTrend by viewModel.weeklyTrend.collectAsStateWithLifecycle()
+
+    val isTutorialCompleted by viewModel.tutorialCompleted.collectAsStateWithLifecycle()
+    var isTourActive by remember { mutableStateOf(forceShowTour || !isTutorialCompleted) }
+    var tourStepIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isTutorialCompleted, forceShowTour) {
+        if (forceShowTour || !isTutorialCompleted) {
+            isTourActive = true
+        }
+    }
+
+    // Scroll state exposed for programmatic guided tour auto-scrolling
+    val homeScrollState = rememberScrollState()
+
+    // Real-time element coordinates for mathematical pinpoint arrow targeting
+    var tokenIslandCenter by remember { mutableStateOf(Offset.Zero) }
+    var focusRingCenter by remember { mutableStateOf(Offset.Zero) }
+    var focusRingScrollY by remember { mutableFloatStateOf(0f) }
+    var goalCardCenter by remember { mutableStateOf(Offset.Zero) }
+    var goalCardScrollY by remember { mutableFloatStateOf(0f) }
+    var screenTimeCenter by remember { mutableStateOf(Offset.Zero) }
+    var screenTimeScrollY by remember { mutableFloatStateOf(0f) }
+    var focusButtonCenter by remember { mutableStateOf(Offset.Zero) }
+    var focusButtonScrollY by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(tourStepIndex, isTourActive) {
+        if (isTourActive) {
+            when (tourStepIndex) {
+                0 -> homeScrollState.animateScrollTo(0)
+                1 -> {
+                    val target = if (goalCardScrollY > 0f) {
+                        (goalCardScrollY - 260f).toInt().coerceAtLeast(0)
+                    } else 280
+                    homeScrollState.animateScrollTo(target)
+                }
+                2 -> {
+                    val target = if (screenTimeScrollY > 0f) {
+                        (screenTimeScrollY - 240f).toInt().coerceAtLeast(0)
+                    } else 650
+                    homeScrollState.animateScrollTo(target)
+                }
+                3 -> {
+                    val target = if (focusButtonScrollY > 0f) {
+                        (focusButtonScrollY - 280f).toInt().coerceAtLeast(0)
+                    } else 950
+                    homeScrollState.animateScrollTo(target)
+                }
+                4 -> homeScrollState.animateScrollTo(0)
+                5 -> homeScrollState.animateScrollTo(0)
+            }
+        }
+    }
+
+    val activeTourTarget = when (tourStepIndex) {
+        0 -> focusRingCenter
+        1 -> goalCardCenter
+        2 -> screenTimeCenter
+        3 -> focusButtonCenter
+        4 -> tokenIslandCenter
+        else -> Offset.Zero
+    }
 
     var showMerchCustomizer by remember { mutableStateOf(false) }
     var showWalletScreen by remember { mutableStateOf(false) }
@@ -201,7 +270,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(homeScrollState)
                 .padding(top = 16.dp, bottom = 180.dp) // Extra bottom padding for BottomNav and FAB
         ) {
             // 1. Header (Logo + Dynamic Token Island + Profile Button)
@@ -240,6 +309,10 @@ fun HomeScreen(
                             )
                         )
                         .border(1.dp, Border.copy(alpha = 0.8f), CircleShape)
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            tokenIslandCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                        }
                         .clickable(
                             interactionSource = tokenIslandInteraction,
                             indication = null,
@@ -496,17 +569,25 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Interactive FocusRing
-                FocusRing(
-                    score = score,
-                    showDetails = showBreakdown,
-                    statusComparisonText = statusComparisonText,
-                    statusGoalBadge = goalTitle,
-                    statusDeltaText = deltaText,
-                    onTap = {
-                        Haptics.playLight(view)
-                        showBreakdown = !showBreakdown
+                Box(
+                    modifier = Modifier.onGloballyPositioned { coords ->
+                        val pos = coords.positionInRoot()
+                        focusRingCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                        focusRingScrollY = coords.positionInParent().y
                     }
-                )
+                ) {
+                    FocusRing(
+                        score = score,
+                        showDetails = showBreakdown,
+                        statusComparisonText = statusComparisonText,
+                        statusGoalBadge = goalTitle,
+                        statusDeltaText = deltaText,
+                        onTap = {
+                            Haptics.playLight(view)
+                            showBreakdown = !showBreakdown
+                        }
+                    )
+                }
 
                 // "TOP Y% PERFORMER"
                 AnimatedVisibility(
@@ -549,7 +630,12 @@ fun HomeScreen(
                 primaryGoal = primaryGoal,
                 trend = dashboardState.trend,
                 todayUsageMs = todayGoalUsageMs,
-                baselineMs = yesterdayGoalUsageMs
+                baselineMs = yesterdayGoalUsageMs,
+                modifier = Modifier.onGloballyPositioned { coords ->
+                    val pos = coords.positionInRoot()
+                    goalCardCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                    goalCardScrollY = coords.positionInParent().y
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -568,6 +654,13 @@ fun HomeScreen(
                         .clip(RoundedCornerShape(16.dp))
                         .background(Card.copy(alpha = 0.8f))
                         .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .onGloballyPositioned { coords ->
+                            if (screenTimeCenter == Offset.Zero) {
+                                val pos = coords.positionInRoot()
+                                screenTimeCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                                screenTimeScrollY = coords.positionInParent().y
+                            }
+                        }
                         .padding(vertical = 20.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
@@ -808,6 +901,11 @@ fun HomeScreen(
                         .clip(RoundedCornerShape(16.dp))
                         .background(Card.copy(alpha = 0.8f))
                         .border(1.dp, Border, RoundedCornerShape(16.dp))
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            screenTimeCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                            screenTimeScrollY = coords.positionInParent().y
+                        }
                         .padding(20.dp)
                 ) {
                     Text(
@@ -1005,6 +1103,11 @@ fun HomeScreen(
                                 colors = listOf(ButtonGradientStart, ButtonGradientEnd)
                             )
                         )
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            focusButtonCenter = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                            focusButtonScrollY = coords.positionInParent().y
+                        }
                         .clickable(
                             interactionSource = ctaInteraction,
                             indication = null,
@@ -1899,6 +2002,28 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Interactive Home Screen Product Tour (Mascot Guided)
+    // ══════════════════════════════════════════════════════════════════
+    if (isTourActive) {
+        HomeMascotGuidedTour(
+            currentStepIndex = tourStepIndex,
+            targetScreenOffset = activeTourTarget,
+            onNext = {
+                if (tourStepIndex < HomeTourSteps.size - 1) {
+                    tourStepIndex++
+                } else {
+                    isTourActive = false
+                    viewModel.completeTutorial()
+                }
+            },
+            onSkip = {
+                isTourActive = false
+                viewModel.completeTutorial()
+            }
+        )
     }
 }
 

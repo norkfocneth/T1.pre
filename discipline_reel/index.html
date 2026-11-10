@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+      :root {
+        --ground: #000000;
+        --neon: #c084fc;
+        --neon-bright: #f3e8ff;
+        --neon-glow: rgba(192, 132, 252, 0.85);
+        --font-display: 'Outfit', sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ground);
+        font-family: var(--font-display);
+        color: #ffffff;
+      }
+
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000000;
+      }
+
+      /* Glow SVG Filters */
+      .neon-glow {
+        filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.95)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.6));
+      }
+
+      /* TOP SECTION: 4-Tier Evolution */
+      .top-stage-wrap {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1000px;
+        z-index: 20;
+      }
+
+      .tier-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        width: 1080px;
+        height: 220px;
+      }
+
+      #tier-1 { top: 60px; }
+      #tier-2 { top: 270px; }
+      #tier-3 { top: 480px; }
+      #tier-4 { top: 690px; }
+
+      .tier-label {
+        position: absolute;
+        left: 100px;
+        top: 60px;
+        font-size: 38px;
+        font-weight: 600;
+        color: var(--neon);
+        letter-spacing: 0.02em;
+        opacity: 0.35;
+      }
+
+      /* CENTER PUNCHLINE SECTION */
+      .center-punchline-box {
+        position: absolute;
+        top: 960px;
+        left: 60px;
+        right: 60px;
+        height: 130px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        z-index: 30;
+        text-align: center;
+      }
+
+      .punchline-quote {
+        font-size: 46px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: var(--neon-bright);
+        filter: drop-shadow(0 0 18px rgba(192, 132, 252, 0.7));
+      }
+
+      .punchline-sub {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        color: #a855f7;
+        text-transform: uppercase;
+      }
+
+      /* BOTTOM CINEMATIC SECTION */
+      .bottom-cinematic-wrap {
+        position: absolute;
+        top: 1090px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        z-index: 10;
+        background: #000000;
+      }
+
+      .cinematic-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 30%;
+        filter: brightness(0.9) contrast(1.1);
+      }
+
+      /* Top gradient blend feather */
+      .top-feather-blend {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 120px;
+        background: linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0.8) 50%, transparent 100%);
+        z-index: 15;
+        pointer-events: none;
+      }
+
+      /* Bottom cinematic vignette */
+      .bottom-vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 60%, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+        z-index: 12;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="12"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- TOP SECTION: Animated 4-Tier Evolution -->
+      <div id="top-stage" class="top-stage-wrap">
+        
+        <!-- TIER 1: Today -->
+        <div id="tier-1" class="clip tier-row" data-start="0" data-duration="12" data-layout-allow-overflow="true">
+          <div id="label-1" class="tier-label">Today</div>
+          <svg width="1080" height="220" viewBox="0 0 1080 220" style="overflow: visible;" class="neon-glow">
+            <!-- Ground Line -->
+            <path d="M 100 170 Q 300 171 500 170 Q 750 169 980 170" stroke="#c084fc" stroke-width="4" fill="none" opacity="0.8" />
+            
+            <!-- Character: Struggling to push sharp square box -->
+            <g id="figure-1" transform="translate(520, 170)">
+              <circle cx="-35" cy="-70" r="13" fill="#c084fc" />
+              <path d="M -35 -57 L -15 -25" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -15 -25 L -55 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -15 -25 L -20 -10 L -5 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -30 -48 L -2 -42 L 15 -35" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+            </g>
+
+            <!-- Tilted Square Box (Sharp corners, heavy friction) -->
+            <g id="box-1" transform="translate(555, 170)">
+              <g transform="translate(35, -35) rotate(22)">
+                <rect x="-35" y="-35" width="70" height="70" fill="none" stroke="#c084fc" stroke-width="6" stroke-linejoin="miter" />
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- TIER 2: In a week -->
+        <div id="tier-2" class="clip tier-row" data-start="0" data-duration="12" data-layout-allow-overflow="true">
+          <div id="label-2" class="tier-label">In a week</div>
+          <svg width="1080" height="220" viewBox="0 0 1080 220" style="overflow: visible;" class="neon-glow">
+            <!-- Ground Line -->
+            <path d="M 100 170 Q 300 171 500 170 Q 750 169 980 170" stroke="#c084fc" stroke-width="4" fill="none" opacity="0.8" />
+            
+            <!-- Character: Pushing with smoother posture -->
+            <g id="figure-2" transform="translate(520, 170)">
+              <circle cx="-32" cy="-70" r="13" fill="#c084fc" />
+              <path d="M -32 -57 L -18 -25" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -18 -25 L -45 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -18 -25 L -15 -10 L -2 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -28 -48 L 0 -40 L 15 -35" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+            </g>
+
+            <!-- Rounded Cube (Corners shaving down) -->
+            <g id="box-2" transform="translate(555, 170)">
+              <g transform="translate(35, -35) rotate(14)">
+                <rect x="-35" y="-35" width="70" height="70" rx="20" ry="20" fill="none" stroke="#c084fc" stroke-width="6" stroke-linejoin="round" />
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- TIER 3: In a month -->
+        <div id="tier-3" class="clip tier-row" data-start="0" data-duration="12" data-layout-allow-overflow="true">
+          <div id="label-3" class="tier-label">In a month</div>
+          <svg width="1080" height="220" viewBox="0 0 1080 220" style="overflow: visible;" class="neon-glow">
+            <!-- Ground Line -->
+            <path d="M 100 170 Q 300 171 500 170 Q 750 169 980 170" stroke="#c084fc" stroke-width="4" fill="none" opacity="0.8" />
+            
+            <!-- Character: Effortlessly pushing the rolling wheel -->
+            <g id="figure-3" transform="translate(520, 170)">
+              <circle cx="-25" cy="-72" r="13" fill="#c084fc" />
+              <path d="M -25 -59 L -18 -25" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -18 -25 L -35 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -18 -25 L -5 0" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M -22 -48 L 5 -38 L 18 -35" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+            </g>
+
+            <!-- Perfect Smooth Wheel (Round, rolling easily) -->
+            <g id="wheel-3" transform="translate(555, 170)">
+              <g transform="translate(35, -35)">
+                <circle cx="0" cy="0" r="35" fill="none" stroke="#c084fc" stroke-width="6" />
+                <circle cx="0" cy="0" r="6" fill="#c084fc" />
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- TIER 4: In a year -->
+        <div id="tier-4" class="clip tier-row" data-start="0" data-duration="12" data-layout-allow-overflow="true">
+          <div id="label-4" class="tier-label">In a year</div>
+          <svg width="1080" height="220" viewBox="0 0 1080 220" style="overflow: visible;" class="neon-glow">
+            <!-- Ground Line -->
+            <path d="M 100 170 Q 300 171 500 170 Q 750 169 980 170" stroke="#c084fc" stroke-width="4" fill="none" opacity="0.8" />
+            
+            <!-- High-Speed Motion Blur Trails Behind Wheel -->
+            <g id="speed-trails" transform="translate(555, 170)">
+              <line x1="0" y1="-48" x2="-140" y2="-48" stroke="#c084fc" stroke-width="6" stroke-linecap="round" opacity="0.85" />
+              <line x1="10" y1="-35" x2="-200" y2="-35" stroke="#c084fc" stroke-width="8" stroke-linecap="round" opacity="0.95" />
+              <line x1="0" y1="-20" x2="-130" y2="-20" stroke="#c084fc" stroke-width="6" stroke-linecap="round" opacity="0.8" />
+            </g>
+
+            <!-- Sphere + Character Riding on Top -->
+            <g id="surf-4" transform="translate(590, 170)">
+              <!-- Glowing Sphere -->
+              <circle cx="0" cy="-35" r="35" fill="#c084fc" fill-opacity="0.25" stroke="#e9d5ff" stroke-width="6" />
+              
+              <!-- Character comfortably riding on top -->
+              <circle cx="0" cy="-96" r="13" fill="#c084fc" />
+              <path d="M 0 -83 L 0 -68" stroke="#c084fc" stroke-width="6" stroke-linecap="round" fill="none" />
+              <path d="M 0 -68 L -14 -56 L -18 -42" stroke="#c084fc" stroke-width="5" stroke-linecap="round" fill="none" />
+              <path d="M 0 -68 L 14 -56 L 18 -42" stroke="#c084fc" stroke-width="5" stroke-linecap="round" fill="none" />
+              <path d="M 0 -78 L -16 -68" stroke="#c084fc" stroke-width="5" stroke-linecap="round" fill="none" />
+              <path d="M 0 -78 L 16 -68" stroke="#c084fc" stroke-width="5" stroke-linecap="round" fill="none" />
+            </g>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- CENTER PUNCHLINE SECTION -->
+      <div id="punchline-card" class="clip center-punchline-box" data-start="0" data-duration="12">
+        <div id="punchline-text" class="punchline-quote">Consistency is the key.</div>
+        <div id="punchline-sub" class="punchline-sub">Discipline creates freedom · T1</div>
+      </div>
+
+      <!-- BOTTOM CINEMATIC DISCIPLINE SECTION -->
+      <div id="bottom-cinematic" class="clip bottom-cinematic-wrap" data-start="0" data-duration="12" data-layout-allow-overflow="true">
+        <div class="top-feather-blend"></div>
+        <div class="bottom-vignette"></div>
+        <img
+          id="cinematic-bg-img"
+          src="assets/images/discipline_athlete.jpg"
+          class="cinematic-img"
+          alt="Disciplined Athlete Training in Dark Foggy Forest"
+        />
+      </div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial States:
+      tl.set("#tier-1", { opacity: 1 }, 0);
+      tl.set("#label-1", { opacity: 1 }, 0);
+      tl.set("#tier-2", { opacity: 0.35 }, 0);
+      tl.set("#tier-3", { opacity: 0.35 }, 0);
+      tl.set("#tier-4", { opacity: 0.35 }, 0);
+
+      // Subtle strain physics on Box 1
+      tl.to("#box-1", {
+        x: 4,
+        duration: 0.2,
+        yoyo: true,
+        repeat: 11,
+        ease: "sine.inOut"
+      }, 0.2);
+
+      // Stage 2 Reveal at 2.5s ("In a week")
+      tl.to("#tier-2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.5);
+      tl.to("#label-2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.5);
+
+      // Stage 3 Reveal at 5.0s ("In a month")
+      tl.to("#tier-3", { opacity: 1, duration: 0.4, ease: "power2.out" }, 5.0);
+      tl.to("#label-3", { opacity: 1, duration: 0.4, ease: "power2.out" }, 5.0);
+
+      // Stage 4 Reveal at 7.5s ("In a year")
+      tl.to("#tier-4", { opacity: 1, duration: 0.4, ease: "power2.out" }, 7.5);
+      tl.to("#label-4", { opacity: 1, duration: 0.4, ease: "power2.out" }, 7.5);
+      
+      // Speed trails pulsing
+      tl.fromTo("#speed-trails", 
+        { opacity: 0.7 }, 
+        { opacity: 1, duration: 0.2, yoyo: true, repeat: 21, ease: "sine.inOut" }, 
+        7.6
+      );
+
+      // Center Punchline Glow Enhancement at 8.5s
+      tl.fromTo("#punchline-text", 
+        { scale: 1 }, 
+        { scale: 1.05, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" }, 
+        8.5
+      );
+
+      // Bottom Cinematic Camera Slow Dolly Zoom (0s to 12s)
+      tl.fromTo("#cinematic-bg-img", 
+        { scale: 1.0 }, 
+        { scale: 1.08, duration: 12.0, ease: "none" }, 
+        0
+      );
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

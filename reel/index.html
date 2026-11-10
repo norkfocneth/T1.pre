@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #06020c;
+        --ink: #ffffff;
+        --font-display: 'Outfit', sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+      .scene-host {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="22"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Scene 1: Fight Intro (0.0s - 3.5s) -->
+      <div
+        id="scene1_intro"
+        class="clip scene-host"
+        data-composition-id="scene1_intro"
+        data-composition-src="compositions/scene1_intro.html"
+        data-start="0"
+        data-duration="3.5"
+        data-track-index="0"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 2: Crisis Alert (3.5s - 7.5s) -->
+      <div
+        id="scene2_crisis"
+        class="clip scene-host"
+        data-composition-id="scene2_crisis"
+        data-composition-src="compositions/scene2_crisis.html"
+        data-start="3.5"
+        data-duration="4.0"
+        data-track-index="0"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 3: T1 Hex Shield (7.5s - 12.0s) -->
+      <div
+        id="scene3_shield"
+        class="clip scene-host"
+        data-composition-id="scene3_shield"
+        data-composition-src="compositions/scene3_shield.html"
+        data-start="7.5"
+        data-duration="4.5"
+        data-track-index="0"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 4: Combo Strike & Boss KO (12.0s - 17.5s) -->
+      <div
+        id="scene4_combo"
+        class="clip scene-host"
+        data-composition-id="scene4_combo"
+        data-composition-src="compositions/scene4_combo.html"
+        data-start="12.0"
+        data-duration="5.5"
+        data-track-index="0"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 5: Victory Outro & CTA (17.5s - 22.0s) -->
+      <div
+        id="scene5_outro"
+        class="clip scene-host"
+        data-composition-id="scene5_outro"
+        data-composition-src="compositions/scene5_outro.html"
+        data-start="17.5"
+        data-duration="4.5"
+        data-track-index="0"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

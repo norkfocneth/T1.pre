@@ -1,0 +1,309 @@
+<template>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      background: radial-gradient(circle at 50% 45%, #241445 0%, #0e071c 70%, #05020c 100%);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      color: #ffffff;
+    }
+
+    /* Grid lines */
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(168, 85, 247, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168, 85, 247, 0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Top HUD Restored */
+    .top-shield-hud {
+      position: absolute;
+      top: 170px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 30;
+    }
+
+    .shield-badge {
+      align-self: center;
+      background: rgba(168, 85, 247, 0.25);
+      border: 2px solid #a855f7;
+      border-radius: 999px;
+      padding: 10px 36px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #e9d5ff;
+      text-transform: uppercase;
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+    }
+
+    .hp-full-track {
+      height: 36px;
+      background: #1e1433;
+      border: 2px solid #3b2866;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hp-recover-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 18%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      border-radius: 6px;
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.8);
+    }
+
+    /* Central Mascot Position */
+    .mascot-shield-wrap {
+      position: absolute;
+      top: 420px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 720px;
+      height: 720px;
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mascot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.8));
+    }
+
+    /* Giant Hexagonal Shield Hologram */
+    .hex-shield-ring {
+      position: absolute;
+      top: 380px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      border: 4px solid #a855f7;
+      border-radius: 50%;
+      box-shadow: 
+        0 0 60px rgba(168, 85, 247, 0.8),
+        inset 0 0 60px rgba(56, 189, 248, 0.5);
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(56, 189, 248, 0.1) 60%, transparent 80%);
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shield-inner-hex {
+      width: 680px;
+      height: 680px;
+      border: 2px dashed #38bdf8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Deflected Notification Sparks */
+    .spark-deflect {
+      position: absolute;
+      font-size: 32px;
+      font-weight: 800;
+      color: #f43f5e;
+      background: rgba(20, 10, 30, 0.9);
+      border: 2px solid #f43f5e;
+      border-radius: 16px;
+      padding: 14px 24px;
+      z-index: 25;
+      box-shadow: 0 0 25px rgba(244, 63, 94, 0.6);
+    }
+
+    #deflect-1 {
+      top: 500px;
+      right: 40px;
+    }
+
+    #deflect-2 {
+      top: 860px;
+      left: 40px;
+    }
+
+    /* Activation Trigger Button & Callout */
+    .action-trigger-card {
+      position: absolute;
+      bottom: 220px;
+      left: 70px;
+      right: 70px;
+      background: linear-gradient(180deg, rgba(35, 20, 60, 0.95) 0%, rgba(18, 10, 32, 0.95) 100%);
+      border: 2px solid #a855f7;
+      border-radius: 32px;
+      padding: 36px 40px;
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 20px 50px rgba(168, 85, 247, 0.35);
+    }
+
+    .t1-power-btn {
+      width: 100%;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      color: #ffffff;
+      padding: 22px 32px;
+      border-radius: 20px;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .t1-power-sub {
+      font-size: 28px;
+      font-weight: 600;
+      color: #d8b4fe;
+      letter-spacing: 0.02em;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene3_shield" data-width="1080" data-height="1920">
+    <div class="grid-lines"></div>
+
+    <!-- Top HUD Restored -->
+    <div id="top-shield-hud" class="clip top-shield-hud" data-start="0.1" data-duration="4.4">
+      <div class="shield-badge">🛡️ T1 DEFENSE ACTIVE</div>
+      <div class="hp-full-track">
+        <div id="hp-recovery-bar" class="hp-recover-fill"></div>
+      </div>
+    </div>
+
+    <!-- Mascot in Focused State -->
+    <div id="shield-mascot" class="clip mascot-shield-wrap" data-start="0.1" data-duration="4.4">
+      <img src="assets/images/mascot_live_analytics.png" class="mascot-img" alt="T1 Analytical Focus" />
+    </div>
+
+    <!-- Holographic Energy Shield -->
+    <div id="hex-shield" class="clip hex-shield-ring" data-start="1.0" data-duration="3.5">
+      <div class="shield-inner-hex">
+        <div style="font-size: 64px;">⚡</div>
+      </div>
+    </div>
+
+    <!-- Deflected Alerts Bouncing Away -->
+    <div id="deflect-1" class="clip spark-deflect" data-start="1.5" data-duration="3.0">
+      🚫 INSTAGRAM BLOCKED
+    </div>
+
+    <div id="deflect-2" class="clip spark-deflect" data-start="1.8" data-duration="2.7">
+      🚫 REELS DISABLED
+    </div>
+
+    <!-- Action Button Card -->
+    <div id="action-trigger" class="clip action-trigger-card" data-start="0.3" data-duration="4.2">
+      <div id="t1-press-btn" class="t1-power-btn">
+        <span>🔒</span>
+        <span>ACTIVATE T1 FOCUS LOCK</span>
+      </div>
+      <div class="t1-power-sub">
+        Apps Locked · Distractions Blocked · Deep Work Mode ON
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    // HUD entrance
+    tl.fromTo("#top-shield-hud", 
+      { y: -40, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.3, ease: "power3.out" }, 
+      0.1
+    );
+
+    // Mascot enter
+    tl.fromTo("#shield-mascot", 
+      { scale: 0.9, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.4, ease: "power3.out" }, 
+      0.1
+    );
+
+    // Button Card entrance
+    tl.fromTo("#action-trigger", 
+      { y: 80, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }, 
+      0.3
+    );
+
+    // Button Click Compression at 0.9s
+    tl.to("#t1-press-btn", 
+      { scale: 0.94, duration: 0.12, ease: "power2.inOut" }, 
+      0.9
+    );
+    tl.to("#t1-press-btn", 
+      { scale: 1, duration: 0.16, ease: "back.out(2)" }, 
+      1.02
+    );
+
+    // Hex Shield Explodes Outwards
+    tl.fromTo("#hex-shield", 
+      { scale: 0, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.8)" }, 
+      1.0
+    );
+
+    // HP Bar shoots from 18% to 100%
+    tl.fromTo("#hp-recovery-bar", 
+      { width: "18%" }, 
+      { width: "100%", duration: 0.6, ease: "power3.out" }, 
+      1.1
+    );
+
+    // Deflected Alerts fly away
+    tl.fromTo("#deflect-1", 
+      { x: 0, opacity: 0, scale: 0.5 }, 
+      { x: 40, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 
+      1.5
+    );
+    tl.to("#deflect-1", 
+      { x: 120, opacity: 0, duration: 0.4, ease: "power2.in" }, 
+      2.8
+    );
+
+    tl.fromTo("#deflect-2", 
+      { x: 0, opacity: 0, scale: 0.5 }, 
+      { x: -40, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 
+      1.8
+    );
+    tl.to("#deflect-2", 
+      { x: -120, opacity: 0, duration: 0.4, ease: "power2.in" }, 
+      3.1
+    );
+
+    window.__timelines["scene3_shield"] = tl;
+  </script>
+</template>

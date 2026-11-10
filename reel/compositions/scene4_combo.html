@@ -1,0 +1,310 @@
+<template>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      background: radial-gradient(circle at 50% 40%, #2b1238 0%, #11071e 65%, #06020c 100%);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      color: #ffffff;
+    }
+
+    /* Grid lines */
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 158, 11, 0.08) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Top Boss Health Meter */
+    .boss-meter-wrap {
+      position: absolute;
+      top: 170px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 30;
+    }
+
+    .boss-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .boss-hp-track {
+      height: 36px;
+      background: #25132d;
+      border: 3px solid #6b1f3c;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .boss-hp-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #f43f5e, #fb7185);
+      border-radius: 6px;
+    }
+
+    /* Combo Meter Badge */
+    .combo-badge {
+      position: absolute;
+      top: 290px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      padding: 12px 36px;
+      border-radius: 999px;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.6);
+      z-index: 25;
+    }
+
+    /* Mascot Hero - Productive Flow */
+    .mascot-flow-wrap {
+      position: absolute;
+      top: 480px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 740px;
+      height: 740px;
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mascot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.8));
+    }
+
+    /* Dynamic Combo Strike Cards */
+    .strike-list {
+      position: absolute;
+      bottom: 240px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      z-index: 30;
+    }
+
+    .strike-card {
+      background: rgba(25, 14, 40, 0.9);
+      border: 2px solid #f59e0b;
+      border-radius: 20px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.3);
+      backdrop-filter: blur(16px);
+    }
+
+    .strike-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .strike-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      color: #facc15;
+    }
+
+    /* Giant K.O. Banner */
+    .ko-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+      background: rgba(10, 4, 18, 0.7);
+    }
+
+    .ko-text {
+      font-size: 220px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 0%, #facc15 50%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 20px 40px rgba(234, 88, 12, 0.8));
+    }
+
+    .ko-sub {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: #fef08a;
+      text-transform: uppercase;
+      margin-top: -20px;
+    }
+
+    .white-flash {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      z-index: 60;
+      pointer-events: none;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene4_combo" data-width="1080" data-height="1920">
+    <div class="grid-lines"></div>
+
+    <!-- Top Boss Health Meter -->
+    <div id="boss-hud" class="clip boss-meter-wrap" data-start="0.1" data-duration="5.4">
+      <div class="boss-label-row">
+        <span style="color: #f43f5e;">DOOMSCROLL BOSS</span>
+        <span id="boss-hp-num" style="color: #fecdd3;">HP: 100%</span>
+      </div>
+      <div class="boss-hp-track">
+        <div id="boss-hp-dynamic" class="boss-hp-bar"></div>
+      </div>
+    </div>
+
+    <!-- Combo Streak Badge -->
+    <div id="combo-badge" class="clip combo-badge" data-start="0.4" data-duration="5.1">
+      ⚡ ×10 FOCUS COMBO!
+    </div>
+
+    <!-- Mascot in Flow State -->
+    <div id="flow-mascot" class="clip mascot-flow-wrap" data-start="0.1" data-duration="5.4">
+      <img src="assets/images/mascot_live_improve.png" class="mascot-img" alt="Focus Strike Mascot" />
+    </div>
+
+    <!-- Strike Cards Sequence -->
+    <div id="strikes-box" class="clip strike-list" data-start="0.5" data-duration="3.7">
+      <div id="strike-1" class="strike-card">
+        <div class="strike-title">
+          <span>🎯</span>
+          <span>Pomodoro Sprint</span>
+        </div>
+        <div class="strike-xp">+25 MINS</div>
+      </div>
+
+      <div id="strike-2" class="strike-card">
+        <div class="strike-title">
+          <span>🧠</span>
+          <span>Deep Work Flow</span>
+        </div>
+        <div class="strike-xp">+60 MINS</div>
+      </div>
+
+      <div id="strike-3" class="strike-card">
+        <div class="strike-title">
+          <span>👑</span>
+          <span>Strict App Lock</span>
+        </div>
+        <div class="strike-xp">BOSS DOWN!</div>
+      </div>
+    </div>
+
+    <!-- K.O. Climax -->
+    <div id="ko-box" class="clip ko-container" data-start="4.0" data-duration="1.5" data-layout-allow-occlusion="true">
+      <div class="ko-text">K.O.!</div>
+      <div class="ko-sub">DISTRACTION DEFEATED</div>
+    </div>
+
+    <!-- Screen Flash -->
+    <div id="flash-overlay" class="white-flash" data-layout-allow-occlusion="true"></div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    // Boss HUD Entrance
+    tl.fromTo("#boss-hud", 
+      { y: -30, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.3, ease: "power3.out" }, 
+      0.1
+    );
+
+    // Mascot Entrance
+    tl.fromTo("#flow-mascot", 
+      { scale: 0.9, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.4, ease: "power3.out" }, 
+      0.1
+    );
+
+    // Combo Badge
+    tl.fromTo("#combo-badge", 
+      { scale: 0, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2)" }, 
+      0.4
+    );
+
+    // Strike 1 Impact at 0.7s
+    tl.fromTo("#strike-1", 
+      { x: -60, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 
+      0.7
+    );
+    tl.to("#boss-hp-dynamic", { width: "65%", duration: 0.3, ease: "power2.out" }, 0.8);
+
+    // Strike 2 Impact at 1.8s
+    tl.fromTo("#strike-2", 
+      { x: -60, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 
+      1.8
+    );
+    tl.to("#boss-hp-dynamic", { width: "25%", duration: 0.3, ease: "power2.out" }, 1.9);
+
+    // Strike 3 Impact at 2.9s
+    tl.fromTo("#strike-3", 
+      { x: -60, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 
+      2.9
+    );
+    tl.to("#boss-hp-dynamic", { width: "0%", duration: 0.4, ease: "power2.out" }, 3.0);
+
+    // Flash and K.O. Explosion at 4.0s
+    tl.set("#flash-overlay", { opacity: 0.8 }, 4.0);
+    tl.to("#flash-overlay", { opacity: 0, duration: 0.35, ease: "power2.out" }, 4.01);
+
+    tl.fromTo("#ko-box", 
+      { scale: 2.2, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.8)" }, 
+      4.0
+    );
+
+    window.__timelines["scene4_combo"] = tl;
+  </script>
+</template>

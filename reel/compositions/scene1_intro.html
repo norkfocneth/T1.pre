@@ -1,0 +1,409 @@
+<template>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      background: radial-gradient(circle at 50% 30%, #1c1335 0%, #0d091a 70%, #05040a 100%);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      color: #ffffff;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(168, 85, 247, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168, 85, 247, 0.08) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Top Arcade Fighting HUD */
+    .hud-header {
+      position: absolute;
+      top: 180px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 20;
+    }
+
+    .stage-badge {
+      align-self: center;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid #a855f7;
+      border-radius: 999px;
+      padding: 8px 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #d8b4fe;
+      text-transform: uppercase;
+    }
+
+    .hp-bars-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .fighter-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .fighter-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fighter-name {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    .fighter-p1 {
+      color: #38bdf8;
+    }
+
+    .fighter-boss {
+      color: #f43f5e;
+      text-align: right;
+    }
+
+    .hp-track {
+      height: 36px;
+      background: #1e1633;
+      border: 2px solid #3b2a63;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hp-fill-p1 {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #38bdf8, #06b6d4);
+      border-radius: 6px;
+    }
+
+    .hp-fill-boss {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #f43f5e, #fb7185);
+      border-radius: 6px;
+    }
+
+    .vs-emblem {
+      font-size: 32px;
+      font-weight: 900;
+      font-style: italic;
+      color: #f59e0b;
+      padding: 0 8px;
+    }
+
+    /* Giant FIGHT Announcer */
+    .fight-banner {
+      position: absolute;
+      top: 480px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .fight-text {
+      font-size: 130px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 0%, #facc15 50%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 12px 24px rgba(234, 88, 12, 0.6));
+    }
+
+    .round-sub {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: #e2e8f0;
+      margin-bottom: -10px;
+      text-transform: uppercase;
+    }
+
+    /* Mascot Hero on Left */
+    .mascot-wrap {
+      position: absolute;
+      bottom: 220px;
+      left: 60px;
+      width: 580px;
+      height: 720px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mascot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.7));
+    }
+
+    /* Notification Attack Missiles */
+    .notif-swarm {
+      position: absolute;
+      top: 720px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      z-index: 15;
+    }
+
+    .notif-card {
+      width: 460px;
+      background: rgba(30, 20, 50, 0.85);
+      border: 2px solid #f43f5e;
+      border-radius: 20px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 12px 30px rgba(244, 63, 94, 0.35);
+      backdrop-filter: blur(16px);
+    }
+
+    .notif-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      background: #f43f5e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #fff;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .notif-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .notif-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .notif-desc {
+      font-size: 28px;
+      color: #cbd5e1;
+    }
+
+    /* Hit Sparks */
+    .hit-flash {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .danger-alert {
+      position: absolute;
+      bottom: 120px;
+      left: 100px;
+      right: 100px;
+      background: rgba(244, 63, 94, 0.25);
+      border: 2px solid #f43f5e;
+      border-radius: 16px;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fecdd3;
+      letter-spacing: 0.05em;
+      z-index: 25;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene1_intro" data-width="1080" data-height="1920">
+    <div class="grid-bg"></div>
+
+    <!-- Top HUD -->
+    <div id="hud-header" class="clip hud-header" data-start="0.1" data-duration="3.4">
+      <div class="stage-badge">Stage 01: The Daily Distraction</div>
+      <div class="hp-bars-row">
+        <!-- Player 1 -->
+        <div class="fighter-card">
+          <div class="fighter-meta">
+            <span class="fighter-name fighter-p1">P1 · YOU</span>
+            <span id="p1-hp-text" style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700;">100%</span>
+          </div>
+          <div class="hp-track">
+            <div id="p1-hp-fill" class="hp-fill-p1"></div>
+          </div>
+        </div>
+
+        <div class="vs-emblem">VS</div>
+
+        <!-- Boss -->
+        <div class="fighter-card">
+          <div class="fighter-meta">
+            <span id="boss-hp-text" style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700;">100%</span>
+            <span class="fighter-name fighter-boss">DOOMSCROLL</span>
+          </div>
+          <div class="hp-track">
+            <div id="boss-hp-fill" class="hp-fill-boss"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Giant FIGHT Banner -->
+    <div id="fight-banner" class="clip fight-banner" data-start="0.3" data-duration="1.8">
+      <div class="round-sub">ROUND 1</div>
+      <div class="fight-text">FIGHT!</div>
+    </div>
+
+    <!-- Mascot Fighter -->
+    <div id="mascot-p1" class="clip mascot-wrap" data-start="0.2" data-duration="3.3">
+      <img src="assets/images/mascot_live_struggle.png" class="mascot-img" alt="T1 Mascot Distracted" />
+    </div>
+
+    <!-- Incoming Distraction Attack Missiles -->
+    <div id="notif-swarm" class="clip notif-swarm" data-start="1.4" data-duration="2.1">
+      <div id="notif-1" class="notif-card">
+        <div class="notif-icon">🔥</div>
+        <div class="notif-content">
+          <div class="notif-title">Instagram</div>
+          <div class="notif-desc">Just 1 quick reel...</div>
+        </div>
+      </div>
+
+      <div id="notif-2" class="notif-card">
+        <div class="notif-icon">⚠️</div>
+        <div class="notif-content">
+          <div class="notif-title">Infinite Feed</div>
+          <div class="notif-desc">49 tabs waiting</div>
+        </div>
+      </div>
+
+      <div id="notif-3" class="notif-card">
+        <div class="notif-icon">💬</div>
+        <div class="notif-content">
+          <div class="notif-title">Group Chat</div>
+          <div class="notif-desc">99+ new messages</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Critical Alert Box -->
+    <div id="danger-alert" class="clip danger-alert" data-start="2.2" data-duration="1.3">
+      ⚠️ CRITICAL HIT! FOCUS HP DEPLETED TO 18%
+    </div>
+
+    <!-- Screen Flash -->
+    <div id="hit-flash" class="hit-flash" data-layout-allow-occlusion="true"></div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    // HUD Entrance
+    tl.fromTo("#hud-header", 
+      { y: -60, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 
+      0.1
+    );
+
+    // FIGHT Banner Entrance & Blast
+    tl.fromTo("#fight-banner", 
+      { scale: 2.2, opacity: 0, filter: "blur(12px)" }, 
+      { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.35, ease: "back.out(1.8)" }, 
+      0.3
+    );
+    tl.to("#fight-banner", 
+      { scale: 1.1, opacity: 0, filter: "blur(8px)", duration: 0.3, ease: "power2.in" }, 
+      1.6
+    );
+
+    // Mascot Stagger Entrance
+    tl.fromTo("#mascot-p1", 
+      { x: -120, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 
+      0.2
+    );
+
+    // Distraction Notification Swarm Flying In
+    tl.fromTo("#notif-1", 
+      { x: 200, opacity: 0, scale: 0.8 }, 
+      { x: 0, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, 
+      1.4
+    );
+    tl.fromTo("#notif-2", 
+      { x: 240, opacity: 0, scale: 0.8 }, 
+      { x: 0, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, 
+      1.6
+    );
+    tl.fromTo("#notif-3", 
+      { x: 280, opacity: 0, scale: 0.8 }, 
+      { x: 0, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, 
+      1.8
+    );
+
+    // Hit Impact & Flash at 2.1s
+    tl.set("#hit-flash", { opacity: 0.7 }, 2.1);
+    tl.to("#hit-flash", { opacity: 0, duration: 0.25, ease: "power2.out" }, 2.11);
+
+    // Mascot takes damage: shake
+    tl.to("#mascot-p1", { x: -20, duration: 0.06, yoyo: true, repeat: 5 }, 2.1);
+
+    // P1 HP Bar drops from 100% to 18%
+    tl.fromTo("#p1-hp-fill", 
+      { width: "100%", backgroundColor: "#38bdf8" }, 
+      { width: "18%", backgroundColor: "#f43f5e", duration: 0.6, ease: "power3.out" }, 
+      2.15
+    );
+
+    // Danger Alert Appearance
+    tl.fromTo("#danger-alert", 
+      { scale: 0.8, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }, 
+      2.2
+    );
+
+    window.__timelines["scene1_intro"] = tl;
+  </script>
+</template>

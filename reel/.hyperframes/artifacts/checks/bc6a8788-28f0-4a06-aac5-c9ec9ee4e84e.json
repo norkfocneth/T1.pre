@@ -1,0 +1,2106 @@
+{
+  "ok": false,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 6
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": false,
+    "errorCount": 14,
+    "warningCount": 0,
+    "infoCount": 8,
+    "findings": [
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "div.stage-badge",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 279.59,
+          "top": 187,
+          "right": 800.41,
+          "bottom": 218,
+          "width": 520.81,
+          "height": 31
+        },
+        "containerSelector": "#hit-flash",
+        "text": "Stage 01: The Daily Distraction",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 279.59,
+          "y": 187,
+          "width": 520.81,
+          "height": 31
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "span.fighter-name.fighter-p1",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 60,
+          "top": 241,
+          "right": 175.78,
+          "bottom": 276,
+          "width": 115.78,
+          "height": 35
+        },
+        "containerSelector": "#hit-flash",
+        "text": "P1 · YOU",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 60,
+          "y": 241,
+          "width": 115.78,
+          "height": 35
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "#p1-hp-text",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 438.3,
+          "top": 244,
+          "right": 491.11,
+          "bottom": 273,
+          "width": 52.81,
+          "height": 29
+        },
+        "containerSelector": "#hit-flash",
+        "text": "100%",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 438.3,
+          "y": 244,
+          "width": 52.81,
+          "height": 29
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "div.vs-emblem",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 519.11,
+          "top": 258.5,
+          "right": 560.88,
+          "bottom": 298.5,
+          "width": 41.77,
+          "height": 40
+        },
+        "containerSelector": "#hit-flash",
+        "text": "VS",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 519.11,
+          "y": 258.5,
+          "width": 41.77,
+          "height": 40
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "#boss-hp-text",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 588.88,
+          "top": 244,
+          "right": 641.69,
+          "bottom": 273,
+          "width": 52.81,
+          "height": 29
+        },
+        "containerSelector": "#hit-flash",
+        "text": "100%",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 588.88,
+          "y": 244,
+          "width": 52.81,
+          "height": 29
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "span.fighter-name.fighter-boss",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 806.17,
+          "top": 241,
+          "right": 1020,
+          "bottom": 276,
+          "width": 213.83,
+          "height": 35
+        },
+        "containerSelector": "#hit-flash",
+        "text": "DOOMSCROLL",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.1,
+          "end": 3.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 806.17,
+          "y": 241,
+          "width": 213.83,
+          "height": 35
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "div.round-sub",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 426.94,
+          "top": 480,
+          "right": 653.05,
+          "bottom": 530,
+          "width": 226.11,
+          "height": 50
+        },
+        "containerSelector": "#hit-flash",
+        "text": "ROUND 1",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.3,
+          "end": 2.1
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 426.94,
+          "y": 480,
+          "width": 226.11,
+          "height": 50
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 1.222,
+        "selector": "div.fight-text",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 308.27,
+          "top": 520,
+          "right": 771.72,
+          "bottom": 684,
+          "width": 463.45,
+          "height": 164
+        },
+        "containerSelector": "#hit-flash",
+        "text": "FIGHT!",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0.3,
+          "end": 2.1
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 308.27,
+          "y": 520,
+          "width": 463.45,
+          "height": 164
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "div.boss-label-row > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 60,
+          "top": 170,
+          "right": 276,
+          "bottom": 201,
+          "width": 216,
+          "height": 31
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "DOOMSCROLL BOSS",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.1,
+          "end": 17.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 60,
+          "y": 170,
+          "width": 216,
+          "height": 31
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "#boss-hp-num",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 904.8,
+          "top": 170,
+          "right": 1020,
+          "bottom": 201,
+          "width": 115.2,
+          "height": 31
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "HP: 100%",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.1,
+          "end": 17.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 904.8,
+          "y": 170,
+          "width": 115.2,
+          "height": 31
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "#combo-badge",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 332.6,
+          "top": 305,
+          "right": 747.4,
+          "bottom": 345,
+          "width": 414.8,
+          "height": 40
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "⚡ ×10 FOCUS COMBO!",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.4,
+          "end": 17.5
+        },
+        "dataAttributes": {
+          "data-start": "0.4",
+          "data-duration": "5.1"
+        },
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 332.6,
+          "y": 305,
+          "width": 414.8,
+          "height": 40
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "#strike-1 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 100,
+          "top": 1416,
+          "right": 141.2,
+          "bottom": 1454,
+          "width": 41.2,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "🎯",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1416,
+          "width": 41.2,
+          "height": 38
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "#strike-1 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 155.2,
+          "top": 1415,
+          "right": 393.28,
+          "bottom": 1453,
+          "width": 238.08,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "Pomodoro Sprint",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.2,
+          "y": 1415,
+          "width": 238.08,
+          "height": 38
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 13.444,
+        "selector": "#strike-1 > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 845.59,
+          "top": 1415.5,
+          "right": 980,
+          "bottom": 1452.5,
+          "width": 134.41,
+          "height": 37
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "+25 MINS",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 845.59,
+          "y": 1415.5,
+          "width": 134.41,
+          "height": 37
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "canvas_covered",
+        "severity": "info",
+        "time": 1.222,
+        "selector": "#scene1_intro > div:nth-of-type(1)",
+        "message": "An opaque element covers the canvas above every other visible clip, so the frame shows only it.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "fixHint": "Move the full-frame element below the content (earlier in the DOM or a lower z-index / track), or mark a deliberate full-frame card with data-layout-allow-occlusion.",
+        "dataAttributes": {
+          "data-hf-inner-root": "true",
+          "data-hf-authored-id": "root",
+          "data-width": "1080",
+          "data-height": "1920"
+        },
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 1.222,
+        "lastSeen": 1.222,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "canvas_covered",
+        "severity": "info",
+        "time": 13.444,
+        "selector": "#scene4_combo > div:nth-of-type(1)",
+        "message": "An opaque element covers the canvas above every other visible clip, so the frame shows only it.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "fixHint": "Move the full-frame element below the content (earlier in the DOM or a lower z-index / track), or mark a deliberate full-frame card with data-layout-allow-occlusion.",
+        "dataAttributes": {
+          "data-hf-inner-root": "true",
+          "data-hf-authored-id": "root",
+          "data-width": "1080",
+          "data-height": "1920"
+        },
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 13.444,
+        "lastSeen": 15.889,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          13.444,
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-2 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 100,
+          "top": 1518,
+          "right": 141.2,
+          "bottom": 1556,
+          "width": 41.2,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "🧠",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1518,
+          "width": 41.2,
+          "height": 38
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-2 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 155.2,
+          "top": 1517,
+          "right": 383.97,
+          "bottom": 1555,
+          "width": 228.77,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "Deep Work Flow",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.2,
+          "y": 1517,
+          "width": 228.77,
+          "height": 38
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-2 > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 845.59,
+          "top": 1517.5,
+          "right": 980,
+          "bottom": 1554.5,
+          "width": 134.41,
+          "height": 37
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "+60 MINS",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 845.59,
+          "y": 1517.5,
+          "width": 134.41,
+          "height": 37
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-3 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 100,
+          "top": 1620,
+          "right": 141.2,
+          "bottom": 1658,
+          "width": 41.2,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "👑",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1620,
+          "width": 41.2,
+          "height": 38
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-3 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 155.2,
+          "top": 1619,
+          "right": 368.75,
+          "bottom": 1657,
+          "width": 213.55,
+          "height": 38
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "Strict App Lock",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.2,
+          "y": 1619,
+          "width": 213.55,
+          "height": 38
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.889,
+        "selector": "#strike-3 > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 812,
+          "top": 1619.5,
+          "right": 980,
+          "bottom": 1656.5,
+          "width": 168,
+          "height": 37
+        },
+        "containerSelector": "#flash-overlay",
+        "text": "BOSS DOWN!",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 12.5,
+          "end": 16.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 812,
+          "y": 1619.5,
+          "width": 168,
+          "height": 37
+        },
+        "firstSeen": 15.889,
+        "lastSeen": 15.889,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.889
+        ]
+      }
+    ],
+    "duration": 22,
+    "samples": [
+      1.222,
+      3.667,
+      6.111,
+      8.556,
+      11,
+      13.444,
+      15.889,
+      18.333,
+      20.778
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 22,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 23,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.05:1; WCAG AA requires 3:1.",
+        "text": "Stage 01: The Daily Distraction",
+        "fg": "rgb(216,180,254)",
+        "bg": "rgb(194,188,204)",
+        "ratio": 1.05,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(115,96,135)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(2) > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 254.59375,
+          "y": 180,
+          "width": 570.8125,
+          "height": 45
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.08:1; WCAG AA requires 3:1.",
+        "text": "P1 · YOU",
+        "fg": "rgb(56,189,248)",
+        "bg": "rgb(185,183,191)",
+        "ratio": 1.08,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(31,106,139)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 60,
+          "y": 241,
+          "width": 115.78125,
+          "height": 35
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.96:1; WCAG AA requires 3:1.",
+        "text": "100%",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(186,184,192)",
+        "ratio": 1.96,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(100,100,100)",
+        "large": true,
+        "selector": "#p1-hp-text",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 438.296875,
+          "y": 244,
+          "width": 52.8125,
+          "height": 29
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.09:1; WCAG AA requires 3:1.",
+        "text": "VS",
+        "fg": "rgb(245,158,11)",
+        "bg": "rgb(186,184,192)",
+        "ratio": 1.09,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(139,90,6)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 511.109375,
+          "y": 258.5,
+          "width": 57.765625,
+          "height": 40
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.96:1; WCAG AA requires 3:1.",
+        "text": "100%",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(186,184,192)",
+        "ratio": 1.96,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(100,100,100)",
+        "large": true,
+        "selector": "#boss-hp-text",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 588.875,
+          "y": 244,
+          "width": 52.8125,
+          "height": 29
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.85:1; WCAG AA requires 3:1.",
+        "text": "DOOMSCROLL",
+        "fg": "rgb(244,63,94)",
+        "bg": "rgb(185,183,191)",
+        "ratio": 1.85,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(183,47,70)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 806.171875,
+          "y": 241,
+          "width": 213.828125,
+          "height": 35
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.59:1; WCAG AA requires 3:1.",
+        "text": "ROUND 1",
+        "fg": "rgb(226,232,240)",
+        "bg": "rgb(186,184,193)",
+        "ratio": 1.59,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(97,100,104)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(3) > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 0,
+          "y": 480,
+          "width": 1080,
+          "height": 50
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.96:1; WCAG AA requires 3:1.",
+        "text": "FIGHT!",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(186,184,192)",
+        "ratio": 1.96,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(100,100,100)",
+        "large": true,
+        "selector": "div > div:nth-of-type(1) > div > div:nth-of-type(3) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 0,
+          "y": 520,
+          "width": 1080,
+          "height": 164
+        },
+        "time": 1.222,
+        "times": [
+          1.222
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.39:1; WCAG AA requires 3:1.",
+        "text": "⚡",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(176,161,199)",
+        "ratio": 2.39,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(87,87,87)",
+        "large": true,
+        "selector": "div > div:nth-of-type(3) > div > div:nth-of-type(4) > div > div",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene3_shield.html",
+        "bbox": {
+          "x": 496.0625,
+          "y": 737,
+          "width": 87.875,
+          "height": 86
+        },
+        "time": 11,
+        "times": [
+          11
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.35:1; WCAG AA requires 3:1.",
+        "text": "DOOMSCROLL BOSS",
+        "fg": "rgb(244,63,94)",
+        "bg": "rgb(208,206,211)",
+        "ratio": 2.35,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(212,55,82)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 60,
+          "y": 170,
+          "width": 216,
+          "height": 31
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.11:1; WCAG AA requires 3:1.",
+        "text": "HP: 100%",
+        "fg": "rgb(254,205,211)",
+        "bg": "rgb(208,206,211)",
+        "ratio": 1.11,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(135,109,113)",
+        "large": true,
+        "selector": "#boss-hp-num",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 904.796875,
+          "y": 170,
+          "width": 115.203125,
+          "height": 31
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.25:1; WCAG AA requires 3:1.",
+        "text": "⚡ ×10 FOCUS COMBO!",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(252,225,212)",
+        "ratio": 1.25,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(132,132,132)",
+        "large": true,
+        "selector": "#combo-badge",
+        "dataAttributes": {
+          "data-start": "0.4",
+          "data-duration": "5.1"
+        },
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 296.60198974609375,
+          "y": 290,
+          "width": 486.796875,
+          "height": 67
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "🎯",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1414,
+          "width": 41.203125,
+          "height": 40
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "Pomodoro Sprint",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.203125,
+          "y": 1415,
+          "width": 238.078125,
+          "height": 38
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.01:1; WCAG AA requires 3:1.",
+        "text": "+25 MINS",
+        "fg": "rgb(250,204,21)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.01,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(140,114,12)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 845.59375,
+          "y": 1415.5,
+          "width": 134.40625,
+          "height": 37
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "🧠",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1516,
+          "width": 41.203125,
+          "height": 40
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "Deep Work Flow",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.203125,
+          "y": 1517,
+          "width": 228.765625,
+          "height": 38
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.01:1; WCAG AA requires 3:1.",
+        "text": "+60 MINS",
+        "fg": "rgb(250,204,21)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.01,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(140,114,12)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 845.59375,
+          "y": 1517.5,
+          "width": 134.40625,
+          "height": 37
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "👑",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 100,
+          "y": 1618,
+          "width": 41.203125,
+          "height": 40
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.55:1; WCAG AA requires 3:1.",
+        "text": "Strict App Lock",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.55,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(116,116,116)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 155.203125,
+          "y": 1619,
+          "width": 213.546875,
+          "height": 38
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.01:1; WCAG AA requires 3:1.",
+        "text": "BOSS DOWN!",
+        "fg": "rgb(250,204,21)",
+        "bg": "rgb(209,207,212)",
+        "ratio": 1.01,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(140,114,12)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(5) > div:nth-of-type(3) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 812,
+          "y": 1619.5,
+          "width": 168,
+          "height": 37
+        },
+        "time": 15.889,
+        "times": [
+          15.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.52:1; WCAG AA requires 3:1.",
+        "text": "🏆",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(15,185,138)",
+        "ratio": 2.52,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(84,84,84)",
+        "large": true,
+        "selector": "div > div:nth-of-type(5) > div > div:nth-of-type(2) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene5_outro.html",
+        "bbox": {
+          "x": 306,
+          "y": 188.5,
+          "width": 41.8125,
+          "height": 37
+        },
+        "time": 20.778,
+        "times": [
+          20.778
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.5:1; WCAG AA requires 3:1.",
+        "text": "100% DISCIPLINE ACHIEVED",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(11,183,175)",
+        "ratio": 2.5,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(84,84,84)",
+        "large": true,
+        "selector": "div > div:nth-of-type(5) > div > div:nth-of-type(2) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene5_outro.html",
+        "bbox": {
+          "x": 359.8125,
+          "y": 172,
+          "width": 414.1875,
+          "height": 70
+        },
+        "time": 20.778,
+        "times": [
+          20.778
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.222,
+      6.111,
+      11,
+      15.889,
+      20.778
+    ],
+    "checked": 43,
+    "passed": 20
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 10,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "film_silent",
+        "severity": "warning",
+        "message": "This 22 s film has no sound source (no <audio>, no <video> with sound): add a music bed and sounds on the visible actions unless the person asked for silence; see references/sound.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 9 text elements stay under it for 0.5 s or more, the smallest \"99+ new unread notifications\" at 19 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "99+ new unread notifications",
+        "selector": "#notif-3 > div:nth-of-type(2) > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 782.5,
+          "y": 1029.69,
+          "width": 237.1,
+          "height": 23.28
+        },
+        "time": 1.875,
+        "times": [
+          0.25,
+          0.25,
+          0.25,
+          1.5,
+          1.5,
+          1.75,
+          1.75,
+          1.875,
+          1.875
+        ],
+        "fontPx": 18.63,
+        "floorPx": 28,
+        "seconds": 1.625,
+        "elements": [
+          {
+            "selector": "#notif-3 > div:nth-of-type(2) > div:nth-of-type(2)",
+            "text": "99+ new unread notifications",
+            "fontPx": 18.63,
+            "time": 1.875,
+            "seconds": 1.625
+          },
+          {
+            "selector": "#notif-1 > div:nth-of-type(2) > div:nth-of-type(2)",
+            "text": "\"Just 1 quick reel...\"",
+            "fontPx": 19.42,
+            "time": 1.5,
+            "seconds": 2
+          },
+          {
+            "selector": "#notif-2 > div:nth-of-type(2) > div:nth-of-type(2)",
+            "text": "49 tabs waiting for you",
+            "fontPx": 19.93,
+            "time": 1.75,
+            "seconds": 1.75
+          },
+          {
+            "selector": "#p1-hp-text",
+            "text": "100%",
+            "fontPx": 22,
+            "time": 0.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#boss-hp-text",
+            "text": "100%",
+            "fontPx": 22,
+            "time": 0.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#notif-3 > div:nth-of-type(2) > div:nth-of-type(1)",
+            "text": "Group Chat",
+            "fontPx": 22.35,
+            "time": 1.875,
+            "seconds": 1.625
+          },
+          {
+            "selector": "#notif-1 > div:nth-of-type(2) > div:nth-of-type(1)",
+            "text": "Instagram",
+            "fontPx": 23.3,
+            "time": 1.5,
+            "seconds": 2
+          },
+          {
+            "selector": "#notif-2 > div:nth-of-type(2) > div:nth-of-type(1)",
+            "text": "Infinite Feed",
+            "fontPx": 23.91,
+            "time": 1.75,
+            "seconds": 1.75
+          },
+          {
+            "selector": "div.stage-badge",
+            "text": "Stage 01: The Daily Distraction",
+            "fontPx": 24,
+            "time": 0.25,
+            "seconds": 3.25
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"⚠️ CRITICAL HIT! FOCUS HP DEPLETED TO 18%\" (8 words) is on screen 1.23 s (±0.01 s), under its 2.17 s floor: hold it about 0.5 s + 0.3 s a word (2.90 s here) before it leaves or changes; see references/motion.md.",
+        "text": "⚠️ CRITICAL HIT! FOCUS HP DEPLETED TO 18%",
+        "selector": "#danger-alert",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene1_intro.html",
+        "bbox": {
+          "x": 193.14,
+          "y": 1746.67,
+          "width": 693.72,
+          "height": 35.700000000000045
+        },
+        "time": 2.273,
+        "words": 8,
+        "seconds": 1.227,
+        "floorSeconds": 2.175,
+        "measured": [
+          {
+            "time": 2,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.25,
+            "opacity": 0.45,
+            "heightPx": 31
+          },
+          {
+            "time": 2.375,
+            "opacity": 1,
+            "heightPx": 36
+          },
+          {
+            "time": 2.5,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 2.625,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 2.75,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 3,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 3.125,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 3.25,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 3.375,
+            "opacity": 1,
+            "heightPx": 35
+          },
+          {
+            "time": 3.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 3.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 3.75,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"⚠️ FOCUS CRITICAL · 18% HP\" at 26 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "⚠️ FOCUS CRITICAL · 18% HP",
+        "selector": "div.alert-badge",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene2_crisis.html",
+        "bbox": {
+          "x": 286.19,
+          "y": 185.13,
+          "width": 507.61,
+          "height": 35
+        },
+        "time": 3.75,
+        "times": [
+          3.75,
+          5.125,
+          5.5
+        ],
+        "fontPx": 26,
+        "floorPx": 28,
+        "seconds": 3.75,
+        "elements": [
+          {
+            "selector": "div.alert-badge",
+            "text": "⚠️ FOCUS CRITICAL · 18% HP",
+            "fontPx": 26,
+            "time": 3.75,
+            "seconds": 3.75
+          },
+          {
+            "selector": "#timewarp-badge > span:nth-of-type(2)",
+            "text": "2 HOURS LATER...",
+            "fontPx": 26,
+            "time": 5.125,
+            "seconds": 2.375
+          },
+          {
+            "selector": "div.question-sub",
+            "text": "Distraction is winning your day. Time to fight back.",
+            "fontPx": 26,
+            "time": 5.5,
+            "seconds": 2
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Picked up your phone for 1 thing... and lost 2 hours?\" (11 words) is on screen 2.09 s (±0.01 s), under its 2.85 s floor: hold it about 0.5 s + 0.3 s a word (3.80 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Picked up your phone for 1 thing... and lost 2 hours?",
+        "selector": "div.question-main",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene2_crisis.html",
+        "bbox": {
+          "x": 123.89,
+          "y": 1489.32,
+          "width": 832.2,
+          "height": 105.5
+        },
+        "time": 5.406,
+        "words": 11,
+        "seconds": 2.094,
+        "floorSeconds": 2.85,
+        "measured": [
+          {
+            "time": 5.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.375,
+            "opacity": 0.47,
+            "heightPx": 106
+          },
+          {
+            "time": 5.5,
+            "opacity": 0.9,
+            "heightPx": 106
+          },
+          {
+            "time": 5.625,
+            "opacity": 0.99,
+            "heightPx": 106
+          },
+          {
+            "time": 5.75,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 5.875,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 7,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 7.125,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 7.25,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 7.375,
+            "opacity": 1,
+            "heightPx": 106
+          },
+          {
+            "time": 7.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.75,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Distraction is winning your day. Time to fight back.\" (9 words) is on screen 2.09 s (±0.01 s), under its 2.40 s floor: hold it about 0.5 s + 0.3 s a word (3.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Distraction is winning your day. Time to fight back.",
+        "selector": "div.question-sub",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene2_crisis.html",
+        "bbox": {
+          "x": 245.69,
+          "y": 1612.32,
+          "width": 588.6099999999999,
+          "height": 33
+        },
+        "time": 5.406,
+        "words": 9,
+        "seconds": 2.094,
+        "floorSeconds": 2.4,
+        "measured": [
+          {
+            "time": 5.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.375,
+            "opacity": 0.47,
+            "heightPx": 33
+          },
+          {
+            "time": 5.5,
+            "opacity": 0.9,
+            "heightPx": 33
+          },
+          {
+            "time": 5.625,
+            "opacity": 0.99,
+            "heightPx": 33
+          },
+          {
+            "time": 5.75,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 5.875,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 7,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 7.125,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 7.25,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 7.375,
+            "opacity": 1,
+            "heightPx": 33
+          },
+          {
+            "time": 7.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.75,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"🛡️ T1 DEFENSE ACTIVE\" at 24 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "🛡️ T1 DEFENSE ACTIVE",
+        "selector": "div.shield-badge",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene3_shield.html",
+        "bbox": {
+          "x": 371.11,
+          "y": 178.19,
+          "width": 337.77,
+          "height": 31
+        },
+        "time": 7.75,
+        "times": [
+          7.75,
+          7.875
+        ],
+        "fontPx": 24,
+        "floorPx": 28,
+        "seconds": 4.25,
+        "elements": [
+          {
+            "selector": "div.shield-badge",
+            "text": "🛡️ T1 DEFENSE ACTIVE",
+            "fontPx": 24,
+            "time": 7.75,
+            "seconds": 4.25
+          },
+          {
+            "selector": "div.t1-power-sub",
+            "text": "Apps Locked · Distractions Blocked · Deep Work Mode ON",
+            "fontPx": 26,
+            "time": 7.875,
+            "seconds": 4.125
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"DOOMSCROLL BOSS\" at 24 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "DOOMSCROLL BOSS",
+        "selector": "div.boss-label-row > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene4_combo.html",
+        "bbox": {
+          "x": 60,
+          "y": 167.14,
+          "width": 216,
+          "height": 31
+        },
+        "time": 12.25,
+        "times": [
+          12.25,
+          12.25
+        ],
+        "fontPx": 24,
+        "floorPx": 28,
+        "seconds": 5.25,
+        "elements": [
+          {
+            "selector": "div.boss-label-row > span:nth-of-type(1)",
+            "text": "DOOMSCROLL BOSS",
+            "fontPx": 24,
+            "time": 12.25,
+            "seconds": 5.25
+          },
+          {
+            "selector": "#boss-hp-num",
+            "text": "HP: 100%",
+            "fontPx": 24,
+            "time": 12.25,
+            "seconds": 5.25
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"Focus Done\" at 20 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Focus Done",
+        "selector": "#stats-display > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene5_outro.html",
+        "bbox": {
+          "x": 159.03,
+          "y": 1056.9,
+          "width": 137.85,
+          "height": 25
+        },
+        "time": 18.25,
+        "times": [
+          18.25,
+          18.25,
+          18.25
+        ],
+        "fontPx": 20,
+        "floorPx": 28,
+        "seconds": 3.75,
+        "elements": [
+          {
+            "selector": "#stats-display > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Focus Done",
+            "fontPx": 20,
+            "time": 18.25,
+            "seconds": 3.75
+          },
+          {
+            "selector": "#stats-display > div:nth-of-type(3) > span:nth-of-type(2)",
+            "text": "Time Wasted",
+            "fontPx": 20,
+            "time": 18.25,
+            "seconds": 3.75
+          },
+          {
+            "selector": "#stats-display > div:nth-of-type(5) > span:nth-of-type(2)",
+            "text": "Streak",
+            "fontPx": 20,
+            "time": 18.25,
+            "seconds": 3.75
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 176
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "audio_none",
+        "severity": "info",
+        "message": "The film has no sound: no clip in it plays audio.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      }
+    ]
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

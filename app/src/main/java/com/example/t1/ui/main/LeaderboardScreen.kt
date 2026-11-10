@@ -83,6 +83,12 @@ import com.example.t1.theme.*
 import com.example.t1.ui.viewmodel.MainViewModel
 import com.example.t1.util.Haptics
 import kotlinx.coroutines.delay
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.example.t1.ui.tour.LeaderboardMascotGuidedTour
+import com.example.t1.ui.tour.LeaderboardTourSteps
 import kotlin.math.max
 import kotlin.math.sin
 
@@ -144,7 +150,8 @@ private val TabBorder       = Color(0x0FFFFFFF)
 fun LeaderboardScreen(
     username: String,
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    forceShowTour: Boolean = false
 ) {
     val view = LocalView.current
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -156,6 +163,49 @@ fun LeaderboardScreen(
     val selectedExam by mainViewModel.selectedExam.collectAsStateWithLifecycle()
     val examChangeCount by mainViewModel.examChangeCount.collectAsStateWithLifecycle()
     val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
+
+    val isLeaderboardTutorialCompleted by mainViewModel.leaderboardTutorialCompleted.collectAsStateWithLifecycle()
+    var isTourActive by remember { mutableStateOf(forceShowTour || !isLeaderboardTutorialCompleted) }
+    var tourStepIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isLeaderboardTutorialCompleted, forceShowTour) {
+        if (forceShowTour || !isLeaderboardTutorialCompleted) {
+            isTourActive = true
+        }
+    }
+
+    val leaderboardListState = rememberLazyListState()
+
+    var tabsOffset by remember { mutableStateOf(Offset.Zero) }
+    var podiumOffset by remember { mutableStateOf(Offset.Zero) }
+    var timeFilterOffset by remember { mutableStateOf(Offset.Zero) }
+    var rankItemOffset by remember { mutableStateOf(Offset.Zero) }
+    var yourRankCardOffset by remember { mutableStateOf(Offset.Zero) }
+    var howItWorksOffset by remember { mutableStateOf(Offset.Zero) }
+
+    LaunchedEffect(tourStepIndex, isTourActive) {
+        if (isTourActive) {
+            when (tourStepIndex) {
+                0 -> leaderboardListState.animateScrollToItem(0)
+                1 -> leaderboardListState.animateScrollToItem(0)
+                2 -> leaderboardListState.animateScrollToItem(0)
+                3 -> leaderboardListState.animateScrollToItem(1)
+                4 -> leaderboardListState.animateScrollToItem(0)
+                5 -> leaderboardListState.animateScrollToItem(0)
+                6 -> leaderboardListState.animateScrollToItem(0)
+            }
+        }
+    }
+
+    val activeTourTarget = when (tourStepIndex) {
+        0 -> tabsOffset
+        1 -> podiumOffset
+        2 -> timeFilterOffset
+        3 -> rankItemOffset
+        4 -> yourRankCardOffset
+        5 -> howItWorksOffset
+        else -> Offset.Zero
+    }
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Global, 1: Founder, 2: Aukaat
     var showExamSelector by remember { mutableStateOf(false) }
@@ -435,6 +485,10 @@ fun LeaderboardScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier          = Modifier
                                 .clip(RoundedCornerShape(10.dp))
+                                .onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    howItWorksOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                                }
                                 .clickable {
                                     Haptics.playLight(view)
                                     showHowItWorks = true
@@ -479,6 +533,10 @@ fun LeaderboardScreen(
                                 .clip(RoundedCornerShape(22.dp))
                                 .background(TabBg)
                                 .border(0.5.dp, TabBorder, RoundedCornerShape(22.dp))
+                                .onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    tabsOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                                }
                                 .padding(3.dp),
                             horizontalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
@@ -521,6 +579,10 @@ fun LeaderboardScreen(
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(Color(0xFF1B1B26))
                                     .border(1.dp, Color(0xFF4B6BFF).copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+                                    .onGloballyPositioned { coords ->
+                                        val pos = coords.positionInRoot()
+                                        timeFilterOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                                    }
                                     .clickable {
                                         Haptics.playLight(view)
                                         showExamSelector = true
@@ -551,6 +613,10 @@ fun LeaderboardScreen(
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(TabBg)
                                     .border(0.5.dp, TabBorder, RoundedCornerShape(18.dp))
+                                    .onGloballyPositioned { coords ->
+                                        val pos = coords.positionInRoot()
+                                        timeFilterOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                                    }
                                     .clickable { Haptics.playLight(view) }
                                     .padding(horizontal = 13.dp, vertical = 7.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -625,6 +691,7 @@ fun LeaderboardScreen(
             // SCROLLABLE BODY
             // ═════════════════════════════════════════
             LazyColumn(
+                state          = leaderboardListState,
                 modifier       = Modifier.weight(1f),
                 contentPadding = PaddingValues(bottom = 140.dp)
             ) {
@@ -634,7 +701,12 @@ fun LeaderboardScreen(
                         visible = podiumVisible,
                         enter   = fadeIn(tween(550)) + slideInVertically(animationSpec = tween(550, easing = FastOutSlowInEasing), initialOffsetY = { 50 })
                     ) {
-                        PodiumSection(top3 = top3, glowAlpha = glowAlpha, crownFloat = crownFloat)
+                        PodiumSection(
+                            top3 = top3,
+                            glowAlpha = glowAlpha,
+                            crownFloat = crownFloat,
+                            onPodiumPositioned = { podiumOffset = it }
+                        )
                     }
                 }
 
@@ -646,7 +718,15 @@ fun LeaderboardScreen(
                         visible = vis && listVisible,
                         enter   = fadeIn(tween(280)) + slideInVertically(animationSpec = tween(280, easing = FastOutSlowInEasing), initialOffsetY = { 18 })
                     ) {
-                        RankListItem(entry = entry)
+                        RankListItem(
+                            entry = entry,
+                            modifier = if (idx == 0) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.positionInRoot()
+                                    rankItemOffset = Offset(pos.x + coords.size.width * 0.55f, pos.y + coords.size.height / 2f)
+                                }
+                            } else Modifier
+                        )
                     }
                 }
 
@@ -689,7 +769,11 @@ fun LeaderboardScreen(
                         userEntry = userEntry,
                         isRanked = isUserRankedInTab,
                         unrankedReason = unrankedDesc,
-                        glowAlpha = glowAlpha
+                        glowAlpha = glowAlpha,
+                        modifier = Modifier.onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            yourRankCardOffset = Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height / 2f)
+                        }
                     )
                 }
             }
@@ -722,6 +806,28 @@ fun LeaderboardScreen(
                 onDismiss = { showExamSelector = false }
             )
         }
+
+        // ══════════════════════════════════════════════════════════════════
+        // Interactive Leaderboard Product Tour (Mascot Guided)
+        // ══════════════════════════════════════════════════════════════════
+        if (isTourActive) {
+            LeaderboardMascotGuidedTour(
+                currentStepIndex = tourStepIndex,
+                targetScreenOffset = activeTourTarget,
+                onNext = {
+                    if (tourStepIndex < LeaderboardTourSteps.size - 1) {
+                        tourStepIndex++
+                    } else {
+                        isTourActive = false
+                        mainViewModel.completeLeaderboardTutorial()
+                    }
+                },
+                onSkip = {
+                    isTourActive = false
+                    mainViewModel.completeLeaderboardTutorial()
+                }
+            )
+        }
     }
 }
 
@@ -729,7 +835,12 @@ fun LeaderboardScreen(
 // PODIUM SECTION
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
-private fun PodiumSection(top3: List<LeaderboardUser>, glowAlpha: Float, crownFloat: Float) {
+private fun PodiumSection(
+    top3: List<LeaderboardUser>,
+    glowAlpha: Float,
+    crownFloat: Float,
+    onPodiumPositioned: (Offset) -> Unit = {}
+) {
     val entry1 = top3.getOrNull(0)
     val entry2 = top3.getOrNull(1)
     val entry3 = top3.getOrNull(2)
@@ -798,7 +909,12 @@ private fun PodiumSection(top3: List<LeaderboardUser>, glowAlpha: Float, crownFl
                     rankLabel          = "1",
                     glowAlpha          = glowAlpha,
                     crownFloat         = crownFloat,
-                    modifier           = Modifier.weight(1f)
+                    modifier           = Modifier
+                        .weight(1f)
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.positionInRoot()
+                            onPodiumPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height * 0.35f))
+                        }
                 )
             }
 
@@ -1054,7 +1170,7 @@ private fun PodiumEntry(
 // RANK LIST ITEM (ranks 4+)
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
-private fun RankListItem(entry: LeaderboardUser) {
+private fun RankListItem(entry: LeaderboardUser, modifier: Modifier = Modifier) {
     val charIdx  = entry.name.firstOrNull()?.code ?: 0
     val avatarBg = AvatarColors[charIdx % AvatarColors.size]
 
@@ -1062,7 +1178,7 @@ private fun RankListItem(entry: LeaderboardUser) {
         .replace("Top ", "").replace("top ", "").replace("%", "").trim()
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .drawBehind {
@@ -1238,12 +1354,13 @@ private fun YourRankCard(
     userEntry: LeaderboardUser,
     isRanked: Boolean,
     unrankedReason: String,
-    glowAlpha: Float
+    glowAlpha: Float,
+    modifier: Modifier = Modifier
 ) {
     val pctVal = userEntry.percentile
         .replace("Top ", "").replace("top ", "").replace("%", "").trim()
 
-    Box(modifier = Modifier
+    Box(modifier = modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)
     ) {

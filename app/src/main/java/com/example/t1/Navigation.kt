@@ -108,6 +108,14 @@ fun MainNavigation(
             )
             return
         }
+        "leaderboard_tour" -> {
+            LeaderboardScreen(
+                username = "user.t1",
+                mainViewModel = mainViewModel,
+                forceShowTour = true
+            )
+            return
+        }
     }
 
     val authState by authViewModel.authState.collectAsStateWithLifecycle()

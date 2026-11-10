@@ -31,6 +31,7 @@ class UserPreferences @Inject constructor(
         private val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         private val KEY_FOCUS_REMINDERS_ENABLED = booleanPreferencesKey("focus_reminders_enabled")
         private val KEY_TUTORIAL_COMPLETED = booleanPreferencesKey("tutorial_completed")
+        private val KEY_LEADERBOARD_TUTORIAL_COMPLETED = booleanPreferencesKey("leaderboard_tutorial_completed")
         private val KEY_TUTORIAL_VERSION = intPreferencesKey("tutorial_version")
         private val KEY_SELECTED_EXAM = stringPreferencesKey("selected_exam_track")
         private val KEY_EXAM_CHANGE_COUNT = intPreferencesKey("exam_change_count_week")
@@ -83,6 +84,13 @@ class UserPreferences @Inject constructor(
      */
     val tutorialVersionFlow: Flow<Int> = context.dataStore.data.map { preferences ->
         preferences[KEY_TUTORIAL_VERSION] ?: 0
+    }
+
+    /**
+     * Emits whether the leaderboard product tour has been completed.
+     */
+    val leaderboardTutorialCompletedFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_LEADERBOARD_TUTORIAL_COMPLETED] ?: false
     }
 
     /**
@@ -195,6 +203,18 @@ class UserPreferences @Inject constructor(
         context.dataStore.edit { preferences ->
             preferences[KEY_TUTORIAL_COMPLETED] = false
             preferences[KEY_TUTORIAL_VERSION] = 0
+        }
+    }
+
+    suspend fun saveLeaderboardTutorialCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LEADERBOARD_TUTORIAL_COMPLETED] = completed
+        }
+    }
+
+    suspend fun resetLeaderboardTutorial() {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LEADERBOARD_TUTORIAL_COMPLETED] = false
         }
     }
 

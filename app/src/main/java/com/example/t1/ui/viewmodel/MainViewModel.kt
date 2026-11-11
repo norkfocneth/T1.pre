@@ -61,13 +61,13 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     val tutorialCompleted: StateFlow<Boolean> = userPreferences.tutorialCompletedFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     val leaderboardTutorialCompleted: StateFlow<Boolean> = userPreferences.leaderboardTutorialCompletedFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     val profileTutorialCompleted: StateFlow<Boolean> = userPreferences.profileTutorialCompletedFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     val tutorialVersion: StateFlow<Int> = userPreferences.tutorialVersionFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)

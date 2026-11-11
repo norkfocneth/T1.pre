@@ -151,7 +151,9 @@ fun LeaderboardScreen(
     username: String,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = hiltViewModel(),
-    forceShowTour: Boolean = false
+    forceShowTour: Boolean = false,
+    onTourComplete: () -> Unit = {},
+    onTourSkip: () -> Unit = {}
 ) {
     val view = LocalView.current
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -165,12 +167,13 @@ fun LeaderboardScreen(
     val privacyGhostMode by mainViewModel.privacyGhostMode.collectAsStateWithLifecycle()
 
     val isLeaderboardTutorialCompleted by mainViewModel.leaderboardTutorialCompleted.collectAsStateWithLifecycle()
-    var isTourActive by remember { mutableStateOf(forceShowTour || !isLeaderboardTutorialCompleted) }
+    var isTourActive by remember { mutableStateOf(forceShowTour) }
     var tourStepIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(isLeaderboardTutorialCompleted, forceShowTour) {
-        if (forceShowTour || !isLeaderboardTutorialCompleted) {
-            isTourActive = true
+    LaunchedEffect(forceShowTour) {
+        isTourActive = forceShowTour
+        if (forceShowTour) {
+            tourStepIndex = 0
         }
     }
 
@@ -819,12 +822,12 @@ fun LeaderboardScreen(
                         tourStepIndex++
                     } else {
                         isTourActive = false
-                        mainViewModel.completeLeaderboardTutorial()
+                        onTourComplete()
                     }
                 },
                 onSkip = {
                     isTourActive = false
-                    mainViewModel.completeLeaderboardTutorial()
+                    onTourSkip()
                 }
             )
         }

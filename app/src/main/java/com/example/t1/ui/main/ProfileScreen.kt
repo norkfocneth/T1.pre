@@ -124,17 +124,20 @@ fun ProfileScreen(
     onStartTour: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel? = null,
-    forceShowTour: Boolean = false
+    forceShowTour: Boolean = false,
+    onTourComplete: () -> Unit = {},
+    onTourSkip: () -> Unit = {}
 ) {
     val view = LocalView.current
 
     val isProfileTutorialCompleted = mainViewModel?.profileTutorialCompleted?.collectAsStateWithLifecycle()?.value ?: true
-    var isTourActive by remember { mutableStateOf(forceShowTour || !isProfileTutorialCompleted) }
+    var isTourActive by remember { mutableStateOf(forceShowTour) }
     var tourStepIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(isProfileTutorialCompleted, forceShowTour) {
-        if (forceShowTour || !isProfileTutorialCompleted) {
-            isTourActive = true
+    LaunchedEffect(forceShowTour) {
+        isTourActive = forceShowTour
+        if (forceShowTour) {
+            tourStepIndex = 0
         }
     }
 
@@ -1020,12 +1023,12 @@ fun ProfileScreen(
                         tourStepIndex++
                     } else {
                         isTourActive = false
-                        mainViewModel?.completeProfileTutorial()
+                        onTourComplete()
                     }
                 },
                 onSkip = {
                     isTourActive = false
-                    mainViewModel?.completeProfileTutorial()
+                    onTourSkip()
                 }
             )
         }

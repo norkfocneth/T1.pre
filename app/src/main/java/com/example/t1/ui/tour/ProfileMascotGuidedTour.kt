@@ -109,9 +109,9 @@ val ProfileTourSteps = listOf(
     // Step 6: Grand Finale
     ProfileTourStep(
         id = 6,
-        title = "PROFILE IS READY!",
-        subtitle = "Aapka personal space completely setup ho chuka hai! Apni progress track karein, streaks defend karein aur top rank par bane rahein.",
-        iconEmoji = "🚀",
+        title = "ALL SET & READY TO BUILD!",
+        subtitle = "Congratulations! Aapka complete T1 tour finish ho chuka hai. Apni daily consistency track karein, 1v1 fights jeetein aur top rank achieve karein!",
+        iconEmoji = "🎉",
         mascotRes = R.drawable.mascot_live_hero,
         mascotAlignLeft = false,
         cardAtTop = false,
@@ -434,7 +434,7 @@ fun ProfileMascotGuidedTour(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Start Exploring ➔",
+                                text = "Start Using T1 ➔",
                                 style = LabelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -460,9 +460,10 @@ fun ProfileMascotGuidedTour(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(
-                            top = if (currentStep.cardAtTop) 65.dp else 0.dp,
-                            bottom = if (!currentStep.cardAtTop) 110.dp else 0.dp
+                            top = if (currentStep.cardAtTop) 72.dp else 0.dp,
+                            bottom = if (!currentStep.cardAtTop) 125.dp else 0.dp
                         ),
                     horizontalAlignment = if (currentStep.mascotAlignLeft) Alignment.Start else Alignment.End
                 ) {
@@ -476,7 +477,7 @@ fun ProfileMascotGuidedTour(
                             painter = painterResource(id = currentStep.mascotRes),
                             contentDescription = "T1 Profile Mascot Guide",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(110.dp)
                         )
                     }
 

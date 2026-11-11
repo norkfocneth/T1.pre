@@ -99,8 +99,8 @@ val FocusBattleTourSteps = listOf(
     // Step 5: Grand Finale
     FocusBattleTourStep(
         id = 5,
-        title = "ENTER THE FOCUS ARENA!",
-        subtitle = "Focus Fight arena ready hai! Kisi dost ko challenge karein, distraction-free deep work lock karein aur winner-takes-all token pot claim karein!",
+        title = "FOCUS ARENA READY!",
+        subtitle = "Focus Fight arena ready hai! Ab aakhiri me chalte hain aapki Profile & Settings par jahan aap apni identity aur preferences configure kar sakte hain.",
         iconEmoji = "⚔️",
         mascotRes = R.drawable.mascot_live_hero,
         mascotAlignLeft = false,
@@ -425,7 +425,7 @@ fun FocusBattleMascotGuidedTour(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Start Duels ➔",
+                                text = "Next: Your Profile ➔",
                                 style = LabelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -451,9 +451,10 @@ fun FocusBattleMascotGuidedTour(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(
-                            top = if (currentStep.cardAtTop) 65.dp else 0.dp,
-                            bottom = if (!currentStep.cardAtTop) 110.dp else 0.dp
+                            top = if (currentStep.cardAtTop) 72.dp else 0.dp,
+                            bottom = if (!currentStep.cardAtTop) 125.dp else 0.dp
                         ),
                     horizontalAlignment = if (currentStep.mascotAlignLeft) Alignment.Start else Alignment.End
                 ) {
@@ -467,7 +468,7 @@ fun FocusBattleMascotGuidedTour(
                             painter = painterResource(id = currentStep.mascotRes),
                             contentDescription = "T1 Battle Mascot Guide",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(110.dp)
                         )
                     }
 

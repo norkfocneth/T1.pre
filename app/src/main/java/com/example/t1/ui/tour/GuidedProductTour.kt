@@ -303,52 +303,6 @@ fun GuidedProductTourOverlay(
                     )
                 }
             }
-
-            // Next / Finish Button (Top Right)
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color(0xFFEDE9FE),
-                                Color(0xFFDDD6FE),
-                                Color(0xFFC4B5FD)
-                            )
-                        )
-                    )
-                    .clickable {
-                        Haptics.playMedium(view)
-                        if (currentStepIndex < steps.size - 1) {
-                            currentStepIndex++
-                        } else {
-                            onCompleteTour()
-                        }
-                    }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = if (currentStepIndex == steps.size - 1) "Start" else "Next",
-                        style = LabelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF1A102E)
-                        )
-                    )
-                    Text(
-                        text = "➔",
-                        style = LabelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF1A102E)
-                        )
-                    )
-                }
-            }
         }
 
         // ══════════════════════════════════════════════════════════════════

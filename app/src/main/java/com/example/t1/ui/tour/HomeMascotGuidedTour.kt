@@ -100,8 +100,8 @@ val HomeTourSteps = listOf(
     // Step 5: Grand Finale
     HomeTourStep(
         id = 5,
-        title = "YOU'RE ALL SET!",
-        subtitle = "Aapka T1 Home setup complete hai! Chaliye, apna pehla focus session shuru karte hain aur deep work master bante hain.",
+        title = "HOME SETUP COMPLETE!",
+        subtitle = "Aapka T1 Home setup complete hai! Ab aage dekhte hain Live Leaderboard jahan aap doosre builders ke sath rank compete karenge.",
         iconEmoji = "🚀",
         mascotRes = R.drawable.mascot_live_hero,
         mascotAlignLeft = false,
@@ -425,7 +425,7 @@ fun HomeMascotGuidedTour(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Let's Focus ➔",
+                                text = "Next: Rank Arena ➔",
                                 style = LabelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -451,9 +451,10 @@ fun HomeMascotGuidedTour(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(
-                            top = if (currentStep.cardAtTop) 65.dp else 0.dp,
-                            bottom = if (!currentStep.cardAtTop) 110.dp else 0.dp
+                            top = if (currentStep.cardAtTop) 72.dp else 0.dp,
+                            bottom = if (!currentStep.cardAtTop) 125.dp else 0.dp
                         ),
                     horizontalAlignment = if (currentStep.mascotAlignLeft) Alignment.Start else Alignment.End
                 ) {
@@ -467,7 +468,7 @@ fun HomeMascotGuidedTour(
                             painter = painterResource(id = currentStep.mascotRes),
                             contentDescription = "T1 Mascot Guide",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(110.dp)
                         )
                     }
 

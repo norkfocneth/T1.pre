@@ -88,7 +88,7 @@ class FocusBattleViewModel @Inject constructor(
 ) : ViewModel() {
 
     val battleTutorialCompleted: StateFlow<Boolean> = userPreferences.battleTutorialCompletedFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     fun completeBattleTutorial() {
         viewModelScope.launch {

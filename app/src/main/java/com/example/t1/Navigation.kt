@@ -147,6 +147,8 @@ fun MainNavigation(
 
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     var isCinematicSplashDone by rememberSaveable { mutableStateOf(SplashStateManager.hasCompletedSplash) }
+    var forceShowFirstRunTour by rememberSaveable { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         // ─── 1. Main Application Content (Deterministic Auth State Routing) ───
@@ -196,6 +198,10 @@ fun MainNavigation(
                         if (onboardingState is OnboardingUiState.Success) {
                             com.example.t1.util.T1Logger.i("Onboarding completed successfully. Restoring session.")
                             mainViewModel.resetTutorial()
+                            mainViewModel.resetLeaderboardTutorial()
+                            mainViewModel.resetProfileTutorial()
+                            com.example.t1.ui.tour.TourManager.resetFirstLaunchTour(context)
+                            forceShowFirstRunTour = true
                             authViewModel.restoreSession()
                             onboardingViewModel.resetState()
                         }
@@ -249,7 +255,8 @@ fun MainNavigation(
                             mainViewModel = mainViewModel,
                             onSignOut = { authViewModel.signOut() },
                             initialTab = if (previewScreen == "focus_fight" || previewScreen == "battle" || autoAcceptFightId != null) T1Tab.BATTLE else T1Tab.HOME,
-                            autoAcceptFightId = autoAcceptFightId
+                            autoAcceptFightId = autoAcceptFightId,
+                            initialForceShowTour = forceShowFirstRunTour
                         )
                     }
                 }
@@ -273,6 +280,14 @@ fun MainNavigation(
     }
 }
 
+enum class ChainedTourStage {
+    NONE,
+    HOME,
+    RANK,
+    BATTLE,
+    USER
+}
+
 /**
  * Container rendering the main dashboard with BottomNav, HomeScreen, Leaderboard, and Settings views.
  */
@@ -284,7 +299,8 @@ fun DashboardShell(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
     initialTab: T1Tab = T1Tab.HOME,
-    autoAcceptFightId: String? = null
+    autoAcceptFightId: String? = null,
+    initialForceShowTour: Boolean = false
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var activeTab by remember { mutableStateOf(initialTab) }
@@ -292,7 +308,44 @@ fun DashboardShell(
     var showSettings by remember { mutableStateOf(false) }
     var showTimer by remember { mutableStateOf(false) }
 
+    val hasCompletedFirstTour = remember { com.example.t1.ui.tour.TourManager.hasCompletedFirstLaunchTour(context) }
+    var chainedTourStage by rememberSaveable {
+        mutableStateOf(
+            if (initialForceShowTour || !hasCompletedFirstTour) ChainedTourStage.HOME else ChainedTourStage.NONE
+        )
+    }
+
+    LaunchedEffect(chainedTourStage) {
+        when (chainedTourStage) {
+            ChainedTourStage.HOME -> activeTab = T1Tab.HOME
+            ChainedTourStage.RANK -> activeTab = T1Tab.RANK
+            ChainedTourStage.BATTLE -> activeTab = T1Tab.BATTLE
+            ChainedTourStage.USER -> activeTab = T1Tab.USER
+            ChainedTourStage.NONE -> {}
+        }
+    }
+
     val battleViewModel: com.example.t1.ui.battle.FocusBattleViewModel = hiltViewModel()
+
+    val handleSkipAllTours = {
+        com.example.t1.ui.tour.TourManager.markFirstLaunchTourCompleted(context)
+        mainViewModel.completeTutorial()
+        mainViewModel.completeLeaderboardTutorial()
+        battleViewModel.completeBattleTutorial()
+        mainViewModel.completeProfileTutorial()
+        chainedTourStage = ChainedTourStage.NONE
+    }
+
+    val handleRestartChainedTour = {
+        com.example.t1.ui.tour.TourManager.resetFirstLaunchTour(context)
+        mainViewModel.resetTutorial()
+        mainViewModel.resetLeaderboardTutorial()
+        battleViewModel.resetBattleTutorial()
+        mainViewModel.resetProfileTutorial()
+        activeTab = T1Tab.HOME
+        chainedTourStage = ChainedTourStage.HOME
+    }
+
     LaunchedEffect(autoAcceptFightId) {
         if (!autoAcceptFightId.isNullOrBlank()) {
             activeTab = T1Tab.BATTLE
@@ -326,6 +379,12 @@ fun DashboardShell(
                     mainViewModel.deleteUserAccount(
                         onSuccess = {
                             showSettings = false
+                            com.example.t1.ui.tour.TourManager.resetFirstLaunchTour(context)
+                            mainViewModel.resetTutorial()
+                            mainViewModel.resetLeaderboardTutorial()
+                            battleViewModel.resetBattleTutorial()
+                            mainViewModel.resetProfileTutorial()
+                            chainedTourStage = ChainedTourStage.NONE
                             onSignOut()
                             onSuccess()
                         },
@@ -334,8 +393,7 @@ fun DashboardShell(
                 },
                 onReplayTour = {
                     showSettings = false
-                    activeTab = T1Tab.HOME
-                    mainViewModel.resetTutorial()
+                    handleRestartChainedTour()
                 }
             )
         } else {
@@ -359,12 +417,27 @@ fun DashboardShell(
                                 focusScore = dashboardState.currentFocusScore,
                                 streak = activeProfile.streak,
                                 totalFocusSessions = totalFocusSessions,
-                                viewModel = mainViewModel
+                                viewModel = mainViewModel,
+                                forceShowTour = (chainedTourStage == ChainedTourStage.HOME),
+                                onTourComplete = {
+                                    mainViewModel.completeTutorial()
+                                    activeTab = T1Tab.RANK
+                                    chainedTourStage = ChainedTourStage.RANK
+                                },
+                                onTourSkip = handleSkipAllTours
                             )
                         }
                         T1Tab.RANK -> {
                             LeaderboardScreen(
-                                username = activeProfile.username
+                                username = activeProfile.username,
+                                mainViewModel = mainViewModel,
+                                forceShowTour = (chainedTourStage == ChainedTourStage.RANK),
+                                onTourComplete = {
+                                    mainViewModel.completeLeaderboardTutorial()
+                                    activeTab = T1Tab.BATTLE
+                                    chainedTourStage = ChainedTourStage.BATTLE
+                                },
+                                onTourSkip = handleSkipAllTours
                             )
                         }
                         T1Tab.BATTLE -> {
@@ -373,7 +446,14 @@ fun DashboardShell(
                                 onBackToHome = {
                                     battleViewModel.resetToDiscovery()
                                     activeTab = T1Tab.HOME
-                                }
+                                },
+                                forceShowTour = (chainedTourStage == ChainedTourStage.BATTLE),
+                                onTourComplete = {
+                                    battleViewModel.completeBattleTutorial()
+                                    activeTab = T1Tab.USER
+                                    chainedTourStage = ChainedTourStage.USER
+                                },
+                                onTourSkip = handleSkipAllTours
                             )
                         }
                         T1Tab.USER -> {
@@ -415,10 +495,15 @@ fun DashboardShell(
                                         }
                                     }
                                 },
-                                onStartTour = {
+                                onStartTour = handleRestartChainedTour,
+                                forceShowTour = (chainedTourStage == ChainedTourStage.USER),
+                                onTourComplete = {
+                                    mainViewModel.completeProfileTutorial()
+                                    com.example.t1.ui.tour.TourManager.markFirstLaunchTourCompleted(context)
+                                    chainedTourStage = ChainedTourStage.NONE
                                     activeTab = T1Tab.HOME
-                                    mainViewModel.resetTutorial()
                                 },
+                                onTourSkip = handleSkipAllTours,
                                 onSignOut = onSignOut,
                                 mainViewModel = mainViewModel
                             )

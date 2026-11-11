@@ -1,10 +1,10 @@
 package com.example.t1.ui.permission
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,46 +13,43 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
-import android.widget.Toast
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.t1.theme.*
-import com.example.t1.ui.components.PrivacyOverviewDialog
-import com.example.t1.ui.onboarding.OnboardingBackground
+import com.example.t1.R
 import com.example.t1.util.Haptics
 
+/**
+ * High-fidelity Usage Permission Fallback Screen for Dashboard.
+ * Matches Step 2 design from onboarding with 3D Mascot presenting the T1 Shield.
+ */
 @Composable
 fun UsagePermissionScreen(
     onOpenSettings: () -> Unit,
@@ -61,327 +58,287 @@ fun UsagePermissionScreen(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
-    val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
-    val scrollState = rememberScrollState()
-    var isConsented by remember { mutableStateOf(false) }
-    var showPrivacyOverview by remember { mutableStateOf(false) }
 
-    OnboardingBackground(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(scrollState)
-                .padding(top = 24.dp, bottom = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Icon
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape)
-                    .background(Brush.linearGradient(listOf(Card, SurfaceRaised)))
-                    .border(1.dp, Border, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Security,
-                    contentDescription = "Security",
-                    tint = GlowPrimary,
-                    modifier = Modifier.size(32.dp)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF06040A),
+                        Color(0xFF10091E),
+                        Color(0xFF07040D)
+                    )
+                )
+            )
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .drawBehind {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0xFF8B5CF6).copy(alpha = 0.32f), Color.Transparent),
+                        center = Offset(size.width * 0.5f, size.height * 0.22f),
+                        radius = size.width * 0.5f
+                    )
+                )
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color(0xFF7C3AED).copy(alpha = 0.16f),
+                            Color.Transparent
+                        ),
+                        startY = size.height * 0.88f,
+                        endY = size.height
+                    )
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Title
-            Text(
-                text = "Usage Intelligence\nAccess Required",
-                style = HeadlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    brush = Brush.linearGradient(
-                        colors = listOf(GradientTextStart, GradientTextEnd)
-                    )
-                ),
-                textAlign = TextAlign.Center,
-                lineHeight = 34.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Subtitle
-            Text(
-                text = "T1 requires Usage Stats Access to track daily screen time, app categories, and focus metrics in the background.",
-                style = BodyLarge.copy(
-                    color = MutedForeground,
-                    textAlign = TextAlign.Center
-                ),
-                lineHeight = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Detailed Comparison Box
+            .padding(horizontal = 22.dp, vertical = 12.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Card)
-                    .border(1.dp, Border, RoundedCornerShape(16.dp))
-                    .padding(20.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "WHAT WE VERIFY",
-                    style = TrackingNarrow.copy(
-                        color = Foreground,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                val collectedItems = listOf(
-                    "Total Daily Screen Time",
-                    "App Category Breakdown (Social, Entert., etc.)",
-                    "Daily Screen Unlocks & Session Counts",
-                    "Active App Session Durations"
-                )
-
-                collectedItems.forEach { item ->
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                // Top row with "Skip →" capsule on top right
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFF1B1629).copy(alpha = 0.85f))
+                            .border(1.dp, Color(0xFF382D4D), RoundedCornerShape(20.dp))
+                            .clickable {
+                                Haptics.playLight(view)
+                                onLater()
+                            }
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Collected",
-                            tint = Success,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = item,
-                            style = BodyMedium.copy(color = MutedForeground)
+                            text = "Skip ➔",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFCBD5E1)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                // Center Hero Graphic: Mascot + Neon Shield on Pedestal
+                Image(
+                    painter = painterResource(id = R.drawable.mascot_perm_usage),
+                    contentDescription = "Mascot presenting T1 Shield",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(175.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Step pill badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF6366F1).copy(alpha = 0.22f))
+                        .border(1.dp, Color(0xFF818CF8).copy(alpha = 0.45f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "✦  SYSTEM PERMISSION",
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFFC7D2FE),
+                        letterSpacing = 1.2.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Headline
+                Text(
+                    text = "Why We Need",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Usage Access",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(
+                        brush = Brush.horizontalGradient(
+                            listOf(Color(0xFFA855F7), Color(0xFFE879F9))
+                        )
+                    ),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Subtitle explanation
+                Text(
+                    text = "T1 is a Sprint Analyzer, not a spy. We read only aggregate app usage and screen unlock counts on your device to compute your Focus Score, track daily screen time by category, and power a fair Focus Fight experience.",
+                    fontSize = 12.5.sp,
+                    color = Color(0xFF94A3B8),
+                    lineHeight = 17.5.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Frosted Card with 3 rows
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Border)
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "WHAT WE NEVER COLLECT",
-                    style = TrackingNarrow.copy(
-                        color = Foreground,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                val nonCollectedItems = listOf(
-                    "Messages, Chats or Notification Contents",
-                    "Contacts, Images or Media Files",
-                    "Real-time GPS Location Coordinates",
-                    "Private / Sensitive Account Identifiers"
-                )
-
-                nonCollectedItems.forEach { item ->
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Not Collected",
-                            tint = Danger,
-                            modifier = Modifier.size(16.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0xFF130E22).copy(alpha = 0.88f))
+                        .border(
+                            1.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color(0xFF7C3AED).copy(alpha = 0.55f),
+                                    Color(0xFF3B1D6E).copy(alpha = 0.25f)
+                                )
+                            ),
+                            RoundedCornerShape(22.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = item,
-                            style = BodyMedium.copy(color = MutedForeground)
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        RowItem(
+                            icon = Icons.Default.BarChart,
+                            title = "What we read",
+                            subtitle = "App category usage, screen time and unlock counts."
+                        )
+                        RowItem(
+                            icon = Icons.Default.Bolt,
+                            title = "How we use it",
+                            subtitle = "To calculate your Focus Score, 7-day baseline, category breakdown and anti-cheat checks."
+                        )
+                        RowItem(
+                            icon = Icons.Default.Security,
+                            title = "What we never access",
+                            subtitle = "Messages, photos, contacts, GPS, or any private account data."
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Explicit Consent Checkbox Row
-            Row(
+            // Bottom CTA section
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { isConsented = !isConsented }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                androidx.compose.material3.Checkbox(
-                    checked = isConsented,
-                    onCheckedChange = { isConsented = it },
-                    colors = androidx.compose.material3.CheckboxDefaults.colors(
-                        checkedColor = GlowPrimary,
-                        uncheckedColor = Border,
-                        checkmarkColor = Background
-                    )
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "I read the Privacy Policy and consent to T1 aggregating and analyzing my usage data.",
-                    style = BodyMedium.copy(color = MutedForeground),
-                    lineHeight = 18.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Action Buttons
-            val openSettingsInteraction = remember { MutableInteractionSource() }
-            val isOpenSettingsPressed by openSettingsInteraction.collectIsPressedAsState()
-            val openSettingsScale = if (isOpenSettingsPressed && isConsented) 0.95f else 1f
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .scale(openSettingsScale)
-                    .clip(RoundedCornerShape(28.dp))
-                    .alpha(if (isConsented) 1f else 0.5f)
-                    .background(Brush.verticalGradient(listOf(ButtonGradientStart, ButtonGradientEnd)))
-                    .clickable(
-                        interactionSource = openSettingsInteraction,
-                        indication = null,
-                        onClick = {
-                            if (isConsented) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(27.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    Color(0xFF6D28D9),
+                                    Color(0xFF9333EA),
+                                    Color(0xFFA855F7)
+                                )
+                            )
+                        )
+                        .border(1.dp, Color(0xFFD8B4FE).copy(alpha = 0.6f), RoundedCornerShape(27.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
                                 Haptics.playMedium(view)
                                 onOpenSettings()
-                            } else {
-                                Toast.makeText(context, "Please accept the consent checkbox to proceed.", Toast.LENGTH_SHORT).show()
                             }
-                        }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.OpenInNew,
-                        contentDescription = "Settings",
-                        tint = Background,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "Open System Settings",
-                        style = LabelLarge.copy(
-                            color = Background,
-                            fontWeight = FontWeight.Bold
-                        )
+                        text = "Enable ➔",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-            // Retry Button
-            val retryInteraction = remember { MutableInteractionSource() }
-            val isRetryPressed by retryInteraction.collectIsPressedAsState()
-            val retryScale = if (isRetryPressed) 0.95f else 1f
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .scale(retryScale)
-                    .clip(RoundedCornerShape(25.dp))
-                    .background(Color.Transparent)
-                    .border(1.dp, Border, RoundedCornerShape(25.dp))
-                    .clickable(
-                        interactionSource = retryInteraction,
-                        indication = null,
-                        onClick = {
-                            Haptics.playLight(view)
-                            onRetry()
-                        }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
                 Text(
-                    text = "Verify Permission State",
-                    style = LabelLarge.copy(
-                        color = Foreground,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    text = "Set up later in Settings",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF94A3B8),
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                Haptics.playLight(view)
+                                onLater()
+                            }
+                        )
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Later Button
-            val laterInteraction = remember { MutableInteractionSource() }
-            val isLaterPressed by laterInteraction.collectIsPressedAsState()
-            val laterScale = if (isLaterPressed) 0.95f else 1f
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .scale(laterScale)
-                    .clip(RoundedCornerShape(25.dp))
-                    .clickable(
-                        interactionSource = laterInteraction,
-                        indication = null,
-                        onClick = {
-                            Haptics.playLight(view)
-                            onLater()
-                        }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Decide Later",
-                    style = LabelLarge.copy(
-                        color = MutedForeground,
-                        fontWeight = FontWeight.Normal
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "View Privacy Policy",
-                style = LabelLarge.copy(
-                    color = GlowPrimary,
-                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
-                ),
-                modifier = Modifier
-                    .clickable {
-                        Haptics.playLight(view)
-                        showPrivacyOverview = true
-                    }
+@Composable
+private fun RowItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(11.dp))
+                .background(Color(0xFF22173D))
+                .border(1.dp, Color(0xFF3B2766), RoundedCornerShape(11.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color(0xFFC084FC),
+                modifier = Modifier.size(19.dp)
             )
         }
 
-        // Privacy Policy In-App Overview Modal
-        if (showPrivacyOverview) {
-            PrivacyOverviewDialog(
-                onDismiss = { showPrivacyOverview = false },
-                onOpenWebPolicy = {
-                    try {
-                        uriHandler.openUri("https://t1premainweb-nine.vercel.app/home/privacy")
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(1.dp))
+            Text(
+                text = subtitle,
+                fontSize = 11.5.sp,
+                color = Color(0xFF94A3B8),
+                lineHeight = 15.sp
             )
         }
     }

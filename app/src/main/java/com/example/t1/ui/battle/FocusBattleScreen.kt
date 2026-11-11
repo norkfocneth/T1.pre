@@ -417,19 +417,22 @@ fun FocusBattleScreen(
     viewModel: FocusBattleViewModel,
     modifier: Modifier = Modifier,
     onBackToHome: () -> Unit = {},
-    forceShowTour: Boolean = false
+    forceShowTour: Boolean = false,
+    onTourComplete: () -> Unit = {},
+    onTourSkip: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isBattleTutorialCompleted by viewModel.battleTutorialCompleted.collectAsState()
     val view = LocalView.current
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    var isTourActive by remember { mutableStateOf(forceShowTour || !isBattleTutorialCompleted) }
+    var isTourActive by remember { mutableStateOf(forceShowTour) }
     var tourStepIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(isBattleTutorialCompleted, forceShowTour) {
-        if (forceShowTour || !isBattleTutorialCompleted) {
-            isTourActive = true
+    LaunchedEffect(forceShowTour) {
+        isTourActive = forceShowTour
+        if (forceShowTour) {
+            tourStepIndex = 0
         }
     }
 
@@ -674,12 +677,12 @@ fun FocusBattleScreen(
                         tourStepIndex++
                     } else {
                         isTourActive = false
-                        viewModel.completeBattleTutorial()
+                        onTourComplete()
                     }
                 },
                 onSkip = {
                     isTourActive = false
-                    viewModel.completeBattleTutorial()
+                    onTourSkip()
                 }
             )
         }

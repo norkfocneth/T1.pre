@@ -109,8 +109,8 @@ val LeaderboardTourSteps = listOf(
     // Step 6: Grand Finale
     LeaderboardTourStep(
         id = 6,
-        title = "CLIMB TO THE TOP!",
-        subtitle = "Leaderboard arena ready hai! Apna agla focus session shuru karein aur top rankers ki league me shaamil ho jayein.",
+        title = "LEADERBOARD READY!",
+        subtitle = "Leaderboard arena ready hai! Ab chalte hain 1v1 Focus Fights ki taraf jahan aap rivals ke sath live token battles lad sakte hain.",
         iconEmoji = "🚀",
         mascotRes = R.drawable.mascot_live_hero,
         mascotAlignLeft = false,
@@ -434,7 +434,7 @@ fun LeaderboardMascotGuidedTour(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Start Competing ➔",
+                                text = "Next: Focus Fights ➔",
                                 style = LabelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -460,9 +460,10 @@ fun LeaderboardMascotGuidedTour(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(
-                            top = if (currentStep.cardAtTop) 65.dp else 0.dp,
-                            bottom = if (!currentStep.cardAtTop) 110.dp else 0.dp
+                            top = if (currentStep.cardAtTop) 72.dp else 0.dp,
+                            bottom = if (!currentStep.cardAtTop) 125.dp else 0.dp
                         ),
                     horizontalAlignment = if (currentStep.mascotAlignLeft) Alignment.Start else Alignment.End
                 ) {
@@ -476,7 +477,7 @@ fun LeaderboardMascotGuidedTour(
                             painter = painterResource(id = currentStep.mascotRes),
                             contentDescription = "T1 Leaderboard Mascot Guide",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(110.dp)
                         )
                     }
 

@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -233,6 +235,40 @@ fun TokenWalletScreen(
                                     .size(48.dp)
                                     .clip(CircleShape)
                                     .graphicsLayer(rotationY = coinRotation)
+                            )
+                        }
+                    }
+                }
+
+                // Legal Notice & Compliance Card (Non-Financial Gamification Token)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceRaised.copy(alpha = 0.5f))
+                        .border(1.dp, Border, RoundedCornerShape(12.dp))
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = "Legal Notice",
+                            tint = GlowPrimary,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .padding(top = 1.dp)
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "Virtual Motivational Rewards",
+                                style = LabelSmall.copy(color = Foreground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            )
+                            Text(
+                                text = "T1 Tokens are in-app gamification points earned strictly via focus sessions and habit consistency. Tokens hold zero monetary/cash value and cannot be purchased, traded, transferred, or exchanged for real money or cryptocurrency.",
+                                style = BodySmall.copy(color = MutedForeground, fontSize = 10.sp, lineHeight = 14.sp)
                             )
                         }
                     }

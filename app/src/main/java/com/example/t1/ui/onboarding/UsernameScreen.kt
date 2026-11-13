@@ -84,6 +84,7 @@ fun UsernameScreen(
 
     var input by remember { mutableStateOf("") }
     var displayNameInput by remember { mutableStateOf("") }
+    var isAgeConfirmed by remember { mutableStateOf(false) }
 
     // Map VM status to local status
     val status = when (statusState) {
@@ -114,7 +115,7 @@ fun UsernameScreen(
         viewModel.checkUsername(trimmed)
     }
 
-    val canContinue = status == UsernameStatus.AVAILABLE && input.trim().length >= 2
+    val canContinue = status == UsernameStatus.AVAILABLE && input.trim().length >= 2 && isAgeConfirmed
 
     // Border color depending on status
     val borderColor by animateColorAsState(
@@ -487,7 +488,72 @@ fun UsernameScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 18+ Age Assurance Affirmation (DPDPA 2023 & Google Play 18+ Compliance)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (isAgeConfirmed) GlowPrimary.copy(alpha = 0.08f) else Card)
+                    .border(
+                        width = 1.dp,
+                        color = if (isAgeConfirmed) GlowPrimary.copy(alpha = 0.5f) else Border,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .clickable {
+                        Haptics.playLight(view)
+                        isAgeConfirmed = !isAgeConfirmed
+                    }
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isAgeConfirmed) GlowPrimary else Color.Transparent)
+                        .border(
+                            width = 1.5.dp,
+                            color = if (isAgeConfirmed) GlowPrimary else MutedForeground.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(6.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isAgeConfirmed) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Confirmed",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "I am 18 years of age or older",
+                        style = LabelMedium.copy(
+                            color = Foreground,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "In compliance with DPDPA regulations, T1 is crafted for adult focus & habit mastery.",
+                        style = BodySmall.copy(
+                            color = MutedForeground,
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Continue CTA
             val interactionSource = remember { MutableInteractionSource() }

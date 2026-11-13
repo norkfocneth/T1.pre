@@ -267,7 +267,7 @@ fun AuthScreen(
                     .padding(bottom = 8.dp)
             ) {
                 Text(
-                    text = "By continuing, you agree to our Terms & Privacy",
+                    text = "By continuing, you confirm you are 18+ & agree to Terms & Privacy",
                     style = BodySmall.copy(
                         fontSize = 10.sp,
                         color = MutedForeground.copy(alpha = 0.5f),

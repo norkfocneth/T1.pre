@@ -13,12 +13,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -36,6 +38,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -835,7 +839,7 @@ fun LeaderboardScreen(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PODIUM SECTION
+// PODIUM SECTION (3D Stage Background Image)
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
 private fun PodiumSection(
@@ -848,113 +852,130 @@ private fun PodiumSection(
     val entry2 = top3.getOrNull(1)
     val entry3 = top3.getOrNull(2)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(310.dp)
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // Atmospheric canvas behind podium
-        Canvas(modifier = Modifier.fillMaxSize().alpha(0.6f)) {
-            // Blue radial glow at center (for #1)
-            drawCircle(
-                brush  = Brush.radialGradient(
-                    colors = listOf(PodiumFirst.copy(alpha = glowAlpha * 0.18f), Color.Transparent),
-                    center = Offset(size.width * 0.5f, size.height * 0.3f),
-                    radius = size.width * 0.38f
-                ),
-                center = Offset(size.width * 0.5f, size.height * 0.3f),
-                radius = size.width * 0.38f
-            )
-            // Mist at ground line
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors      = listOf(Color.Transparent, Color(0xFF07070A).copy(alpha = 0.7f)),
-                    startY      = size.height * 0.7f,
-                    endY        = size.height
-                )
-            )
-        }
+        val sectionHeight = maxWidth * (660f / 576f)
+        val groundPadding = maxWidth * (18f / 576f)
 
-        // Three podium columns
-        Row(
-            modifier              = Modifier
+        // Exact heights of the 3D podium blocks from the ground line in the 576x1024 photo
+        val cube1Height = maxWidth * (170f / 576f) // #1 Center (Y: 640 - 470 = 170px)
+        val cube2Height = maxWidth * (120f / 576f) // #2 Left (Y: 640 - 520 = 120px)
+        val cube3Height = maxWidth * (102f / 576f) // #3 Right (Y: 640 - 538 = 102px)
+
+        Box(
+            modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment     = Alignment.Bottom
+                .height(sectionHeight)
         ) {
-            // #2 Left — Silver
-            if (entry2 != null) {
-                PodiumEntry(
-                    entry              = entry2,
-                    ringColor          = PodiumSecond,
-                    ringColorDark      = PodiumSecondDk,
-                    podiumHeight       = 85.dp,
-                    avatarSize         = 50.dp,
-                    isFirst            = false,
-                    rankLabel          = "2",
-                    glowAlpha          = 0f,
-                    crownFloat         = 0f,
-                    modifier           = Modifier.weight(1f)
-                )
-            }
+            // 1. 3D Cinematic Podium Stage Image
+            Image(
+                painter = painterResource(id = com.example.t1.R.drawable.leaderboard_podium_bg),
+                contentDescription = "Leaderboard 3D Podium",
+                contentScale = ContentScale.FillWidth,
+                alignment = Alignment.TopCenter,
+                modifier = Modifier.fillMaxSize()
+            )
 
-            // #1 Center — Blue neon
-            if (entry1 != null) {
-                PodiumEntry(
-                    entry              = entry1,
-                    ringColor          = PodiumFirst,
-                    ringColorDark      = PodiumFirstDark,
-                    podiumHeight       = 112.dp,
-                    avatarSize         = 62.dp,
-                    isFirst            = true,
-                    rankLabel          = "1",
-                    glowAlpha          = glowAlpha,
-                    crownFloat         = crownFloat,
-                    modifier           = Modifier
-                        .weight(1f)
-                        .onGloballyPositioned { coords ->
-                            val pos = coords.positionInRoot()
-                            onPodiumPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height * 0.35f))
-                        }
-                )
-            }
+            // 2. Soft bottom gradient fade so podium base dissolves cleanly into the list background
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color(0xFF07070A))
+                        )
+                    )
+            )
 
-            // #3 Right — Light grey
-            if (entry3 != null) {
-                PodiumEntry(
-                    entry              = entry3,
-                    ringColor          = PodiumThird,
-                    ringColorDark      = PodiumThirdDk,
-                    podiumHeight       = 68.dp,
-                    avatarSize         = 48.dp,
-                    isFirst            = false,
-                    rankLabel          = "3",
-                    glowAlpha          = 0f,
-                    crownFloat         = 0f,
-                    modifier           = Modifier.weight(1f)
-                )
+            // 3. Three podium columns aligned to sit directly on top of the 3D podium blocks
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = groundPadding)
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                // #2 Left — Cypher (Silver)
+                if (entry2 != null) {
+                    PodiumEntry(
+                        entry = entry2,
+                        ringColor = PodiumSecond,
+                        ringColorDark = PodiumSecondDk,
+                        podiumSpacerHeight = cube2Height,
+                        avatarSize = 50.dp,
+                        isFirst = false,
+                        rankLabel = "2",
+                        glowAlpha = 0f,
+                        crownFloat = 0f,
+                        modifier = Modifier
+                            .weight(1f)
+                            .offset(x = 14.dp)
+                    )
+                }
+
+                // #1 Center — Haiken (Blue neon)
+                if (entry1 != null) {
+                    PodiumEntry(
+                        entry = entry1,
+                        ringColor = PodiumFirst,
+                        ringColorDark = PodiumFirstDark,
+                        podiumSpacerHeight = cube1Height,
+                        avatarSize = 62.dp,
+                        isFirst = true,
+                        rankLabel = "1",
+                        glowAlpha = glowAlpha,
+                        crownFloat = crownFloat,
+                        modifier = Modifier
+                            .weight(1.15f)
+                            .onGloballyPositioned { coords ->
+                                val pos = coords.positionInRoot()
+                                onPodiumPositioned(Offset(pos.x + coords.size.width / 2f, pos.y + coords.size.height * 0.35f))
+                            }
+                    )
+                }
+
+                // #3 Right — Masha (Light grey / Teal)
+                if (entry3 != null) {
+                    PodiumEntry(
+                        entry = entry3,
+                        ringColor = PodiumThird,
+                        ringColorDark = PodiumThirdDk,
+                        podiumSpacerHeight = cube3Height,
+                        avatarSize = 48.dp,
+                        isFirst = false,
+                        rankLabel = "3",
+                        glowAlpha = 0f,
+                        crownFloat = 0f,
+                        modifier = Modifier
+                            .weight(1f)
+                            .offset(x = (-14).dp)
+                    )
+                }
             }
         }
     }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SINGLE PODIUM ENTRY (Premium)
+// SINGLE PODIUM ENTRY (Positioned on top of 3D cube)
 // ═══════════════════════════════════════════════════════════════════════════════
 @Composable
 private fun PodiumEntry(
-    entry         : LeaderboardUser,
-    ringColor     : Color,
-    ringColorDark : Color,
-    podiumHeight  : Dp,
-    avatarSize    : Dp,
-    isFirst       : Boolean,
-    rankLabel     : String,
-    glowAlpha     : Float,
-    crownFloat    : Float,
-    modifier      : Modifier = Modifier
+    entry              : LeaderboardUser,
+    ringColor          : Color,
+    ringColorDark      : Color,
+    podiumSpacerHeight : Dp,
+    avatarSize         : Dp,
+    isFirst            : Boolean,
+    rankLabel          : String,
+    glowAlpha          : Float,
+    crownFloat         : Float,
+    modifier           : Modifier = Modifier
 ) {
     // Premium gradient avatars for top 3
     val avatarGradient = when (rankLabel) {
@@ -1124,48 +1145,10 @@ private fun PodiumEntry(
             )
         )
 
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
 
-        // Premium podium platform block
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(podiumHeight)
-                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            PodiumBlockTop,
-                            PodiumBlockBot.copy(alpha = 0.95f),
-                            PodiumBlockBot
-                        )
-                    )
-                )
-                .border(
-                    width = 1.dp,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            ringColor.copy(alpha = if (isFirst) 0.35f else 0.18f),
-                            ringColor.copy(alpha = 0.05f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                )
-                .drawBehind {
-                    // Inner top-edge shine
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                ringColor.copy(alpha = if (isFirst) 0.12f else 0.06f),
-                                Color.Transparent
-                            ),
-                            startY = 0f,
-                            endY   = size.height * 0.25f
-                        )
-                    )
-                }
-        )
+        // Transparent spacer corresponding to the 3D podium cube height in the image (old drawn bar removed)
+        Spacer(modifier = Modifier.height(podiumSpacerHeight))
     }
 }
 

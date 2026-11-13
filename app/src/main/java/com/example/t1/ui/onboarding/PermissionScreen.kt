@@ -269,38 +269,21 @@ private fun NotificationPermissionScreen(
 ) {
     val view = LocalView.current
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .drawBehind {
-                // Soft purple ambient radial glow on top right behind mascot
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF8B5CF6).copy(alpha = 0.35f), Color.Transparent),
-                        center = Offset(size.width * 0.85f, size.height * 0.22f),
-                        radius = size.width * 0.6f
-                    )
-                )
-                // Bottom ambient glow reflection
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color(0xFF6D28D9).copy(alpha = 0.12f),
-                            Color(0xFF8B5CF6).copy(alpha = 0.16f),
-                            Color.Transparent
-                        ),
-                        startY = size.height * 0.72f,
-                        endY = size.height
-                    )
-                )
-            }
-            .padding(horizontal = 22.dp, vertical = 12.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Full scenic planetary background with starry space, ringed moon, 3D mascot on rock, and water reflections
+        Image(
+            painter = painterResource(id = R.drawable.bg_perm_notif),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 22.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -335,112 +318,93 @@ private fun NotificationPermissionScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Hero Row: Header text on left, Mascot on right
-                Box(
+                // Left Column Header (3D Mascot and purple planet are visible in the background on the right)
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(210.dp)
+                        .fillMaxWidth(0.62f)
+                        .padding(top = 4.dp)
                 ) {
-                    // Left Column Header
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .align(Alignment.TopStart)
-                            .padding(top = 4.dp)
+                    Text(
+                        text = "Notifications",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        lineHeight = 34.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Notifications",
+                            text = if (isGranted) "Enabled" else "Enable",
                             fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            lineHeight = 34.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = if (isGranted) "Enabled" else "Enable",
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                style = TextStyle(
-                                    brush = Brush.horizontalGradient(
-                                        listOf(Color(0xFFA855F7), Color(0xFFC084FC))
-                                    )
+                            fontWeight = FontWeight.ExtraBold,
+                            style = TextStyle(
+                                brush = Brush.horizontalGradient(
+                                    listOf(Color(0xFFA855F7), Color(0xFFC084FC))
                                 )
                             )
+                        )
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        Brush.linearGradient(
-                                            listOf(
-                                                Color(0xFF7C3AED).copy(alpha = 0.5f),
-                                                Color(0xFF9333EA).copy(alpha = 0.4f)
-                                            )
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            Color(0xFF7C3AED).copy(alpha = 0.5f),
+                                            Color(0xFF9333EA).copy(alpha = 0.4f)
                                         )
                                     )
-                                    .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.7f), RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = if (isGranted) Icons.Default.Check else Icons.Default.Notifications,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
                                 )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            text = "Stay in the loop with your focus journey. No spam, only what matters.",
-                            fontSize = 13.sp,
-                            color = Color(0xFF94A3B8),
-                            lineHeight = 18.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // Stepper pill indicator
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .width(26.dp)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(Color(0xFFA855F7))
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(4.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF382F4D))
+                                .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.7f), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isGranted) Icons.Default.Check else Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
 
-                    // Mascot Image on right (pure clean crop with NO letter 'S' and antialiased fade)
-                    Image(
-                        painter = painterResource(id = R.drawable.mascot_perm_notif),
-                        contentDescription = "Mascot sitting on rocks",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .size(190.dp)
-                            .align(Alignment.TopEnd)
-                            .offset(x = 10.dp, y = (-8).dp)
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Stay in the loop with your focus journey. No spam, only what matters.",
+                        fontSize = 13.sp,
+                        color = Color(0xFFCBD5E1),
+                        lineHeight = 18.sp
                     )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Stepper pill indicator
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .width(26.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFFA855F7))
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF382F4D))
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Frosted glass card with 4 rows
                 Box(
@@ -468,7 +432,8 @@ private fun NotificationPermissionScreen(
                             isApproved = true
                         )
                         NotifFeatureRow(
-                            icon = Icons.Default.SportsMma,
+                            icon = null,
+                            iconRes = R.drawable.ic_nav_battle,
                             title = "1v1 Focus Fight Invites",
                             subtitle = "Challenge friends and climb the ranks.",
                             isApproved = true
@@ -791,7 +756,8 @@ private fun UsageAccessPermissionScreen(
  */
 @Composable
 private fun NotifFeatureRow(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    iconRes: Int? = null,
     title: String,
     subtitle: String,
     isApproved: Boolean
@@ -809,12 +775,21 @@ private fun NotifFeatureRow(
                 .border(1.dp, Color(0xFF3B2766), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(19.dp)
-            )
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(19.dp)
+                )
+            } else if (iconRes != null) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(19.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(12.dp))

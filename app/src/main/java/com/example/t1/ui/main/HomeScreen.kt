@@ -265,9 +265,18 @@ fun HomeScreen(
         showTapHint = true
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        OnboardingBackground(modifier = modifier) {
-            Column(
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        Image(
+            painter = painterResource(id = com.example.t1.R.drawable.home_bg_rocks),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
@@ -1281,7 +1290,6 @@ fun HomeScreen(
                 }
             }
         }
-    }
 
     // Floating AI Coach Button
     Box(
